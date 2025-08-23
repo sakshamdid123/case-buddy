@@ -279,36 +279,98 @@
     <!-- FEEDBACK MODAL -->
     <div id="feedback-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
         <div class="bg-white rounded-lg shadow-xl p-8 w-full max-w-lg transform transition-all" id="feedback-modal-content">
-            <h2 class="text-2xl font-bold mb-4 gradient-text">Case Feedback</h2>
-            <div class="mb-6">
-                <label class="block text-slate-700 font-semibold mb-2">Ratings from Buddy</label>
-                <div class="star-rating flex flex-row-reverse justify-end">
-                    <input type="radio" id="buddy-star5" name="buddy-rating" value="5" /><label for="buddy-star5">&#9733;</label>
-                    <input type="radio" id="buddy-star4" name="buddy-rating" value="4" /><label for="buddy-star4">&#9733;</label>
-                    <input type="radio" id="buddy-star3" name="buddy-rating" value="3" /><label for="buddy-star3">&#9733;</label>
-                    <input type="radio" id="buddy-star2" name="buddy-rating" value="2" /><label for="buddy-star2">&#9733;</label>
-                    <input type="radio" id="buddy-star1" name="buddy-rating" value="1" /><label for="buddy-star1">&#9733;</label>
-                </div>
-            </div>
-            <div class="mb-6">
-                <label class="block text-slate-700 font-semibold mb-2">Self Rating</label>
-                 <div class="star-rating flex flex-row-reverse justify-end">
-                    <input type="radio" id="self-star5" name="self-rating" value="5" /><label for="self-star5">&#9733;</label>
-                    <input type="radio" id="self-star4" name="self-rating" value="4" /><label for="self-star4">&#9733;</label>
-                    <input type="radio" id="self-star3" name="self-rating" value="3" /><label for="self-star3">&#9733;</label>
-                    <input type="radio" id="self-star2" name="self-rating" value="2" /><label for="self-star2">&#9733;</label>
-                    <input type="radio" id="self-star1" name="self-rating" value="1" /><label for="self-star1">&#9733;</label>
-                </div>
-            </div>
-            <div class="mb-6">
-                <label for="learnings" class="block text-slate-700 font-semibold mb-2">Learnings & Notes</label>
-                <textarea id="learnings" rows="4" class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="What were your key takeaways from this case?"></textarea>
-            </div>
-            <div class="flex justify-end space-x-4">
-                <button id="close-modal-btn" class="bg-slate-200 text-slate-700 px-6 py-2 rounded-lg font-semibold hover:bg-slate-300 transition">Cancel</button>
-                <button id="submit-feedback-btn" class="gradient-bg text-white px-6 py-2 rounded-lg font-semibold hover:opacity-90 transition">Save Feedback</button>
-            </div>
-        </div>
+          <div class="bg-white rounded-lg shadow-xl p-8 w-full max-w-lg transform transition-all" id="feedback-modal-content">
+  <h2 class="text-2xl font-bold mb-4 gradient-text">Case Feedback</h2>
+
+  <!-- Explainer Toggle -->
+  <details class="mb-6 rounded-lg border p-4 bg-slate-50">
+    <summary class="cursor-pointer font-semibold text-slate-700">How the overall rating is calculated</summary>
+    <div class="mt-3 text-slate-600 text-sm leading-relaxed">
+      We compute a weighted average (out of 5 stars) using:
+      <ul class="list-disc ml-6 mt-2 space-y-1">
+        <li><span class="font-semibold">Case Understanding</span>: 25%</li>
+        <li><span class="font-semibold">Delivery</span>: 25%</li>
+        <li><span class="font-semibold">Creativity</span>: 15%</li>
+        <li><span class="font-semibold">Structure</span>: 35%</li>
+      </ul>
+      <p class="mt-3">Formula: <code class="bg-white px-1 rounded">Overall = 0.25×CU + 0.25×DL + 0.15×CR + 0.35×ST</code>, each on a 0–5 scale.</p>
+    </div>
+  </details>
+
+  <!-- Parameter Ratings -->
+  <div class="space-y-6">
+    <!-- Case Understanding -->
+    <div>
+      <label class="block text-slate-700 font-semibold mb-2">Case Understanding (25%)</label>
+      <div class="star-rating flex flex-row-reverse justify-end param-rating" data-param="caseUnderstanding">
+        <input type="radio" id="cu-5" name="caseUnderstanding" value="5" /><label for="cu-5">&#9733;</label>
+        <input type="radio" id="cu-4" name="caseUnderstanding" value="4" /><label for="cu-4">&#9733;</label>
+        <input type="radio" id="cu-3" name="caseUnderstanding" value="3" /><label for="cu-3">&#9733;</label>
+        <input type="radio" id="cu-2" name="caseUnderstanding" value="2" /><label for="cu-2">&#9733;</label>
+        <input type="radio" id="cu-1" name="caseUnderstanding" value="1" /><label for="cu-1">&#9733;</label>
+      </div>
+    </div>
+
+    <!-- Delivery -->
+    <div>
+      <label class="block text-slate-700 font-semibold mb-2">Delivery (25%)</label>
+      <div class="star-rating flex flex-row-reverse justify-end param-rating" data-param="delivery">
+        <input type="radio" id="dl-5" name="delivery" value="5" /><label for="dl-5">&#9733;</label>
+        <input type="radio" id="dl-4" name="delivery" value="4" /><label for="dl-4">&#9733;</label>
+        <input type="radio" id="dl-3" name="delivery" value="3" /><label for="dl-3">&#9733;</label>
+        <input type="radio" id="dl-2" name="delivery" value="2" /><label for="dl-2">&#9733;</label>
+        <input type="radio" id="dl-1" name="delivery" value="1" /><label for="dl-1">&#9733;</label>
+      </div>
+    </div>
+
+    <!-- Creativity -->
+    <div>
+      <label class="block text-slate-700 font-semibold mb-2">Creativity (15%)</label>
+      <div class="star-rating flex flex-row-reverse justify-end param-rating" data-param="creativity">
+        <input type="radio" id="cr-5" name="creativity" value="5" /><label for="cr-5">&#9733;</label>
+        <input type="radio" id="cr-4" name="creativity" value="4" /><label for="cr-4">&#9733;</label>
+        <input type="radio" id="cr-3" name="creativity" value="3" /><label for="cr-3">&#9733;</label>
+        <input type="radio" id="cr-2" name="creativity" value="2" /><label for="cr-2">&#9733;</label>
+        <input type="radio" id="cr-1" name="creativity" value="1" /><label for="cr-1">&#9733;</label>
+      </div>
+    </div>
+
+    <!-- Structure -->
+    <div>
+      <label class="block text-slate-700 font-semibold mb-2">Structure (35%)</label>
+      <div class="star-rating flex flex-row-reverse justify-end param-rating" data-param="structure">
+        <input type="radio" id="st-5" name="structure" value="5" /><label for="st-5">&#9733;</label>
+        <input type="radio" id="st-4" name="structure" value="4" /><label for="st-4">&#9733;</label>
+        <input type="radio" id="st-3" name="structure" value="3" /><label for="st-3">&#9733;</label>
+        <input type="radio" id="st-2" name="structure" value="2" /><label for="st-2">&#9733;</label>
+        <input type="radio" id="st-1" name="structure" value="1" /><label for="st-1">&#9733;</label>
+      </div>
+    </div>
+  </div>
+
+  <!-- Overall Rating (live) -->
+  <div class="mt-8 p-4 bg-slate-50 border rounded-lg flex items-center justify-between">
+    <div>
+      <div class="text-sm text-slate-600">Overall Rating (weighted)</div>
+      <div id="overall-stars" class="text-2xl leading-none mt-1" aria-label="Overall stars">☆☆☆☆☆</div>
+    </div>
+    <div class="text-right">
+      <div id="overall-number" class="text-3xl font-extrabold gradient-text">0.0</div>
+      <div class="text-xs text-slate-500">out of 5</div>
+    </div>
+  </div>
+
+  <!-- Notes -->
+  <div class="mt-6">
+    <label for="learnings" class="block text-slate-700 font-semibold mb-2">Learnings & Notes</label>
+    <textarea id="learnings" rows="4" class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="What were your key takeaways from this case?"></textarea>
+  </div>
+
+  <div class="mt-6 flex justify-end space-x-4">
+    <button id="close-modal-btn" class="bg-slate-200 text-slate-700 px-6 py-2 rounded-lg font-semibold hover:bg-slate-300 transition">Close</button>
+    <button id="submit-feedback-btn" class="gradient-bg text-white px-6 py-2 rounded-lg font-semibold hover:opacity-90 transition">Save Feedback</button>
+  </div>
+</div>
     </div>
 
 
@@ -755,6 +817,54 @@
             closeFeedbackModal(); 
         });
 
+    // --- Weighted Overall Rating (live) ---
+const WEIGHTS = {
+  caseUnderstanding: 0.25,
+  delivery: 0.25,
+  creativity: 0.15,
+  structure: 0.35,
+};
+
+const overallNumberEl = document.getElementById('overall-number');
+const overallStarsEl = document.getElementById('overall-stars');
+
+function getParamValue(name) {
+  const checked = document.querySelector(`input[name="${name}"]:checked`);
+  return checked ? Number(checked.value) : 0;
+}
+
+function renderStars(scoreOutOf5) {
+  const s = Math.round(scoreOutOf5 * 2) / 2;
+  const full = Math.floor(s);
+  const half = s - full >= 0.5 ? 1 : 0;
+  const empty = 5 - full - half;
+  return '★'.repeat(full) + (half ? '☆' : '') + '☆'.repeat(empty - (half ? 0 : 0));
+}
+
+function recomputeOverall() {
+  const cu = getParamValue('caseUnderstanding');
+  const dl = getParamValue('delivery');
+  const cr = getParamValue('creativity');
+  const st = getParamValue('structure');
+
+  const overall =
+    cu * WEIGHTS.caseUnderstanding +
+    dl * WEIGHTS.delivery +
+    cr * WEIGHTS.creativity +
+    st * WEIGHTS.structure;
+
+  const rounded = Math.round(overall * 10) / 10;
+  overallNumberEl.textContent = rounded.toFixed(1);
+  overallStarsEl.textContent = renderStars(overall);
+}
+
+document.querySelectorAll('.param-rating input[type="radio"]').forEach((input) => {
+  input.addEventListener('change', recomputeOverall);
+});
+
+recomputeOverall();
+
     </script>
 </body>
+
 </html>
