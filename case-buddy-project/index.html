@@ -76,7 +76,17 @@
         }
         .star-rating input[type="radio"]:checked ~ label,
         .star-rating:hover label { color: #f59e0b; /* amber-500 */ }
-        .star-rating:hover label:hover ~ label { color: #d1d5db; /* gray-300 */ }
+        .star-rating label:hover ~ label { color: #d1d5db; /* gray-300 */ }
+        
+        /* Overall Rating Display Styles */
+        #overall-rating-display .star {
+            color: #d1d5db; /* gray-300 */
+            font-size: 2.5rem;
+        }
+        #overall-rating-display .star.filled {
+            color: #f59e0b; /* amber-500 */
+        }
+        
         /* Scrollbar styling */
         ::-webkit-scrollbar { width: 8px; }
         ::-webkit-scrollbar-track { background: #f1f5f9; }
@@ -93,8 +103,8 @@
                     <svg class="h-8 w-8" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="url(#grad1)">
                         <defs>
                            <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="0%">
-                              <stop offset="0%" style="stop-color:#3b82f6;stop-opacity:1" />
-                              <stop offset="100%" style="stop-color:#10b981;stop-opacity:1" />
+                             <stop offset="0%" style="stop-color:#3b82f6;stop-opacity:1" />
+                             <stop offset="100%" style="stop-color:#10b981;stop-opacity:1" />
                            </linearGradient>
                         </defs>
                         <path d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" />
@@ -160,7 +170,7 @@
             <div class="flex justify-between items-center mb-8">
                  <h1 class="text-4xl font-bold gradient-text">Case Library</h1>
                  <button id="back-to-filters-btn" class="font-semibold text-slate-600 hover:text-slate-900 transition">
-                    &larr; Back to Filters
+                     &larr; Back to Filters
                  </button>
             </div>
             <div id="case-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -250,9 +260,9 @@
             </div>
             <div class="p-4 bg-slate-50 border-t flex justify-between items-center">
                  <label class="flex items-center space-x-2 font-semibold">
-                    <input type="checkbox" id="all-companies-checkbox" class="h-5 w-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500">
-                    <span>Select All</span>
-                </label>
+                     <input type="checkbox" id="all-companies-checkbox" class="h-5 w-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                     <span>Select All</span>
+                 </label>
                 <div>
                     <button id="clear-companies-btn" class="px-6 py-2 rounded-lg font-semibold hover:bg-slate-200 transition mr-2">Clear</button>
                     <button id="apply-companies-btn" class="gradient-bg text-white px-6 py-2 rounded-lg font-semibold hover:opacity-90 transition">Apply</button>
@@ -280,33 +290,78 @@
     <div id="feedback-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
         <div class="bg-white rounded-lg shadow-xl p-8 w-full max-w-lg transform transition-all" id="feedback-modal-content">
             <h2 class="text-2xl font-bold mb-4 gradient-text">Case Feedback</h2>
+
             <div class="mb-6">
-                <label class="block text-slate-700 font-semibold mb-2">Ratings from Buddy</label>
-                <div class="star-rating flex flex-row-reverse justify-end">
-                    <input type="radio" id="buddy-star5" name="buddy-rating" value="5" /><label for="buddy-star5">&#9733;</label>
-                    <input type="radio" id="buddy-star4" name="buddy-rating" value="4" /><label for="buddy-star4">&#9733;</label>
-                    <input type="radio" id="buddy-star3" name="buddy-rating" value="3" /><label for="buddy-star3">&#9733;</label>
-                    <input type="radio" id="buddy-star2" name="buddy-rating" value="2" /><label for="buddy-star2">&#9733;</label>
-                    <input type="radio" id="buddy-star1" name="buddy-rating" value="1" /><label for="buddy-star1">&#9733;</label>
+                <button id="toggle-explanation-btn" class="text-sm text-blue-600 hover:underline focus:outline-none">How is the overall rating calculated?</button>
+                <div id="rating-explanation" class="hidden mt-2 p-3 bg-slate-100 rounded-lg text-sm text-slate-600">
+                    The overall rating is a weighted average of the following parameters:
+                    <ul class="list-disc list-inside mt-1">
+                        <li><b>Structure:</b> 35%</li>
+                        <li><b>Case Understanding:</b> 25%</li>
+                        <li><b>Delivery:</b> 25%</li>
+                        <li><b>Creativity:</b> 15%</li>
+                    </ul>
                 </div>
             </div>
-            <div class="mb-6">
-                <label class="block text-slate-700 font-semibold mb-2">Self Rating</label>
-                 <div class="star-rating flex flex-row-reverse justify-end">
-                    <input type="radio" id="self-star5" name="self-rating" value="5" /><label for="self-star5">&#9733;</label>
-                    <input type="radio" id="self-star4" name="self-rating" value="4" /><label for="self-star4">&#9733;</label>
-                    <input type="radio" id="self-star3" name="self-rating" value="3" /><label for="self-star3">&#9733;</label>
-                    <input type="radio" id="self-star2" name="self-rating" value="2" /><label for="self-star2">&#9733;</label>
-                    <input type="radio" id="self-star1" name="self-rating" value="1" /><label for="self-star1">&#9733;</label>
+
+            <div id="rating-parameters" class="space-y-4">
+                 <!-- Structure -->
+                 <div class="flex justify-between items-center">
+                    <label class="text-slate-700 font-semibold">Structure</label>
+                    <div class="star-rating flex flex-row-reverse justify-end" data-parameter="structure" data-weight="0.35">
+                        <input type="radio" id="structure-star5" name="structure-rating" value="5" /><label for="structure-star5">&#9733;</label>
+                        <input type="radio" id="structure-star4" name="structure-rating" value="4" /><label for="structure-star4">&#9733;</label>
+                        <input type="radio" id="structure-star3" name="structure-rating" value="3" /><label for="structure-star3">&#9733;</label>
+                        <input type="radio" id="structure-star2" name="structure-rating" value="2" /><label for="structure-star2">&#9733;</label>
+                        <input type="radio" id="structure-star1" name="structure-rating" value="1" /><label for="structure-star1">&#9733;</label>
+                    </div>
+                </div>
+                <!-- Case Understanding -->
+                <div class="flex justify-between items-center">
+                    <label class="text-slate-700 font-semibold">Case Understanding</label>
+                    <div class="star-rating flex flex-row-reverse justify-end" data-parameter="understanding" data-weight="0.25">
+                        <input type="radio" id="understanding-star5" name="understanding-rating" value="5" /><label for="understanding-star5">&#9733;</label>
+                        <input type="radio" id="understanding-star4" name="understanding-rating" value="4" /><label for="understanding-star4">&#9733;</label>
+                        <input type="radio" id="understanding-star3" name="understanding-rating" value="3" /><label for="understanding-star3">&#9733;</label>
+                        <input type="radio" id="understanding-star2" name="understanding-rating" value="2" /><label for="understanding-star2">&#9733;</label>
+                        <input type="radio" id="understanding-star1" name="understanding-rating" value="1" /><label for="understanding-star1">&#9733;</label>
+                    </div>
+                </div>
+                 <!-- Delivery -->
+                 <div class="flex justify-between items-center">
+                    <label class="text-slate-700 font-semibold">Delivery</label>
+                    <div class="star-rating flex flex-row-reverse justify-end" data-parameter="delivery" data-weight="0.25">
+                        <input type="radio" id="delivery-star5" name="delivery-rating" value="5" /><label for="delivery-star5">&#9733;</label>
+                        <input type="radio" id="delivery-star4" name="delivery-rating" value="4" /><label for="delivery-star4">&#9733;</label>
+                        <input type="radio" id="delivery-star3" name="delivery-rating" value="3" /><label for="delivery-star3">&#9733;</label>
+                        <input type="radio" id="delivery-star2" name="delivery-rating" value="2" /><label for="delivery-star2">&#9733;</label>
+                        <input type="radio" id="delivery-star1" name="delivery-rating" value="1" /><label for="delivery-star1">&#9733;</label>
+                    </div>
+                </div>
+                 <!-- Creativity -->
+                 <div class="flex justify-between items-center">
+                    <label class="text-slate-700 font-semibold">Creativity</label>
+                    <div class="star-rating flex flex-row-reverse justify-end" data-parameter="creativity" data-weight="0.15">
+                        <input type="radio" id="creativity-star5" name="creativity-rating" value="5" /><label for="creativity-star5">&#9733;</label>
+                        <input type="radio" id="creativity-star4" name="creativity-rating" value="4" /><label for="creativity-star4">&#9733;</label>
+                        <input type="radio" id="creativity-star3" name="creativity-rating" value="3" /><label for="creativity-star3">&#9733;</label>
+                        <input type="radio" id="creativity-star2" name="creativity-rating" value="2" /><label for="creativity-star2">&#9733;</label>
+                        <input type="radio" id="creativity-star1" name="creativity-rating" value="1" /><label for="creativity-star1">&#9733;</label>
+                    </div>
                 </div>
             </div>
-            <div class="mb-6">
-                <label for="learnings" class="block text-slate-700 font-semibold mb-2">Learnings & Notes</label>
-                <textarea id="learnings" rows="4" class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="What were your key takeaways from this case?"></textarea>
+
+            <hr class="my-6">
+
+            <div class="text-center">
+                <p class="text-slate-700 font-semibold mb-2">Overall Rating</p>
+                <div id="overall-rating-display" class="flex justify-center">
+                    <!-- Stars will be injected here by JS -->
+                </div>
             </div>
-            <div class="flex justify-end space-x-4">
-                <button id="close-modal-btn" class="bg-slate-200 text-slate-700 px-6 py-2 rounded-lg font-semibold hover:bg-slate-300 transition">Cancel</button>
-                <button id="submit-feedback-btn" class="gradient-bg text-white px-6 py-2 rounded-lg font-semibold hover:opacity-90 transition">Save Feedback</button>
+            
+            <div class="flex justify-end space-x-4 mt-8">
+                <button id="close-modal-btn" class="bg-slate-200 text-slate-700 px-6 py-2 rounded-lg font-semibold hover:bg-slate-300 transition">Close</button>
             </div>
         </div>
     </div>
@@ -479,13 +534,20 @@
         const companyModal = document.getElementById('company-modal');
         const warningModal = document.getElementById('warning-modal');
         const feedbackModal = document.getElementById('feedback-modal');
-        const [closeModalBtn, submitFeedbackBtn] = [document.getElementById('close-modal-btn'), document.getElementById('submit-feedback-btn')];
+        const closeModalBtn = document.getElementById('close-modal-btn');
         const companyListContainer = document.getElementById('company-list');
         const allCompaniesCheckbox = document.getElementById('all-companies-checkbox');
         const clearCompaniesBtn = document.getElementById('clear-companies-btn');
         const applyCompaniesBtn = document.getElementById('apply-companies-btn');
         const cancelWarningBtn = document.getElementById('cancel-warning-btn');
         const proceedBtn = document.getElementById('proceed-btn');
+        
+        // Feedback Modal Elements
+        const toggleExplanationBtn = document.getElementById('toggle-explanation-btn');
+        const ratingExplanation = document.getElementById('rating-explanation');
+        const ratingParameters = document.getElementById('rating-parameters');
+        const overallRatingDisplay = document.getElementById('overall-rating-display');
+
 
         // --- Functions ---
 
@@ -672,7 +734,8 @@
         function toggleFullscreen() {
              if (!document.fullscreenElement) {
                 pdfRenderContainer.requestFullscreen().catch(err => {
-                    alert(`Error attempting to enable full-screen mode: ${err.message} (${err.name})`);
+                    // Use a custom modal instead of alert
+                    console.error(`Error attempting to enable full-screen mode: ${err.message} (${err.name})`);
                 });
             } else {
                 document.exitFullscreen();
@@ -684,8 +747,16 @@
         function closeCompanyModal() { companyModal.classList.remove('flex'); companyModal.classList.add('hidden'); }
         function openWarningModal() { warningModal.classList.remove('hidden'); warningModal.classList.add('flex');}
         function closeWarningModal() { warningModal.classList.remove('flex'); warningModal.classList.add('hidden');}
-        function openFeedbackModal() { feedbackModal.classList.remove('hidden'); feedbackModal.classList.add('flex');}
-        function closeFeedbackModal() { feedbackModal.classList.remove('flex'); feedbackModal.classList.add('hidden'); showView(caseLibraryView); }
+        function openFeedbackModal() { 
+            resetFeedbackModal();
+            feedbackModal.classList.remove('hidden'); 
+            feedbackModal.classList.add('flex');
+        }
+        function closeFeedbackModal() { 
+            feedbackModal.classList.remove('flex'); 
+            feedbackModal.classList.add('hidden'); 
+            showView(caseLibraryView); 
+        }
         
         function applyCompanySelection() {
             selectedCompanies = Array.from(companyListContainer.querySelectorAll('.company-checkbox:checked')).map(cb => cb.value);
@@ -699,6 +770,42 @@
             closeCompanyModal();
         }
 
+        // --- Feedback Modal Functions ---
+        function calculateOverallRating() {
+            let totalScore = 0;
+            const ratingGroups = ratingParameters.querySelectorAll('.star-rating');
+
+            ratingGroups.forEach(group => {
+                const weight = parseFloat(group.dataset.weight);
+                const checkedRadio = group.querySelector('input[type="radio"]:checked');
+                const value = checkedRadio ? parseInt(checkedRadio.value) : 0;
+                totalScore += value * weight;
+            });
+            
+            updateOverallRatingDisplay(totalScore);
+        }
+
+        function updateOverallRatingDisplay(score) {
+            overallRatingDisplay.innerHTML = ''; // Clear previous stars
+            for (let i = 1; i <= 5; i++) {
+                const star = document.createElement('span');
+                star.classList.add('star');
+                if (i <= score) {
+                    star.classList.add('filled');
+                }
+                star.innerHTML = '&#9733;';
+                overallRatingDisplay.appendChild(star);
+            }
+        }
+        
+        function resetFeedbackModal() {
+            // Uncheck all radio buttons
+            const allRadios = feedbackModal.querySelectorAll('input[type="radio"]');
+            allRadios.forEach(radio => radio.checked = false);
+            // Recalculate and update the display to show 0 stars
+            calculateOverallRating();
+        }
+
         // --- Initial Load & Event Listeners ---
         document.addEventListener('DOMContentLoaded', () => { 
             const uniqueTypes = [...new Set(allCases.map(c => c.type))].sort();
@@ -709,6 +816,7 @@
             populateCompanyModal();
             
             showView(welcomeView);
+            updateOverallRatingDisplay(0); // Initialize overall rating display
         });
 
         // Navigation
@@ -750,10 +858,10 @@
 
         // Feedback Modal
         closeModalBtn.addEventListener('click', closeFeedbackModal);
-        submitFeedbackBtn.addEventListener('click', () => { 
-            console.log('Feedback submitted!'); // Placeholder for actual submission logic
-            closeFeedbackModal(); 
+        toggleExplanationBtn.addEventListener('click', () => {
+            ratingExplanation.classList.toggle('hidden');
         });
+        ratingParameters.addEventListener('change', calculateOverallRating);
 
     </script>
 </body>
