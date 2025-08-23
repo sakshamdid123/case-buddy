@@ -12,7 +12,7 @@
             font-family: 'Inter', sans-serif;
             background-color: #ffffff;
         }
-        /* Reverted to the lighter, more vibrant gradient */
+        /* Gradient for text and backgrounds */
         .gradient-text {
             background-image: linear-gradient(to right, #3b82f6, #10b981); /* blue-500 to emerald-500 */
             -webkit-background-clip: text;
@@ -22,6 +22,7 @@
         .gradient-bg {
              background-image: linear-gradient(to right, #3b82f6, #10b981);
         }
+        /* Styles for filter buttons */
         .filter-btn {
             transition: all 0.2s ease-in-out;
             border: 1px solid #d1d5db; /* gray-300 */
@@ -33,6 +34,7 @@
             transform: scale(1.05);
             box-shadow: 0 4px 14px 0 rgba(0, 118, 255, 0.39);
         }
+        /* Styles for case cards */
         .case-card {
             transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
             border: 1px solid #e2e8f0; /* slate-200 */
@@ -42,7 +44,7 @@
             box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.07), 0 4px 6px -4px rgb(0 0 0 / 0.07);
             border-color: #3b82f6; 
         }
-        /* Modal styles */
+        /* Modal backdrop styles */
         #company-modal, #warning-modal, #feedback-modal {
             backdrop-filter: blur(4px);
         }
@@ -66,17 +68,27 @@
             gap: 1rem;
             z-index: 10;
         }
-        /* Star Rating Styles */
-        .star-rating input[type="radio"] { display: none; }
+        
+        /* Updated Star Rating Styles */
+        .star-rating {
+            direction: rtl; /* Reverses item order for CSS sibling selector trick */
+            display: inline-flex;
+        }
+        .star-rating input[type="radio"] { 
+            display: none; 
+        }
         .star-rating label {
             cursor: pointer;
             color: #d1d5db; /* gray-300 */
             font-size: 2.5rem;
-            transition: color 0.2s;
+            transition: color 0.2s ease-in-out;
         }
-        .star-rating input[type="radio"]:checked ~ label,
-        .star-rating:hover label { color: #f59e0b; /* amber-500 */ }
-        .star-rating label:hover ~ label { color: #d1d5db; /* gray-300 */ }
+        /* This single rule handles hover and checked states correctly */
+        .star-rating label:hover,
+        .star-rating label:hover ~ label,
+        .star-rating input[type="radio"]:checked ~ label {
+            color: #f59e0b; /* amber-500 */
+        }
         
         /* Overall Rating Display Styles */
         #overall-rating-display .star {
@@ -289,26 +301,13 @@
     <!-- FEEDBACK MODAL -->
     <div id="feedback-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
         <div class="bg-white rounded-lg shadow-xl p-8 w-full max-w-lg transform transition-all" id="feedback-modal-content">
-            <h2 class="text-2xl font-bold mb-4 gradient-text">Case Feedback</h2>
-
-            <div class="mb-6">
-                <button id="toggle-explanation-btn" class="text-sm text-blue-600 hover:underline focus:outline-none">How is the overall rating calculated?</button>
-                <div id="rating-explanation" class="hidden mt-2 p-3 bg-slate-100 rounded-lg text-sm text-slate-600">
-                    The overall rating is a weighted average of the following parameters:
-                    <ul class="list-disc list-inside mt-1">
-                        <li><b>Structure:</b> 35%</li>
-                        <li><b>Case Understanding:</b> 25%</li>
-                        <li><b>Delivery:</b> 25%</li>
-                        <li><b>Creativity:</b> 15%</li>
-                    </ul>
-                </div>
-            </div>
+            <h2 class="text-2xl font-bold mb-6 gradient-text">Case Feedback</h2>
 
             <div id="rating-parameters" class="space-y-4">
                  <!-- Structure -->
                  <div class="flex justify-between items-center">
                     <label class="text-slate-700 font-semibold">Structure</label>
-                    <div class="star-rating flex flex-row-reverse justify-end" data-parameter="structure" data-weight="0.35">
+                    <div class="star-rating" data-parameter="structure" data-weight="0.35">
                         <input type="radio" id="structure-star5" name="structure-rating" value="5" /><label for="structure-star5">&#9733;</label>
                         <input type="radio" id="structure-star4" name="structure-rating" value="4" /><label for="structure-star4">&#9733;</label>
                         <input type="radio" id="structure-star3" name="structure-rating" value="3" /><label for="structure-star3">&#9733;</label>
@@ -319,7 +318,7 @@
                 <!-- Case Understanding -->
                 <div class="flex justify-between items-center">
                     <label class="text-slate-700 font-semibold">Case Understanding</label>
-                    <div class="star-rating flex flex-row-reverse justify-end" data-parameter="understanding" data-weight="0.25">
+                    <div class="star-rating" data-parameter="understanding" data-weight="0.25">
                         <input type="radio" id="understanding-star5" name="understanding-rating" value="5" /><label for="understanding-star5">&#9733;</label>
                         <input type="radio" id="understanding-star4" name="understanding-rating" value="4" /><label for="understanding-star4">&#9733;</label>
                         <input type="radio" id="understanding-star3" name="understanding-rating" value="3" /><label for="understanding-star3">&#9733;</label>
@@ -330,7 +329,7 @@
                  <!-- Delivery -->
                  <div class="flex justify-between items-center">
                     <label class="text-slate-700 font-semibold">Delivery</label>
-                    <div class="star-rating flex flex-row-reverse justify-end" data-parameter="delivery" data-weight="0.25">
+                    <div class="star-rating" data-parameter="delivery" data-weight="0.25">
                         <input type="radio" id="delivery-star5" name="delivery-rating" value="5" /><label for="delivery-star5">&#9733;</label>
                         <input type="radio" id="delivery-star4" name="delivery-rating" value="4" /><label for="delivery-star4">&#9733;</label>
                         <input type="radio" id="delivery-star3" name="delivery-rating" value="3" /><label for="delivery-star3">&#9733;</label>
@@ -341,7 +340,7 @@
                  <!-- Creativity -->
                  <div class="flex justify-between items-center">
                     <label class="text-slate-700 font-semibold">Creativity</label>
-                    <div class="star-rating flex flex-row-reverse justify-end" data-parameter="creativity" data-weight="0.15">
+                    <div class="star-rating" data-parameter="creativity" data-weight="0.15">
                         <input type="radio" id="creativity-star5" name="creativity-rating" value="5" /><label for="creativity-star5">&#9733;</label>
                         <input type="radio" id="creativity-star4" name="creativity-rating" value="4" /><label for="creativity-star4">&#9733;</label>
                         <input type="radio" id="creativity-star3" name="creativity-rating" value="3" /><label for="creativity-star3">&#9733;</label>
@@ -354,14 +353,27 @@
             <hr class="my-6">
 
             <div class="text-center">
-                <p class="text-slate-700 font-semibold mb-2">Overall Rating</p>
-                <div id="overall-rating-display" class="flex justify-center">
+                <div class="flex justify-center items-center gap-2">
+                    <p class="text-slate-700 font-semibold">Overall Rating</p>
+                    <div class="group relative">
+                        <!-- Info icon that triggers tooltip on hover -->
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-slate-400 cursor-pointer" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
+                        </svg>
+                        <!-- The tooltip content -->
+                        <div class="absolute bottom-full z-10 mb-2 w-64 bg-slate-800 text-white text-xs rounded-lg py-2 px-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
+                            Weighted average: Structure (35%), Case Understanding (25%), Delivery (25%), Creativity (15%).
+                            <svg class="absolute text-slate-800 h-2 w-full left-0 top-full" x="0px" y="0px" viewBox="0 0 255 255" xml:space="preserve"><polygon class="fill-current" points="0,0 127.5,127.5 255,0"/></svg>
+                        </div>
+                    </div>
+                </div>
+                <div id="overall-rating-display" class="flex justify-center mt-1">
                     <!-- Stars will be injected here by JS -->
                 </div>
             </div>
             
             <div class="flex justify-end space-x-4 mt-8">
-                <button id="close-modal-btn" class="bg-slate-200 text-slate-700 px-6 py-2 rounded-lg font-semibold hover:bg-slate-300 transition">Close</button>
+                <button id="save-feedback-btn" class="gradient-bg text-white px-6 py-2 rounded-lg font-semibold hover:opacity-90 transition">Save</button>
             </div>
         </div>
     </div>
@@ -534,7 +546,6 @@
         const companyModal = document.getElementById('company-modal');
         const warningModal = document.getElementById('warning-modal');
         const feedbackModal = document.getElementById('feedback-modal');
-        const closeModalBtn = document.getElementById('close-modal-btn');
         const companyListContainer = document.getElementById('company-list');
         const allCompaniesCheckbox = document.getElementById('all-companies-checkbox');
         const clearCompaniesBtn = document.getElementById('clear-companies-btn');
@@ -543,10 +554,9 @@
         const proceedBtn = document.getElementById('proceed-btn');
         
         // Feedback Modal Elements
-        const toggleExplanationBtn = document.getElementById('toggle-explanation-btn');
-        const ratingExplanation = document.getElementById('rating-explanation');
         const ratingParameters = document.getElementById('rating-parameters');
         const overallRatingDisplay = document.getElementById('overall-rating-display');
+        const saveFeedbackBtn = document.getElementById('save-feedback-btn');
 
 
         // --- Functions ---
@@ -857,9 +867,9 @@
         proceedBtn.addEventListener('click', () => { closeWarningModal(); showInProgressView(); });
 
         // Feedback Modal
-        closeModalBtn.addEventListener('click', closeFeedbackModal);
-        toggleExplanationBtn.addEventListener('click', () => {
-            ratingExplanation.classList.toggle('hidden');
+        saveFeedbackBtn.addEventListener('click', () => {
+             console.log('Feedback saved!'); // Placeholder for actual submission logic
+             closeFeedbackModal();
         });
         ratingParameters.addEventListener('change', calculateOverallRating);
 
