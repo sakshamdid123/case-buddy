@@ -10,7 +10,10 @@
     <style>
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #ffffff;
+            background-color: #f1f5f9; /* A slightly off-white for better contrast */
+        }
+        main {
+             background-color: #ffffff;
         }
         /* Gradient for text and backgrounds */
         .gradient-text {
@@ -104,30 +107,40 @@
         ::-webkit-scrollbar-track { background: #f1f5f9; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
         ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+        /* Dashboard specific styles */
+        .dashboard-animate-fade-in { animation: fadeIn 0.5s; } 
+        @keyframes fadeIn { 0% { opacity: 0; } 100% { opacity: 1; } }
     </style>
 </head>
-<body class="text-slate-800">
+<body class="bg-slate-100 text-slate-800">
 
     <header class="bg-white sticky top-0 z-50 shadow-sm">
         <nav class="container mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex items-center justify-between h-16">
-                <div class="flex items-center cursor-pointer" id="home-button">
-                    <svg class="h-8 w-8" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="url(#grad1)">
-                        <defs>
-                           <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="0%">
-                             <stop offset="0%" style="stop-color:#3b82f6;stop-opacity:1" />
-                             <stop offset="100%" style="stop-color:#10b981;stop-opacity:1" />
-                           </linearGradient>
-                        </defs>
-                        <path d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" />
-                    </svg>
-                    <span class="ml-3 text-2xl font-bold gradient-text">Case Buddy</span>
+                <div class="flex items-center gap-8">
+                    <div class="flex items-center cursor-pointer" id="home-button">
+                        <svg class="h-8 w-8" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="url(#grad1)">
+                            <defs>
+                               <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="0%">
+                                 <stop offset="0%" style="stop-color:#3b82f6;stop-opacity:1" />
+                                 <stop offset="100%" style="stop-color:#10b981;stop-opacity:1" />
+                               </linearGradient>
+                            </defs>
+                            <path d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" />
+                        </svg>
+                        <span class="ml-3 text-2xl font-bold gradient-text">Case Buddy</span>
+                    </div>
+                     <div class="flex items-center gap-6">
+                        <button id="nav-dashboard-btn" class="text-slate-600 hover:text-blue-600 font-semibold transition-colors">Dashboard</button>
+                        <button id="nav-about-btn" class="text-slate-600 hover:text-blue-600 font-semibold transition-colors">About</button>
+                    </div>
                 </div>
             </div>
         </nav>
     </header>
 
-    <main class="container mx-auto p-4 sm:p-6 lg:p-8">
+    <main class="container mx-auto p-4 sm:p-6 lg:p-8 mt-4 rounded-lg shadow-md bg-white">
 
         <!-- WELCOME / FILTER VIEW -->
         <div id="welcome-view">
@@ -136,7 +149,7 @@
                 <p class="text-slate-500 text-lg mt-4">Let's find the perfect one for you.</p>
             </div>
 
-            <div class="max-w-4xl mx-auto bg-white p-8 space-y-10">
+            <div class="max-w-4xl mx-auto p-8 space-y-10">
                 <!-- Case Type Filter -->
                 <div class="grid md:grid-cols-3 items-start gap-4">
                     <h2 class="text-lg font-semibold text-slate-700 mt-2">What's the case style?</h2>
@@ -259,6 +272,87 @@
             </div>
         </div>
 
+        <!-- ABOUT VIEW -->
+        <div id="about-view" class="hidden">
+            <div class="max-w-4xl mx-auto py-12">
+                <h1 class="text-5xl font-extrabold gradient-text text-center">About Case Buddy</h1>
+                <p class="text-slate-600 text-lg mt-6 text-center">Your personal partner for mastering the case interview.</p>
+                <div class="mt-10 text-slate-700 leading-relaxed space-y-4">
+                    <p><strong>Case Buddy</strong> was designed to streamline the case interview preparation process for aspiring consultants. We believe that practice is key, but effective practice requires the right tools. Our platform provides a comprehensive library of real-world case studies from top consulting firms, allowing you to hone your skills in a structured and realistic environment.</p>
+                    <p>Whether you're practicing solo or with a partner, Case Buddy provides the resources you need. The "Interviewer" and "Interviewee" views simulate a real interview, with a complete interviewer's guide available to help provide constructive feedback.</p>
+                    <p>Our goal is to make high-quality case prep accessible to everyone. Use our filtering tools to find cases that match your target firms and desired difficulty, track your progress on the dashboard, and walk into your interviews with confidence.</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- DASHBOARD VIEW -->
+        <div id="dashboard-view" class="hidden">
+            <div class="max-w-7xl mx-auto">
+                <div class="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 mb-6 rounded-r-lg" role="alert">
+                    <p class="font-bold">Disclaimer</p>
+                    <p>This dashboard is for representational purposes only. The data is pre-filled and does not reflect your actual case performance yet.</p>
+                </div>
+
+                <header class="mb-4">
+                    <h1 class="text-3xl font-bold text-slate-800">My Case Prep Dashboard</h1>
+                    <p class="text-slate-500 mt-1">Your comprehensive performance and progress tracker.</p>
+                </header>
+                
+                <div class="flex justify-between items-center mb-4">
+                    <div id="dashboard-date-picker" class="flex gap-2 items-center">
+                        <!-- Date picker will be rendered here by JS -->
+                    </div>
+                    <div class="flex gap-4 items-center text-xs text-gray-600">
+                        <span class="font-semibold">Score Legend:</span>
+                        <div class="flex items-center"><div class="w-3 h-3 rounded-full bg-red-500 mr-1.5"></div>Poor (&lt;70)</div>
+                        <div class="flex items-center"><div class="w-3 h-3 rounded-full bg-amber-500 mr-1.5"></div>Medium (70-84)</div>
+                        <div class="flex items-center"><div class="w-3 h-3 rounded-full bg-green-500 mr-1.5"></div>Good (85+)</div>
+                    </div>
+                </div>
+                <div id="dashboard-active-filters">
+                    <!-- Active filters will be rendered here by JS -->
+                </div>
+
+                <main class="space-y-6">
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        <div class="lg:col-span-1 space-y-6">
+                            <div class="bg-white p-6 rounded-lg shadow text-center">
+                                <h2 class="text-lg font-semibold text-gray-600">Weighted Score</h2>
+                                <div id="dashboard-score-card" class="font-bold my-2">
+                                    <!-- Score will be rendered here by JS -->
+                                </div>
+                                <p class="text-gray-500 text-sm">Avg. score for selected filters.</p>
+                            </div>
+                            <div id="dashboard-metric-breakdown">
+                                <!-- Detailed metrics will be rendered here by JS -->
+                            </div>
+                        </div>
+                        <div class="lg:col-span-2 space-y-6">
+                            <div id="dashboard-type-chart">
+                                <!-- Performance by type chart will be rendered here by JS -->
+                            </div>
+                            <div id="dashboard-difficulty-chart">
+                                <!-- Performance by difficulty chart will be rendered here by JS -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="dashboard-key-takeaways">
+                        <!-- Key takeaways will be rendered here by JS -->
+                    </div>
+                    
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 pt-6 border-t">
+                        <div id="dashboard-case-summary">
+                            <!-- Case summary table will be rendered here by JS -->
+                        </div>
+                        <div id="dashboard-calendar-tracker">
+                            <!-- Calendar will be rendered here by JS -->
+                        </div>
+                    </div>
+                </main>
+            </div>
+        </div>
+
     </main>
 
     <!-- COMPANY SELECTION MODAL -->
@@ -375,6 +469,13 @@
             <div class="flex justify-end space-x-4 mt-8">
                 <button id="save-feedback-btn" class="gradient-bg text-white px-6 py-2 rounded-lg font-semibold hover:opacity-90 transition">Save</button>
             </div>
+        </div>
+    </div>
+
+    <!-- CALENDAR DAY DETAIL MODAL -->
+    <div id="calendar-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 dashboard-animate-fade-in">
+        <div id="calendar-modal-content" class="bg-white rounded-lg shadow-2xl p-6 w-full max-w-md">
+            <!-- Content will be injected by JS -->
         </div>
     </div>
 
@@ -500,7 +601,7 @@
             54: 'cases/TRUCKload of Gasoline II Profitability II Easy II LEK Capability Network.pdf',
             55: 'cases/Unwaivering Allegiance II Unconventional II Easy II Bain & Co..pdf',
             56: 'cases/Where are the Kids II Unconventional II Easy II Nation with Namo.pdf',
-            default: 'Accelerating Prosperity II Growth II Easy II Kepler Cannon.pdf'
+            default: 'cases/Accelerating Prosperity II Growth II Easy II Kepler Cannon.pdf'
         };
 
         // --- State Management ---
@@ -516,8 +617,13 @@
         const caseLibraryView = document.getElementById('case-library-view');
         const detailedCaseView = document.getElementById('detailed-case-view');
         const inProgressView = document.getElementById('in-progress-view');
+        const aboutView = document.getElementById('about-view');
+        const dashboardView = document.getElementById('dashboard-view');
+        
         const caseGrid = document.getElementById('case-grid');
         const homeButton = document.getElementById('home-button');
+        const navDashboardBtn = document.getElementById('nav-dashboard-btn');
+        const navAboutBtn = document.getElementById('nav-about-btn');
         
         // Filter elements
         const typeFiltersContainer = document.getElementById('type-filters');
@@ -558,11 +664,10 @@
         const overallRatingDisplay = document.getElementById('overall-rating-display');
         const saveFeedbackBtn = document.getElementById('save-feedback-btn');
 
-
-        // --- Functions ---
+        // --- Main App Functions ---
 
         function showView(viewToShow) {
-            [welcomeView, caseLibraryView, detailedCaseView, inProgressView].forEach(view => {
+            [welcomeView, caseLibraryView, detailedCaseView, inProgressView, aboutView, dashboardView].forEach(view => {
                 view.classList.add('hidden');
             });
             viewToShow.classList.remove('hidden');
@@ -744,7 +849,6 @@
         function toggleFullscreen() {
              if (!document.fullscreenElement) {
                 pdfRenderContainer.requestFullscreen().catch(err => {
-                    // Use a custom modal instead of alert
                     console.error(`Error attempting to enable full-screen mode: ${err.message} (${err.name})`);
                 });
             } else {
@@ -800,7 +904,7 @@
             for (let i = 1; i <= 5; i++) {
                 const star = document.createElement('span');
                 star.classList.add('star');
-                if (i <= score) {
+                if (i <= Math.round(score)) {
                     star.classList.add('filled');
                 }
                 star.innerHTML = '&#9733;';
@@ -827,10 +931,15 @@
             
             showView(welcomeView);
             updateOverallRatingDisplay(0); // Initialize overall rating display
+            
+            // Initialize Dashboard
+            initializeDashboard();
         });
 
         // Navigation
         homeButton.addEventListener('click', () => showView(welcomeView));
+        navDashboardBtn.addEventListener('click', () => showView(dashboardView));
+        navAboutBtn.addEventListener('click', () => showView(aboutView));
         backToFiltersBtn.addEventListener('click', () => showView(welcomeView));
         backToLibraryBtn.addEventListener('click', () => showView(caseLibraryView));
         
@@ -873,6 +982,455 @@
         });
         ratingParameters.addEventListener('change', calculateOverallRating);
 
+        // ====================================================================
+        // --- DASHBOARD SCRIPT ---
+        // ====================================================================
+
+        function initializeDashboard() {
+            // --- Dashboard Data ---
+            const dashboardCaseData = [
+                { name: 'Coffee Shop Profitability', company: 'Bain', date: '2025-08-18', type: 'Profitability', difficulty: 'Easy', structuring: 28, quantitative: 15, insight: 22, communication: 18 },
+                { name: 'EV Market Entry', company: 'BCG', date: '2025-08-18', type: 'Market Entry', difficulty: 'Medium', structuring: 22, quantitative: 14, insight: 15, communication: 15 },
+                { name: 'Pharma M&A', company: 'McKinsey', date: '2025-08-19', type: 'M&A', difficulty: 'Hard', structuring: 18, quantitative: 13, insight: 12, communication: 14 },
+                { name: 'Retail Growth Strategy', company: 'LEK', date: '2025-08-20', type: 'Growth', difficulty: 'Medium', structuring: 25, quantitative: 15, insight: 18, communication: 17 },
+                { name: 'Airline Cost Reduction', company: 'EYP', date: '2025-08-20', type: 'Profitability', difficulty: 'Medium', structuring: 26, quantitative: 14, insight: 25, communication: 19 },
+                { name: 'CPG New Product', company: 'Strategy&', date: '2025-08-21', type: 'Market Entry', difficulty: 'Hard', structuring: 20, quantitative: 13, insight: 14, communication: 13 },
+                { name: 'Manufacturing Ops', company: 'Kearney', date: '2025-09-02', type: 'Profitability', difficulty: 'Easy', structuring: 30, quantitative: 15, insight: 28, communication: 20 },
+            ];
+            const maxScores = { structuring: 30, quantitative: 15, insight: 35, communication: 20 };
+
+            // --- Dashboard State ---
+            let analyticalFilters = {};
+            let dateRange = { start: null, end: null };
+
+            // --- Dashboard Helper Functions ---
+            const calculateWeightedScore = (caseItem) => {
+                const weights = { structuring: 30, quantitative: 15, insight: 35, communication: 20 };
+                return Math.round(Object.keys(weights).reduce((acc, key) => acc + (caseItem[key] / maxScores[key]) * weights[key], 0));
+            };
+            const getScoreColor = (score) => {
+                if (score >= 85) return 'from-green-500 to-green-400';
+                if (score >= 70) return 'from-amber-500 to-amber-400';
+                return 'from-red-600 to-red-500';
+            };
+            const getScoreTextColor = (score) => {
+                if (score >= 85) return 'text-green-600';
+                if (score >= 70) return 'text-amber-600';
+                return 'text-red-600';
+            };
+
+            // --- Main Render Function ---
+            function renderDashboard() {
+                const globallyFilteredCases = dashboardCaseData.filter(c => {
+                    const caseDate = new Date(c.date);
+                    const isAfterStart = !dateRange.start || caseDate >= dateRange.start;
+                    const isBeforeEnd = !dateRange.end || caseDate <= dateRange.end;
+                    const typeMatch = !analyticalFilters.type || c.type === analyticalFilters.type;
+                    const difficultyMatch = !analyticalFilters.difficulty || c.difficulty === analyticalFilters.difficulty;
+                    return isAfterStart && isBeforeEnd && typeMatch && difficultyMatch;
+                });
+
+                renderActiveFilters(analyticalFilters);
+                renderScoreCard(globallyFilteredCases);
+                renderDetailedMetrics(globallyFilteredCases);
+                renderBarCharts(globallyFilteredCases);
+                renderKeyTakeaways(globallyFilteredCases);
+                renderCaseSummary(globallyFilteredCases);
+                renderCalendar(dashboardCaseData); // Calendar always shows all data
+            }
+
+            // --- Component Rendering Functions ---
+
+            function renderDateRangePicker() {
+                const container = document.getElementById('dashboard-date-picker');
+                container.innerHTML = `
+                    <select id="date-range-type" class="text-sm border-gray-300 rounded-md shadow-sm">
+                        <option value="all">All Time</option>
+                        <option value="this_month">This Month</option>
+                        <option value="last_month">Last Month</option>
+                        <option value="custom">Custom Range</option>
+                    </select>
+                    <div id="custom-range-inputs" class="hidden items-center gap-2">
+                        <input type="date" id="date-start" class="text-sm border-gray-300 rounded-md shadow-sm"/>
+                        <input type="date" id="date-end" class="text-sm border-gray-300 rounded-md shadow-sm"/>
+                    </div>
+                    <button id="apply-date-range" class="text-sm bg-blue-600 text-white px-3 py-1 rounded-md hover:bg-blue-700">Apply</button>
+                `;
+
+                const rangeTypeSelect = document.getElementById('date-range-type');
+                const customInputs = document.getElementById('custom-range-inputs');
+                
+                rangeTypeSelect.addEventListener('change', (e) => {
+                    customInputs.classList.toggle('hidden', e.target.value !== 'custom');
+                });
+
+                document.getElementById('apply-date-range').addEventListener('click', () => {
+                    const rangeType = rangeTypeSelect.value;
+                    let start = null, end = null;
+                    const today = new Date();
+                    if (rangeType === 'this_month') {
+                        start = new Date(today.getFullYear(), today.getMonth(), 1);
+                        end = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+                    } else if (rangeType === 'last_month') {
+                        start = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+                        end = new Date(today.getFullYear(), today.getMonth(), 0);
+                    } else if (rangeType === 'custom') {
+                        const startVal = document.getElementById('date-start').value;
+                        const endVal = document.getElementById('date-end').value;
+                        if (startVal && endVal) {
+                            start = new Date(startVal);
+                            end = new Date(endVal);
+                        }
+                    }
+                    dateRange = { start, end };
+                    renderDashboard();
+                });
+            }
+
+            function renderActiveFilters(filters) {
+                const container = document.getElementById('dashboard-active-filters');
+                const active = Object.entries(filters).filter(([, value]) => value);
+                if (active.length === 0) {
+                    container.innerHTML = '';
+                    return;
+                }
+                
+                const filterItems = active.map(([key, value]) => `
+                    <div class="flex items-center bg-blue-200 text-blue-800 text-xs font-semibold px-2 py-1 rounded-full">
+                        <span class="capitalize">${key}: ${value}</span>
+                        <button data-key="${key}" class="ml-2 text-blue-600 hover:text-blue-900 clear-filter-btn">&times;</button>
+                    </div>
+                `).join('');
+
+                container.innerHTML = `
+                    <div class="flex items-center gap-2 mb-4 p-2 bg-blue-50 border border-blue-200 rounded-lg">
+                        <span class="font-semibold text-sm text-gray-700">Filters Applied:</span>
+                        ${filterItems}
+                        <button id="clear-all-filters-btn" class="ml-auto text-sm font-semibold text-blue-600 hover:text-blue-800">Clear All</button>
+                    </div>
+                `;
+
+                document.querySelectorAll('.clear-filter-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        const key = e.target.dataset.key;
+                        delete analyticalFilters[key];
+                        renderDashboard();
+                    });
+                });
+                document.getElementById('clear-all-filters-btn').addEventListener('click', () => {
+                    analyticalFilters = {};
+                    renderDashboard();
+                });
+            }
+
+            function renderScoreCard(cases) {
+                const container = document.getElementById('dashboard-score-card');
+                const score = cases.length > 0 ? Math.round(cases.reduce((acc, curr) => acc + calculateWeightedScore(curr), 0) / cases.length) : 0;
+                container.innerHTML = `
+                    <div class="${getScoreTextColor(score)}">
+                        <span class="text-6xl">${score}</span>
+                        <span class="text-2xl text-gray-400"> / 100</span>
+                    </div>
+                `;
+            }
+
+            function renderDetailedMetrics(cases) {
+                const container = document.getElementById('dashboard-metric-breakdown');
+                let content = '';
+                if (cases.length > 0) {
+                    const avgMetrics = {
+                        structuring: cases.reduce((acc, c) => acc + c.structuring, 0) / cases.length,
+                        quantitative: cases.reduce((acc, c) => acc + c.quantitative, 0) / cases.length,
+                        insight: cases.reduce((acc, c) => acc + c.insight, 0) / cases.length,
+                        communication: cases.reduce((acc, c) => acc + c.communication, 0) / cases.length,
+                    };
+                    const metricData = Object.keys(maxScores).map(key => ({ 
+                        name: key.charAt(0).toUpperCase() + key.slice(1), 
+                        score: avgMetrics[key], 
+                        maxScore: maxScores[key] 
+                    }));
+
+                    const itemsHTML = metricData.map(item => {
+                        const percentage = Math.round((item.score / item.maxScore) * 100);
+                        return `
+                            <div class="flex items-center">
+                                <div class="w-28 text-sm text-gray-600">${item.name}</div>
+                                <div class="flex-1 bg-gray-200 rounded-full h-6">
+                                    <div class="bg-gradient-to-r ${getScoreColor(percentage)} h-6 rounded-full text-white text-xs flex items-center justify-center font-semibold" style="width: ${percentage}%">${percentage}%</div>
+                                </div>
+                            </div>
+                        `;
+                    }).join('');
+
+                    content = `<div class="space-y-3">${itemsHTML}</div>`;
+                } else {
+                    content = `<p class="text-gray-500 text-center py-4">No matching cases found.</p>`;
+                }
+                
+                container.innerHTML = `
+                    <div class="bg-white p-4 rounded-lg shadow dashboard-animate-fade-in">
+                        <h3 class="text-lg font-semibold text-gray-700 mb-4">Metric Breakdown</h3>
+                        ${content}
+                    </div>
+                `;
+            }
+
+            function renderBarCharts(cases) {
+                const performanceByGroup = (dataSource, groupingKey) => {
+                    const groups = {};
+                    dataSource.forEach(c => {
+                        const key = c[groupingKey];
+                        if (!groups[key]) groups[key] = { totalScore: 0, count: 0 };
+                        groups[key].totalScore += calculateWeightedScore(c);
+                        groups[key].count++;
+                    });
+                    return Object.entries(groups).map(([key, value]) => ({ name: key, score: Math.round(value.totalScore / value.count) })).sort((a, b) => b.score - a.score);
+                };
+
+                const performanceByTypeData = performanceByGroup(cases, 'type');
+                const performanceByDifficultyData = performanceByGroup(cases, 'difficulty');
+
+                renderSingleBarChart('dashboard-type-chart', 'Performance by Case Type', performanceByTypeData, 'type');
+                renderSingleBarChart('dashboard-difficulty-chart', 'Performance by Difficulty', performanceByDifficultyData, 'difficulty');
+            }
+
+            function renderSingleBarChart(containerId, title, data, filterType) {
+                const container = document.getElementById(containerId);
+                let content = '';
+                if (data.length > 0) {
+                    const barsHTML = data.map(item => {
+                        const isActive = analyticalFilters[filterType] === item.name;
+                        return `
+                            <div class="flex items-center group bar-chart-item" data-type="${filterType}" data-value="${item.name}">
+                                <div class="w-24 text-sm text-gray-600">${item.name}</div>
+                                <div class="flex-1 bg-gray-200 rounded-full h-6 cursor-pointer transition-all duration-200 ${isActive ? 'ring-2 ring-blue-500' : ''}">
+                                    <div class="bg-gradient-to-r ${getScoreColor(item.score)} h-6 rounded-full text-white text-xs flex items-center justify-center font-bold" style="width: ${item.score}%">${item.score}</div>
+                                </div>
+                            </div>
+                        `;
+                    }).join('');
+                    content = `<div class="space-y-2">${barsHTML}</div>`;
+                } else {
+                    content = `<p class="text-sm text-gray-500 text-center py-2">No data for this filter.</p>`;
+                }
+
+                container.innerHTML = `
+                    <div class="bg-white p-4 rounded-lg shadow">
+                        <div class="flex justify-between items-baseline mb-2">
+                            <h3 class="text-lg font-semibold text-gray-700">${title}</h3>
+                            <span class="text-xs text-gray-400 italic">Click bars to filter</span>
+                        </div>
+                        ${content}
+                    </div>
+                `;
+
+                document.querySelectorAll(`#${containerId} .bar-chart-item`).forEach(item => {
+                    item.addEventListener('click', (e) => {
+                        const current = e.currentTarget;
+                        const type = current.dataset.type;
+                        const value = current.dataset.value;
+                        analyticalFilters[type] = analyticalFilters[type] === value ? undefined : value;
+                        renderDashboard();
+                    });
+                });
+            }
+
+            function renderKeyTakeaways(cases) {
+                const container = document.getElementById('dashboard-key-takeaways');
+                if (cases.length < 2) {
+                    container.innerHTML = `<div class="bg-white p-6 rounded-lg shadow lg:col-span-3 text-center text-gray-500">Not enough data to generate insights for the current filters.</div>`;
+                    return;
+                }
+
+                const getMetricPerformance = (caseSet) => {
+                    const performance = {};
+                    Object.keys(maxScores).forEach(key => {
+                        const avgScore = caseSet.reduce((acc, c) => acc + c[key], 0) / caseSet.length;
+                        performance[key] = Math.round((avgScore / maxScores[key]) * 100);
+                    });
+                    return performance;
+                };
+
+                const overallPerf = getMetricPerformance(cases);
+                const strength = Object.entries(overallPerf).reduce((max, item) => item[1] > max[1] ? item : max);
+                const weakness = Object.entries(overallPerf).reduce((min, item) => item[1] < min[1] ? item : min);
+
+                const types = [...new Set(cases.map(c => c.type))];
+                const typeScores = types.map(type => {
+                    const typeCases = cases.filter(c => c.type === type);
+                    return { name: type, score: Math.round(typeCases.reduce((acc, c) => acc + calculateWeightedScore(c), 0) / typeCases.length) };
+                });
+                const bestType = typeScores.reduce((max, item) => item.score > max.score ? item : max, {score: -1});
+                const worstType = typeScores.reduce((min, item) => item.score < min.score ? item : min, {score: 101});
+                
+                container.innerHTML = `
+                    <div class="bg-white p-6 rounded-lg shadow lg:col-span-3">
+                        <h2 class="text-xl font-semibold text-gray-700 mb-4">Key Takeaways</h2>
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 text-sm">
+                            <div class="bg-slate-50 p-4 rounded-lg">
+                                <h3 class="font-bold text-gray-800 mb-2 flex items-center">⭐ Your Strength</h3>
+                                <p>Your strongest area is <span class="font-bold text-green-600">${strength[0]}</span> with an average performance of <span class="font-bold">${strength[1]}%</span>.</p>
+                            </div>
+                            <div class="bg-slate-50 p-4 rounded-lg">
+                                <h3 class="font-bold text-gray-800 mb-2 flex items-center">🎯 Focus Area</h3>
+                                <p>The biggest opportunity for improvement is in <span class="font-bold text-red-600">${weakness[0]}</span>, currently at <span class="font-bold">${weakness[1]}%</span>.</p>
+                            </div>
+                            <div class="bg-slate-50 p-4 rounded-lg">
+                                <h3 class="font-bold text-gray-800 mb-2 flex items-center">🚀 Best Case Type</h3>
+                                <p>You excel at <span class="font-bold text-blue-600">${bestType.name}</span> cases, averaging a score of <span class="font-bold">${bestType.score}</span>.</p>
+                            </div>
+                            <div class="bg-slate-50 p-4 rounded-lg">
+                                <h3 class="font-bold text-gray-800 mb-2 flex items-center">🔍 Review Needed</h3>
+                                <p>Consider practicing more <span class="font-bold text-orange-600">${worstType.name}</span> cases, where your average score is <span class="font-bold">${worstType.score}</span>.</p>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            function renderCaseSummary(cases) {
+                const container = document.getElementById('dashboard-case-summary');
+                let tableBody = '';
+                if (cases.length > 0) {
+                    tableBody = cases.map(c => `
+                        <tr class="border-b last:border-none hover:bg-gray-50">
+                            <td class="py-3 px-3 text-sm text-gray-600">${c.date}</td>
+                            <td class="py-3 px-3">${c.company} - ${c.name}</td>
+                            <td class="py-3 px-3"><span class="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded-full">${c.type}</span></td>
+                            <td class="py-3 px-3"><span class="bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded-full">${c.difficulty}</span></td>
+                            <td class="py-3 px-3 text-right font-semibold">${calculateWeightedScore(c)}</td>
+                        </tr>
+                    `).join('');
+                } else {
+                    tableBody = `<tr><td colspan="5" class="text-center py-8 text-gray-500">No cases match the current filters.</td></tr>`;
+                }
+
+                container.innerHTML = `
+                    <div class="bg-white p-4 rounded-lg shadow">
+                        <h2 class="text-xl font-semibold text-gray-700 mb-4">Case Summary</h2>
+                        <div class="overflow-y-auto max-h-80">
+                            <table class="w-full text-left">
+                                <thead><tr class="border-b text-sm text-gray-500"><th class="py-2 px-3">Date</th><th class="py-2 px-3">Case Name</th><th class="py-2 px-3">Type</th><th class="py-2 px-3">Difficulty</th><th class="py-2 px-3 text-right">Score</th></tr></thead>
+                                <tbody>${tableBody}</tbody>
+                            </table>
+                        </div>
+                    </div>
+                `;
+            }
+
+            function renderCalendar(data) {
+                const container = document.getElementById('dashboard-calendar-tracker');
+                let currentDate = new Date(2025, 7, 1); // August 2025
+
+                const calendarData = {};
+                data.forEach(c => {
+                    if (!calendarData[c.date]) calendarData[c.date] = { count: 0, totalScore: 0, cases: [] };
+                    calendarData[c.date].count++;
+                    calendarData[c.date].totalScore += calculateWeightedScore(c);
+                    calendarData[c.date].cases.push(c);
+                });
+                Object.keys(calendarData).forEach(date => {
+                    calendarData[date].avgScore = Math.round(calendarData[date].totalScore / calendarData[date].count);
+                });
+
+                function drawCalendar() {
+                    const year = currentDate.getFullYear();
+                    const month = currentDate.getMonth();
+                    const daysInMonth = new Date(year, month + 1, 0).getDate();
+                    const startDay = new Date(year, month, 1).getDay();
+                    const calendarDays = Array(startDay).fill(null).concat(Array.from({ length: daysInMonth }, (_, i) => i + 1));
+                    const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+                    const daysHTML = calendarDays.map((day, index) => {
+                        const dateStr = day ? `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}` : '';
+                        const dayData = dateStr ? calendarData[dateStr] : null;
+                        let dayContent = '';
+                        if (dayData) {
+                            dayContent = `
+                                <div class="text-xs mt-1 space-y-1">
+                                    <div class="bg-blue-100 text-blue-800 rounded-full px-1">Cases: ${dayData.count}</div>
+                                    <div class="${getScoreColor(dayData.avgScore).replace('from-', 'bg-').split(' ')[0]} text-white rounded-full px-1">Avg: ${dayData.avgScore}</div>
+                                </div>
+                            `;
+                        }
+                        return `
+                            <div class="h-24 border rounded-md p-1 ${day ? (dayData ? 'cursor-pointer hover:bg-slate-100' : '') : 'bg-slate-50'}" data-date="${dateStr}">
+                                ${day ? `<div class="font-semibold text-gray-700">${day}</div>` : ''}
+                                ${dayContent}
+                            </div>
+                        `;
+                    }).join('');
+
+                    container.innerHTML = `
+                        <div class="bg-white p-4 rounded-lg shadow">
+                            <div class="flex justify-between items-center mb-4">
+                                <h2 class="text-xl font-semibold text-gray-700">Progress Calendar</h2>
+                                <div class="flex items-center gap-2">
+                                    <button id="cal-prev" class="px-2 py-1 rounded-md hover:bg-gray-200">&lt;</button>
+                                    <span class="font-bold w-32 text-center">${currentDate.toLocaleString('default', { month: 'long', year: 'numeric' })}</span>
+                                    <button id="cal-next" class="px-2 py-1 rounded-md hover:bg-gray-200">&gt;</button>
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-7 gap-1 text-center text-sm">
+                                ${dayNames.map(day => `<div class="font-bold text-gray-500">${day}</div>`).join('')}
+                                ${daysHTML}
+                            </div>
+                        </div>
+                    `;
+
+                    document.getElementById('cal-prev').addEventListener('click', () => {
+                        currentDate.setMonth(currentDate.getMonth() - 1);
+                        drawCalendar();
+                    });
+                    document.getElementById('cal-next').addEventListener('click', () => {
+                        currentDate.setMonth(currentDate.getMonth() + 1);
+                        drawCalendar();
+                    });
+                    
+                    container.querySelectorAll('[data-date]').forEach(cell => {
+                        if (calendarData[cell.dataset.date]) {
+                            cell.addEventListener('click', () => showCalendarModal(calendarData[cell.dataset.date]));
+                        }
+                    });
+                }
+                drawCalendar();
+            }
+            
+            function showCalendarModal(dayData) {
+                const modal = document.getElementById('calendar-modal');
+                const content = document.getElementById('calendar-modal-content');
+
+                const casesHTML = dayData.cases.map(c => `
+                    <div class="border rounded-lg p-3">
+                        <p class="font-semibold">${c.company} - ${c.name}</p>
+                        <div class="flex gap-2 mt-1 text-xs">
+                            <span class="bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full">${c.type}</span>
+                            <span class="bg-green-100 text-green-800 px-2 py-0.5 rounded-full">${c.difficulty}</span>
+                        </div>
+                    </div>
+                `).join('');
+
+                content.innerHTML = `
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-xl font-bold text-gray-800">Cases for ${dayData.cases[0].date}</h3>
+                        <button id="close-cal-modal" class="text-gray-500 hover:text-gray-800 text-2xl">&times;</button>
+                    </div>
+                    <div class="space-y-4">${casesHTML}</div>
+                `;
+                
+                modal.classList.remove('hidden');
+
+                const closeModal = () => modal.classList.add('hidden');
+                document.getElementById('close-cal-modal').addEventListener('click', closeModal);
+                modal.addEventListener('click', (e) => {
+                    if (e.target === modal) closeModal();
+                });
+            }
+
+            // --- Initial Dashboard Render ---
+            renderDateRangePicker();
+            renderDashboard();
+        }
     </script>
 </body>
 </html>
