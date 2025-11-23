@@ -86,6 +86,14 @@
             opacity: 0; visibility: hidden; transform: translateY(10px); transition: all 0.2s ease-in-out;
         }
         .user-pill-container:hover .profile-hover-card { opacity: 1; visibility: visible; transform: translateY(0); }
+
+        /* Neopolitan Profile Theme */
+        .neo-card { border: 1px solid #f1f5f9; background: white; border-radius: 1rem; box-shadow: 0 2px 10px rgba(0,0,0,0.03); transition: transform 0.2s; }
+        .neo-card:hover { transform: translateY(-2px); }
+        .neo-stat-value { font-family: 'Inter', sans-serif; font-weight: 800; }
+        .bg-neo-pink { background-color: #fff1f2; color: #be123c; }
+        .bg-neo-cream { background-color: #fffbeb; color: #b45309; }
+        .bg-neo-dark { background-color: #1e293b; color: #f8fafc; }
     </style>
     <!-- Google tag (gtag.js) -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-EJTFDTP163"></script>
@@ -115,9 +123,9 @@
                     <span class="ml-3 text-2xl font-bold gradient-text">Case Buddy</span>
                 </div>
 
-                <!-- Dynamic Nav Container (Buttons appear here) -->
+                <!-- Dynamic Nav Container -->
                 <div class="flex items-center gap-4" id="nav-actions-container">
-                    <!-- Injected by JS: Dashboard, About, and User Profile/Login -->
+                    <!-- Injected by JS -->
                 </div>
             </div>
         </nav>
@@ -228,7 +236,7 @@
                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
                             </button>
                             <button id="pdf-fullscreen" class="text-white hover:text-blue-300 ml-4">
-                               <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5v-4m0 0h-4m4 0l-5-5" /></svg>
+                               <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5v-4m0 0h-4m4 0l5-5" /></svg>
                             </button>
                         </div>
                     </div>
@@ -281,10 +289,6 @@
         <!-- DASHBOARD VIEW -->
         <div id="dashboard-view" class="hidden">
             <div class="max-w-7xl mx-auto">
-                <div class="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 mb-6 rounded-r-lg" role="alert">
-                    <p class="font-bold">Disclaimer</p>
-                    <p>This dashboard is for representational purposes only. The data is pre-filled and does not reflect your actual case performance yet.</p>
-                </div>
                 <header class="mb-4">
                     <h1 class="text-3xl font-bold text-slate-800">My Case Prep Dashboard</h1>
                     <p class="text-slate-500 mt-1">Your comprehensive performance and progress tracker.</p>
@@ -321,6 +325,11 @@
                     </div>
                 </main>
             </div>
+        </div>
+
+        <!-- PROFILE VIEW (NEW) -->
+        <div id="profile-view" class="hidden">
+            <!-- Content Injected by JS -->
         </div>
 
     </main>
@@ -421,7 +430,7 @@
                 <div id="overall-rating-display" class="flex justify-center mt-1"></div>
             </div>
             <div class="flex justify-end space-x-4 mt-8">
-                <button id="save-feedback-btn" class="gradient-bg text-white px-6 py-2 rounded-lg font-semibold hover:opacity-90 transition">Save</button>
+                <button id="save-feedback-btn" class="gradient-bg text-white px-6 py-2 rounded-lg font-semibold hover:opacity-90 transition">Save & Track</button>
             </div>
         </div>
     </div>
@@ -476,10 +485,8 @@
 
     <!-- Main Module Script -->
     <script type="module">
-        // --- Direct PDF.js Import (Fixes Global Variable Issue) ---
+        // --- Direct PDF.js Import ---
         import * as pdfjsLib from 'https://mozilla.github.io/pdf.js/build/pdf.mjs';
-        
-        // Set Worker Source relative to the main library
         pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://mozilla.github.io/pdf.js/build/pdf.worker.mjs';
 
         // --- Data ---
@@ -611,6 +618,11 @@
         
         // User State
         let userProfile = JSON.parse(localStorage.getItem('caseBuddyUser')) || null;
+        if(userProfile && !userProfile.history) {
+            userProfile.history = [];
+            userProfile.stats = { solved: 0, streak: 1, lastActive: new Date().toISOString() };
+            localStorage.setItem('caseBuddyUser', JSON.stringify(userProfile));
+        }
 
         // --- DOM Elements ---
         const welcomeView = document.getElementById('welcome-view');
@@ -619,6 +631,7 @@
         const inProgressView = document.getElementById('in-progress-view');
         const aboutView = document.getElementById('about-view');
         const dashboardView = document.getElementById('dashboard-view');
+        const profileView = document.getElementById('profile-view');
         
         const caseGrid = document.getElementById('case-grid');
         const homeButton = document.getElementById('home-button');
@@ -672,9 +685,6 @@
         const skipLoginBtn = document.getElementById('skip-login-btn');
 
         // --- Gamification Data (Mascots) ---
-        // Using SVG paths for cleaner look
-        
-        // Common Abstract Avatar SVG (Professional)
         const commonAvatarSvg = `
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-full h-full">
                 <path fill-rule="evenodd" d="M7.5 6a4.5 4.5 0 1 1 9 0 4.5 4.5 0 0 1-9 0ZM3.751 20.105a8.25 8.25 0 0 1 16.498 0 .75.75 0 0 1-.437.695A18.683 18.683 0 0 1 12 22.5c-2.786 0-5.433-.608-7.812-1.7a.75.75 0 0 1-.437-.695Z" clip-rule="evenodd" />
@@ -692,7 +702,7 @@
         // --- Main App Functions ---
 
         function showView(viewToShow) {
-            [welcomeView, caseLibraryView, detailedCaseView, inProgressView, aboutView, dashboardView].forEach(view => {
+            [welcomeView, caseLibraryView, detailedCaseView, inProgressView, aboutView, dashboardView, profileView].forEach(view => {
                 view.classList.add('hidden');
             });
             viewToShow.classList.remove('hidden');
@@ -909,23 +919,29 @@
             closeCompanyModal();
         }
 
-        // --- Feedback Modal Functions ---
+        // --- Feedback Logic & Analytics ---
         function calculateOverallRating() {
             let totalScore = 0;
             const ratingGroups = ratingParameters.querySelectorAll('.star-rating');
+            const scores = {};
 
             ratingGroups.forEach(group => {
+                const param = group.dataset.parameter;
                 const weight = parseFloat(group.dataset.weight);
                 const checkedRadio = group.querySelector('input[type="radio"]:checked');
                 const value = checkedRadio ? parseInt(checkedRadio.value) : 0;
-                totalScore += value * weight;
+                scores[param] = value;
+                totalScore += value * weight; // 5-point scale
             });
             
+            // Normalize to 100 point scale for consistency
+            const finalScore = Math.round((totalScore / 5) * 100);
             updateOverallRatingDisplay(totalScore);
+            return { finalScore, scores };
         }
 
         function updateOverallRatingDisplay(score) {
-            overallRatingDisplay.innerHTML = ''; // Clear previous stars
+            overallRatingDisplay.innerHTML = ''; 
             for (let i = 1; i <= 5; i++) {
                 const star = document.createElement('span');
                 star.classList.add('star');
@@ -938,85 +954,100 @@
         }
         
         function resetFeedbackModal() {
-            // Uncheck all radio buttons
             const allRadios = feedbackModal.querySelectorAll('input[type="radio"]');
             allRadios.forEach(radio => radio.checked = false);
-            // Recalculate and update the display to show 0 stars
-            calculateOverallRating();
+            updateOverallRatingDisplay(0);
+        }
+
+        function saveFeedback() {
+            if (!userProfile) {
+                alert("Please create a profile to save your progress!");
+                openLoginModal();
+                return;
+            }
+
+            const { finalScore, scores } = calculateOverallRating();
+            
+            // Create Record
+            const record = {
+                caseId: currentCase.id,
+                name: currentCase.title,
+                company: currentCase.company,
+                type: currentCase.type,
+                difficulty: currentCase.difficulty,
+                date: new Date().toISOString().split('T')[0],
+                structuring: scores.structure ? scores.structure * 6 : 0, // Map 5->30 roughly
+                quantitative: scores.understanding ? scores.understanding * 3 : 0, // Map 5->15
+                insight: scores.delivery ? scores.delivery * 7 : 0, // Map
+                communication: scores.creativity ? scores.creativity * 4 : 0,
+                totalScore: finalScore
+            };
+
+            // Update User Data
+            if (!userProfile.history) userProfile.history = [];
+            userProfile.history.push(record);
+            
+            // Update Stats
+            if (!userProfile.stats) userProfile.stats = { solved: 0, streak: 0, lastActive: null };
+            userProfile.stats.solved++;
+            
+            // Streak Logic
+            const today = new Date().toDateString();
+            const lastActive = userProfile.stats.lastActive ? new Date(userProfile.stats.lastActive).toDateString() : null;
+            
+            if (lastActive !== today) {
+                const yesterday = new Date();
+                yesterday.setDate(yesterday.getDate() - 1);
+                if (lastActive === yesterday.toDateString()) {
+                    userProfile.stats.streak++;
+                } else {
+                    userProfile.stats.streak = 1;
+                }
+                userProfile.stats.lastActive = new Date().toISOString();
+            }
+
+            localStorage.setItem('caseBuddyUser', JSON.stringify(userProfile));
+            alert("Case tracked! Check your dashboard.");
+            closeFeedbackModal();
+            
+            // Refresh views
+            renderNav();
+            initializeDashboard();
         }
 
         // --- User Profile / Login System ---
-        
         function initLoginSystem() {
             renderNav();
-            
-            // Logic: If no user exists and we haven't shown the skip this session
             if (!userProfile && !sessionStorage.getItem('loginSkipped')) {
-                // Wait 1.5s for better UX on load
                 setTimeout(openLoginModal, 1500);
             }
         }
 
         function renderNav() {
-            navActionsContainer.innerHTML = ''; // Clear container
+            navActionsContainer.innerHTML = ''; 
 
             if (userProfile) {
-                // LOGGED IN STATE: Show Profile Pill + Links
-                const mascot = mascots[userProfile.mascotId];
+                const mascot = mascots[userProfile.mascotId] || mascots[0];
+                const solvedCount = userProfile.stats?.solved || 0;
                 
-                // Create the container div
                 const pillContainer = document.createElement('div');
-                pillContainer.className = 'user-pill-container relative py-2'; // py-2 adds a bridge for hover
+                pillContainer.className = 'user-pill-container relative py-2';
 
-                // 1. The Visible Pill
-                const pill = document.createElement('div');
-                pill.className = 'user-pill flex items-center gap-3 pl-1 pr-4 py-1.5 bg-white border border-slate-200 rounded-full cursor-default shadow-sm';
-                pill.innerHTML = `
-                    <div class="w-8 h-8 rounded-full flex items-center justify-center p-1.5" 
-                         style="background-color: ${mascot.color}15; color: ${mascot.color};">
-                        ${commonAvatarSvg}
-                    </div>
-                    <div class="flex flex-col leading-none">
-                        <span class="text-xs font-bold text-slate-700">${userProfile.username}</span>
+                // Pill
+                pillContainer.innerHTML = `
+                    <div class="user-pill flex items-center gap-3 pl-1 pr-4 py-1.5 bg-white border border-slate-200 rounded-full cursor-pointer shadow-sm">
+                        <div class="w-8 h-8 rounded-full flex items-center justify-center p-1.5" 
+                             style="background-color: ${mascot.color}15; color: ${mascot.color};">
+                            ${commonAvatarSvg}
+                        </div>
+                        <div class="flex flex-col leading-none">
+                            <span class="text-xs font-bold text-slate-700">${userProfile.username}</span>
+                        </div>
                     </div>
                 `;
-
-                // 2. The Hover Card (Hidden by default)
-                const hoverCard = document.createElement('div');
-                hoverCard.className = 'profile-hover-card absolute right-0 top-full mt-0 w-64 bg-white rounded-xl shadow-xl border border-slate-100 overflow-hidden z-50';
-                hoverCard.innerHTML = `
-                    <div class="h-2 w-full" style="background-color: ${mascot.color}"></div>
-                    <div class="p-5">
-                        <div class="flex items-center gap-3 mb-4">
-                            <div class="w-12 h-12 rounded-full flex items-center justify-center p-2" 
-                                 style="background-color: ${mascot.color}15; color: ${mascot.color};">
-                                ${commonAvatarSvg}
-                            </div>
-                            <div>
-                                <p class="font-bold text-slate-800 text-sm">${userProfile.name}</p>
-                                <p class="text-xs text-slate-500 truncate w-32">${userProfile.email}</p>
-                            </div>
-                        </div>
-                        
-                        <div class="space-y-2 mb-4">
-                            <div class="flex justify-between text-xs">
-                                <span class="text-slate-500">College</span>
-                                <span class="font-semibold text-slate-700">${userProfile.college}</span>
-                            </div>
-                            <div class="flex justify-between text-xs">
-                                <span class="text-slate-500">Joined</span>
-                                <span class="font-semibold text-slate-700">${new Date(userProfile.joinedDate).toLocaleDateString()}</span>
-                            </div>
-                        </div>
-
-                        <button onclick="logout()" class="w-full py-2 text-xs font-semibold text-red-500 hover:bg-red-50 rounded-lg transition">
-                            Log Out
-                        </button>
-                    </div>
-                `;
-
-                pillContainer.appendChild(pill);
-                pillContainer.appendChild(hoverCard);
+                
+                // Click to open profile
+                pillContainer.addEventListener('click', renderUserProfile);
                 navActionsContainer.appendChild(pillContainer);
 
                 const dashboardBtn = document.createElement('button');
@@ -1033,7 +1064,6 @@
                 navActionsContainer.appendChild(aboutBtn);
 
             } else {
-                // GUEST STATE: Show Login Button + Links
                 const loginBtn = document.createElement('button');
                 loginBtn.textContent = 'Login / Sign Up';
                 loginBtn.className = 'text-sm font-bold text-white bg-slate-900 px-4 py-2 rounded-lg hover:bg-slate-800 transition';
@@ -1055,8 +1085,78 @@
             }
         }
 
+        function renderUserProfile() {
+            if(!userProfile) return;
+            const mascot = mascots[userProfile.mascotId] || mascots[0];
+            const stats = userProfile.stats || { solved: 0, streak: 0 };
+            const history = userProfile.history || [];
+            
+            // Calculate Avg Score
+            const avgScore = history.length > 0 
+                ? Math.round(history.reduce((a, b) => a + b.totalScore, 0) / history.length) 
+                : 0;
+
+            profileView.innerHTML = `
+                <div class="max-w-4xl mx-auto py-8 dashboard-animate-fade-in">
+                    <!-- Header Card -->
+                    <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-8 mb-8 flex flex-col md:flex-row items-center gap-8">
+                        <div class="w-32 h-32 rounded-full flex items-center justify-center p-6 shadow-inner" 
+                             style="background-color: ${mascot.color}10; color: ${mascot.color};">
+                            ${commonAvatarSvg}
+                        </div>
+                        <div class="text-center md:text-left flex-grow">
+                            <h1 class="text-3xl font-extrabold text-slate-800 mb-1">${userProfile.name}</h1>
+                            <p class="text-slate-500 font-medium text-sm mb-4">@${userProfile.username} • ${userProfile.college}</p>
+                            <div class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-slate-100 text-slate-600">
+                                Member since ${new Date(userProfile.joinedDate).toLocaleDateString()}
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <button onclick="logout()" class="text-red-500 hover:text-red-700 font-semibold text-sm border border-red-100 hover:bg-red-50 px-4 py-2 rounded-lg transition">Log Out</button>
+                        </div>
+                    </div>
+
+                    <!-- Stats Grid (Neopolitan) -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+                        <div class="neo-card p-6 bg-neo-pink border-red-100">
+                            <p class="text-xs font-bold uppercase opacity-70 mb-1">Cases Cracked</p>
+                            <p class="text-4xl neo-stat-value">${stats.solved}</p>
+                        </div>
+                        <div class="neo-card p-6 bg-neo-cream border-yellow-100">
+                            <p class="text-xs font-bold uppercase opacity-70 mb-1">Current Streak</p>
+                            <p class="text-4xl neo-stat-value">${stats.streak} <span class="text-lg">days</span></p>
+                        </div>
+                        <div class="neo-card p-6 bg-neo-dark">
+                            <p class="text-xs font-bold uppercase opacity-70 mb-1">Average Score</p>
+                            <p class="text-4xl neo-stat-value text-green-400">${avgScore}</p>
+                        </div>
+                    </div>
+
+                    <!-- Recent Activity -->
+                    <h3 class="text-xl font-bold text-slate-800 mb-4 px-2">Recent Activity</h3>
+                    <div class="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden">
+                        ${history.length === 0 
+                            ? `<div class="p-8 text-center text-slate-400">No cases solved yet. Go crack one!</div>`
+                            : `<table class="w-full text-left">
+                                <thead class="bg-slate-50 text-xs text-slate-500 uppercase"><tr class="border-b"><th class="p-4">Date</th><th class="p-4">Case</th><th class="p-4">Score</th></tr></thead>
+                                <tbody class="divide-y divide-slate-100">
+                                    ${history.slice().reverse().map(h => `
+                                        <tr class="hover:bg-slate-50 transition">
+                                            <td class="p-4 text-sm text-slate-500">${h.date}</td>
+                                            <td class="p-4 font-medium text-slate-700">${h.name}</td>
+                                            <td class="p-4 font-bold ${h.totalScore >= 85 ? 'text-green-600' : 'text-slate-600'}">${h.totalScore}</td>
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
+                               </table>`
+                        }
+                    </div>
+                </div>
+            `;
+            showView(profileView);
+        }
+
         function openLoginModal() {
-            // Populate Mascots
             mascotContainer.innerHTML = mascots.map((m) => `
                 <div class="mascot-option w-16 h-16 rounded-full bg-white flex items-center justify-center cursor-pointer" 
                      style="--mascot-color: ${m.color}; --mascot-shadow: ${m.shadow}; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);"
@@ -1064,17 +1164,12 @@
                     <div style="width: 2.5rem; height: 2.5rem; color: ${m.color};">${commonAvatarSvg}</div>
                 </div>
             `).join('');
-            
-            // Auto-select first
             selectMascot(mascotContainer.children[0], 0);
-            
             loginModal.classList.remove('hidden');
             loginModal.classList.add('flex');
         }
 
-        // Make global so onclick works
         window.selectMascot = function(el, id) {
-            // clear all
             Array.from(mascotContainer.children).forEach(c => c.classList.remove('selected'));
             el.classList.add('selected');
             mascotInput.value = id;
@@ -1091,21 +1186,23 @@
             userProfile = {
                 name, username, email, college, mascotId,
                 joinedDate: new Date().toISOString(),
-                streak: 1 
+                history: [],
+                stats: { solved: 0, streak: 1, lastActive: new Date().toISOString() }
             };
 
             localStorage.setItem('caseBuddyUser', JSON.stringify(userProfile));
-            
             loginModal.classList.add('hidden');
             loginModal.classList.remove('flex');
             renderNav();
         }
 
         window.logout = function() {
-            localStorage.removeItem('caseBuddyUser');
-            userProfile = null;
-            renderNav();
-            showView(welcomeView);
+            if(confirm("Are you sure you want to log out?")) {
+                localStorage.removeItem('caseBuddyUser');
+                userProfile = null;
+                renderNav();
+                showView(welcomeView);
+            }
         }
 
         // Login Event Listeners
@@ -1174,10 +1271,7 @@
         proceedBtn.addEventListener('click', () => { closeWarningModal(); showInProgressView(); });
 
         // Feedback Modal
-        saveFeedbackBtn.addEventListener('click', () => {
-             console.log('Feedback saved!'); // Placeholder for actual submission logic
-             closeFeedbackModal();
-        });
+        saveFeedbackBtn.addEventListener('click', saveFeedback);
         ratingParameters.addEventListener('change', calculateOverallRating);
 
         // ====================================================================
@@ -1185,24 +1279,16 @@
         // ====================================================================
 
         function initializeDashboard() {
-            // --- Dashboard Data ---
-            const dashboardCaseData = [
-                { name: 'Coffee Shop Profitability', company: 'Bain', date: '2025-08-18', type: 'Profitability', difficulty: 'Easy', structuring: 28, quantitative: 15, insight: 22, communication: 18 },
-                { name: 'EV Market Entry', company: 'BCG', date: '2025-08-18', type: 'Market Entry', difficulty: 'Medium', structuring: 22, quantitative: 14, insight: 15, communication: 15 },
-                { name: 'Pharma M&A', company: 'McKinsey', date: '2025-08-19', type: 'M&A', difficulty: 'Hard', structuring: 18, quantitative: 13, insight: 12, communication: 14 },
-                { name: 'Retail Growth Strategy', company: 'LEK', date: '2025-08-20', type: 'Growth', difficulty: 'Medium', structuring: 25, quantitative: 15, insight: 18, communication: 17 },
-                { name: 'Airline Cost Reduction', company: 'EYP', date: '2025-08-20', type: 'Profitability', difficulty: 'Medium', structuring: 26, quantitative: 14, insight: 25, communication: 19 },
-                { name: 'CPG New Product', company: 'Strategy&', date: '2025-08-21', type: 'Market Entry', difficulty: 'Hard', structuring: 20, quantitative: 13, insight: 14, communication: 13 },
-                { name: 'Manufacturing Ops', company: 'Kearney', date: '2025-09-02', type: 'Profitability', difficulty: 'Easy', structuring: 30, quantitative: 15, insight: 28, communication: 20 },
-            ];
+            // Use User Data if available, else empty
+            const dashboardCaseData = userProfile ? (userProfile.history || []) : [];
             const maxScores = { structuring: 30, quantitative: 15, insight: 35, communication: 20 };
 
-            // --- Dashboard State ---
             let analyticalFilters = {};
             let dateRange = { start: null, end: null };
 
-            // --- Dashboard Helper Functions ---
             const calculateWeightedScore = (caseItem) => {
+                // If history already has totalScore, use it, else calculate
+                if (caseItem.totalScore) return caseItem.totalScore;
                 const weights = { structuring: 30, quantitative: 15, insight: 35, communication: 20 };
                 return Math.round(Object.keys(weights).reduce((acc, key) => acc + (caseItem[key] / maxScores[key]) * weights[key], 0));
             };
@@ -1217,8 +1303,8 @@
                 return 'text-red-600';
             };
 
-            // --- Main Render Function ---
             function renderDashboard() {
+                // Filter logic
                 const globallyFilteredCases = dashboardCaseData.filter(c => {
                     const caseDate = new Date(c.date);
                     const isAfterStart = !dateRange.start || caseDate >= dateRange.start;
@@ -1234,10 +1320,8 @@
                 renderBarCharts(globallyFilteredCases);
                 renderKeyTakeaways(globallyFilteredCases);
                 renderCaseSummary(globallyFilteredCases);
-                renderCalendar(dashboardCaseData); // Calendar always shows all data
+                renderCalendar(dashboardCaseData);
             }
-
-            // --- Component Rendering Functions ---
 
             function renderDateRangePicker() {
                 const container = document.getElementById('dashboard-date-picker');
@@ -1323,7 +1407,11 @@
 
             function renderScoreCard(cases) {
                 const container = document.getElementById('dashboard-score-card');
-                const score = cases.length > 0 ? Math.round(cases.reduce((acc, curr) => acc + calculateWeightedScore(curr), 0) / cases.length) : 0;
+                if(cases.length === 0) {
+                    container.innerHTML = `<div class="text-gray-400 italic">No data yet</div>`;
+                    return;
+                }
+                const score = Math.round(cases.reduce((acc, curr) => acc + calculateWeightedScore(curr), 0) / cases.length);
                 container.innerHTML = `
                     <div class="${getScoreTextColor(score)}">
                         <span class="text-6xl">${score}</span>
@@ -1362,7 +1450,7 @@
 
                     content = `<div class="space-y-3">${itemsHTML}</div>`;
                 } else {
-                    content = `<p class="text-gray-500 text-center py-4">No matching cases found.</p>`;
+                    content = `<p class="text-gray-500 text-center py-4">Solve a case to see your metrics!</p>`;
                 }
                 
                 container.innerHTML = `
@@ -1409,7 +1497,7 @@
                     }).join('');
                     content = `<div class="space-y-2">${barsHTML}</div>`;
                 } else {
-                    content = `<p class="text-sm text-gray-500 text-center py-2">No data for this filter.</p>`;
+                    content = `<p class="text-sm text-gray-500 text-center py-2">No data yet.</p>`;
                 }
 
                 container.innerHTML = `
@@ -1436,7 +1524,7 @@
             function renderKeyTakeaways(cases) {
                 const container = document.getElementById('dashboard-key-takeaways');
                 if (cases.length < 2) {
-                    container.innerHTML = `<div class="bg-white p-6 rounded-lg shadow lg:col-span-3 text-center text-gray-500">Not enough data to generate insights for the current filters.</div>`;
+                    container.innerHTML = `<div class="bg-white p-6 rounded-lg shadow lg:col-span-3 text-center text-gray-500">Solve at least 2 cases to unlock insights.</div>`;
                     return;
                 }
 
@@ -1518,7 +1606,7 @@
 
             function renderCalendar(data) {
                 const container = document.getElementById('dashboard-calendar-tracker');
-                let currentDate = new Date(2025, 7, 1); // August 2025
+                let currentDate = new Date();
 
                 const calendarData = {};
                 data.forEach(c => {
@@ -1540,7 +1628,17 @@
                     const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
                     const daysHTML = calendarDays.map((day, index) => {
-                        const dateStr = day ? `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}` : '';
+                        // Format date as YYYY-MM-DD to match data
+                        let dateStr = '';
+                        if(day) {
+                            const offsetDate = new Date(year, month, day);
+                            // Adjust for local timezone to match input date format if needed, but simple ISO string split works for local-ish dates
+                            const y = offsetDate.getFullYear();
+                            const m = String(offsetDate.getMonth() + 1).padStart(2, '0');
+                            const d = String(offsetDate.getDate()).padStart(2, '0');
+                            dateStr = `${y}-${m}-${d}`;
+                        }
+                        
                         const dayData = dateStr ? calendarData[dateStr] : null;
                         let dayContent = '';
                         if (dayData) {
