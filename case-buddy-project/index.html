@@ -48,7 +48,7 @@
             border-color: #3b82f6; 
         }
         /* Modal backdrop styles */
-        #company-modal, #warning-modal, #feedback-modal {
+        #company-modal, #warning-modal, #feedback-modal, #login-modal {
             backdrop-filter: blur(4px);
         }
         /* PDF Viewer Styles */
@@ -111,6 +111,51 @@
         /* Dashboard specific styles */
         .dashboard-animate-fade-in { animation: fadeIn 0.5s; } 
         @keyframes fadeIn { 0% { opacity: 0; } 100% { opacity: 1; } }
+
+        /* --- LOGIN SYSTEM STYLES --- */
+        
+        /* Mascot Selection */
+        .mascot-option {
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+            position: relative;
+            overflow: hidden;
+        }
+        .mascot-option:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+        /* The selected state uses CSS variables set inline for dynamic coloring */
+        .mascot-option.selected {
+            border-color: var(--mascot-color);
+            background-color: white;
+            transform: scale(1.05);
+            box-shadow: 0 0 0 4px var(--mascot-shadow);
+        }
+        
+        /* Profile Pill & Hover Card */
+        .user-pill-container {
+            position: relative;
+        }
+        .user-pill {
+            transition: all 0.2s ease;
+        }
+        .user-pill:hover {
+            background-color: #f8fafc;
+            border-color: #cbd5e1;
+        }
+        /* The Hover Card */
+        .profile-hover-card {
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(10px);
+            transition: all 0.2s ease-in-out;
+        }
+        .user-pill-container:hover .profile-hover-card {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
     </style>
 <!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-EJTFDTP163"></script>
@@ -140,9 +185,9 @@
                         </svg>
                         <span class="ml-3 text-2xl font-bold gradient-text">Case Buddy</span>
                     </div>
-                     <div class="flex items-center gap-6">
-                        <button id="nav-dashboard-btn" class="text-slate-600 hover:text-blue-600 font-semibold transition-colors">Dashboard</button>
-                        <button id="nav-about-btn" class="text-slate-600 hover:text-blue-600 font-semibold transition-colors">About</button>
+                     <!-- Dynamic Nav Container -->
+                     <div class="flex items-center gap-4" id="nav-actions-container">
+                        <!-- Injected by JS: Dashboard, About, and User Profile/Login -->
                     </div>
                 </div>
             </div>
@@ -291,13 +336,13 @@
                     <p>Whether you're practicing solo or with a partner, Case Buddy provides the resources you need. The "Interviewer" and "Interviewee" views simulate a real interview, with a complete interviewer's guide available to help provide constructive feedback.</p>
                     <p>Our goal is to make high-quality case prep accessible to everyone. Use our filtering tools to find cases that match your target firms and desired difficulty, track your progress on the dashboard, and walk into your interviews with confidence.</p>
                 </div>
-<div class="mt-10 text-center">
-    <h3 class="text-2xl font-bold text-slate-800">Get in Touch</h3>
-    <p class="text-slate-600 mt-2">
-        Have questions, feedback, or want to contribute? Email us at: 
-        <a href="mailto:casebuddy.du@gmail.com" class="font-semibold text-blue-600 hover:underline">casebuddy.du@gmail.com</a>
-    </p>
-</div>
+                <div class="mt-10 text-center">
+                    <h3 class="text-2xl font-bold text-slate-800">Get in Touch</h3>
+                    <p class="text-slate-600 mt-2">
+                        Have questions, feedback, or want to contribute? Email us at: 
+                        <a href="mailto:casebuddy.du@gmail.com" class="font-semibold text-blue-600 hover:underline">casebuddy.du@gmail.com</a>
+                    </p>
+                </div>
                 <div class="mt-12">
                     <h2 class="text-3xl font-bold text-slate-800 text-center">Meet the Founders</h2>
                     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 mt-8 text-center">
@@ -505,6 +550,59 @@
         </div>
     </div>
 
+    <!-- LOGIN / PROFILE CREATION MODAL -->
+    <div id="login-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg transform transition-all">
+            <div class="p-8">
+                <div class="text-center mb-6">
+                    <h2 class="text-3xl font-extrabold gradient-text">Create Your Profile</h2>
+                    <p class="text-slate-500 mt-2">Sign up to track your progress.</p>
+                </div>
+
+                <form id="login-form" class="space-y-5">
+                    <!-- Avatar Selection -->
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-3 text-center">Choose Your Archetype</label>
+                        <div class="flex justify-center gap-4" id="mascot-selection-container">
+                            <!-- Mascots injected by JS -->
+                        </div>
+                        <input type="hidden" id="selected-mascot-id" required>
+                    </div>
+
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Full Name</label>
+                            <input type="text" id="user-fullname-input" required placeholder="John Doe" 
+                                class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition">
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Username</label>
+                                <input type="text" id="user-name-input" required placeholder="StratMaster" 
+                                    class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold uppercase text-slate-500 mb-1">College/Uni</label>
+                                <input type="text" id="user-college-input" placeholder="SRCC" 
+                                    class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Email Address</label>
+                            <input type="email" id="user-email-input" required placeholder="john@example.com" 
+                                class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition">
+                        </div>
+                    </div>
+
+                    <div class="pt-4 flex items-center justify-between">
+                        <button type="button" id="skip-login-btn" class="text-slate-400 font-medium text-sm hover:text-slate-600">Skip for now</button>
+                        <button type="submit" class="gradient-bg text-white px-8 py-2.5 rounded-lg font-bold shadow-md hover:opacity-90 transform transition hover:-translate-y-0.5">Login / Sign Up</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
     <!-- CALENDAR DAY DETAIL MODAL -->
     <div id="calendar-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 dashboard-animate-fade-in">
         <div id="calendar-modal-content" class="bg-white rounded-lg shadow-2xl p-6 w-full max-w-md">
@@ -644,6 +742,9 @@
         let selectedTypes = [];
         let selectedDifficulties = [];
         let selectedCompanies = [];
+        
+        // User State
+        let userProfile = JSON.parse(localStorage.getItem('caseBuddyUser')) || null;
 
         // --- DOM Elements ---
         const welcomeView = document.getElementById('welcome-view');
@@ -655,8 +756,7 @@
         
         const caseGrid = document.getElementById('case-grid');
         const homeButton = document.getElementById('home-button');
-        const navDashboardBtn = document.getElementById('nav-dashboard-btn');
-        const navAboutBtn = document.getElementById('nav-about-btn');
+        const navActionsContainer = document.getElementById('nav-actions-container');
         
         // Filter elements
         const typeFiltersContainer = document.getElementById('type-filters');
@@ -685,6 +785,8 @@
         const companyModal = document.getElementById('company-modal');
         const warningModal = document.getElementById('warning-modal');
         const feedbackModal = document.getElementById('feedback-modal');
+        const loginModal = document.getElementById('login-modal');
+        
         const companyListContainer = document.getElementById('company-list');
         const allCompaniesCheckbox = document.getElementById('all-companies-checkbox');
         const clearCompaniesBtn = document.getElementById('clear-companies-btn');
@@ -696,6 +798,30 @@
         const ratingParameters = document.getElementById('rating-parameters');
         const overallRatingDisplay = document.getElementById('overall-rating-display');
         const saveFeedbackBtn = document.getElementById('save-feedback-btn');
+
+        // Login Modal Elements
+        const loginForm = document.getElementById('login-form');
+        const mascotContainer = document.getElementById('mascot-selection-container');
+        const mascotInput = document.getElementById('selected-mascot-id');
+        const skipLoginBtn = document.getElementById('skip-login-btn');
+
+        // --- Gamification Data (Mascots) ---
+        // Using SVG paths for cleaner look
+        
+        // Common Abstract Avatar SVG (Professional)
+        const commonAvatarSvg = `
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-full h-full">
+                <path fill-rule="evenodd" d="M7.5 6a4.5 4.5 0 1 1 9 0 4.5 4.5 0 0 1-9 0ZM3.751 20.105a8.25 8.25 0 0 1 16.498 0 .75.75 0 0 1-.437.695A18.683 18.683 0 0 1 12 22.5c-2.786 0-5.433-.608-7.812-1.7a.75.75 0 0 1-.437-.695Z" clip-rule="evenodd" />
+            </svg>
+        `;
+
+        const mascots = [
+            { id: 0, color: '#3b82f6', shadow: 'rgba(59, 130, 246, 0.25)' }, // Blue
+            { id: 1, color: '#6366f1', shadow: 'rgba(99, 102, 241, 0.25)' }, // Indigo
+            { id: 2, color: '#10b981', shadow: 'rgba(16, 185, 129, 0.25)' }, // Emerald
+            { id: 3, color: '#f59e0b', shadow: 'rgba(245, 158, 11, 0.25)' }, // Amber
+            { id: 4, color: '#64748b', shadow: 'rgba(100, 116, 139, 0.25)' }, // Slate
+        ];
 
         // --- Main App Functions ---
 
@@ -953,6 +1079,178 @@
             calculateOverallRating();
         }
 
+        // --- User Profile / Login System ---
+        
+        function initLoginSystem() {
+            renderNav();
+            
+            // Logic: If no user exists and we haven't shown the skip this session
+            if (!userProfile && !sessionStorage.getItem('loginSkipped')) {
+                // Wait 1.5s for better UX on load
+                setTimeout(openLoginModal, 1500);
+            }
+        }
+
+        function renderNav() {
+            navActionsContainer.innerHTML = ''; // Clear container
+
+            if (userProfile) {
+                // LOGGED IN STATE: Show Profile Pill + Links
+                const mascot = mascots[userProfile.mascotId];
+                
+                // Create the container div
+                const pillContainer = document.createElement('div');
+                pillContainer.className = 'user-pill-container relative py-2'; // py-2 adds a bridge for hover
+
+                // 1. The Visible Pill
+                const pill = document.createElement('div');
+                pill.className = 'user-pill flex items-center gap-3 pl-1 pr-4 py-1.5 bg-white border border-slate-200 rounded-full cursor-default shadow-sm';
+                pill.innerHTML = `
+                    <div class="w-8 h-8 rounded-full flex items-center justify-center p-1.5" 
+                         style="background-color: ${mascot.color}15; color: ${mascot.color};">
+                        ${commonAvatarSvg}
+                    </div>
+                    <div class="flex flex-col leading-none">
+                        <span class="text-xs font-bold text-slate-700">${userProfile.username}</span>
+                    </div>
+                `;
+
+                // 2. The Hover Card (Hidden by default)
+                const hoverCard = document.createElement('div');
+                hoverCard.className = 'profile-hover-card absolute right-0 top-full mt-0 w-64 bg-white rounded-xl shadow-xl border border-slate-100 overflow-hidden z-50';
+                hoverCard.innerHTML = `
+                    <div class="h-2 w-full" style="background-color: ${mascot.color}"></div>
+                    <div class="p-5">
+                        <div class="flex items-center gap-3 mb-4">
+                            <div class="w-12 h-12 rounded-full flex items-center justify-center p-2" 
+                                 style="background-color: ${mascot.color}15; color: ${mascot.color};">
+                                ${commonAvatarSvg}
+                            </div>
+                            <div>
+                                <p class="font-bold text-slate-800 text-sm">${userProfile.name}</p>
+                                <p class="text-xs text-slate-500 truncate w-32">${userProfile.email}</p>
+                            </div>
+                        </div>
+                        
+                        <div class="space-y-2 mb-4">
+                            <div class="flex justify-between text-xs">
+                                <span class="text-slate-500">College</span>
+                                <span class="font-semibold text-slate-700">${userProfile.college}</span>
+                            </div>
+                            <div class="flex justify-between text-xs">
+                                <span class="text-slate-500">Joined</span>
+                                <span class="font-semibold text-slate-700">${new Date(userProfile.joinedDate).toLocaleDateString()}</span>
+                            </div>
+                        </div>
+
+                        <button onclick="logout()" class="w-full py-2 text-xs font-semibold text-red-500 hover:bg-red-50 rounded-lg transition">
+                            Log Out
+                        </button>
+                    </div>
+                `;
+
+                pillContainer.appendChild(pill);
+                pillContainer.appendChild(hoverCard);
+                navActionsContainer.appendChild(pillContainer);
+
+                const dashboardBtn = document.createElement('button');
+                dashboardBtn.textContent = 'Dashboard';
+                dashboardBtn.className = 'text-slate-600 hover:text-blue-600 font-semibold transition-colors text-sm hidden sm:block';
+                dashboardBtn.addEventListener('click', () => showView(dashboardView));
+
+                const aboutBtn = document.createElement('button');
+                aboutBtn.textContent = 'About';
+                aboutBtn.className = 'text-slate-600 hover:text-blue-600 font-semibold transition-colors text-sm hidden sm:block';
+                aboutBtn.addEventListener('click', () => showView(aboutView));
+
+                navActionsContainer.appendChild(dashboardBtn);
+                navActionsContainer.appendChild(aboutBtn);
+
+            } else {
+                // GUEST STATE: Show Login Button + Links
+                const loginBtn = document.createElement('button');
+                loginBtn.textContent = 'Login / Sign Up';
+                loginBtn.className = 'text-sm font-bold text-white bg-slate-900 px-4 py-2 rounded-lg hover:bg-slate-800 transition';
+                loginBtn.addEventListener('click', openLoginModal);
+
+                const dashboardBtn = document.createElement('button');
+                dashboardBtn.textContent = 'Dashboard';
+                dashboardBtn.className = 'text-slate-600 hover:text-blue-600 font-semibold transition-colors text-sm';
+                dashboardBtn.addEventListener('click', () => showView(dashboardView));
+
+                const aboutBtn = document.createElement('button');
+                aboutBtn.textContent = 'About';
+                aboutBtn.className = 'text-slate-600 hover:text-blue-600 font-semibold transition-colors text-sm';
+                aboutBtn.addEventListener('click', () => showView(aboutView));
+
+                navActionsContainer.appendChild(loginBtn);
+                navActionsContainer.appendChild(dashboardBtn);
+                navActionsContainer.appendChild(aboutBtn);
+            }
+        }
+
+        function openLoginModal() {
+            // Populate Mascots
+            mascotContainer.innerHTML = mascots.map((m) => `
+                <div class="mascot-option w-16 h-16 rounded-full bg-white flex items-center justify-center cursor-pointer" 
+                     style="--mascot-color: ${m.color}; --mascot-shadow: ${m.shadow}; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);"
+                     data-id="${m.id}" onclick="selectMascot(this, ${m.id})">
+                    <div style="width: 2.5rem; height: 2.5rem; color: ${m.color};">${commonAvatarSvg}</div>
+                </div>
+            `).join('');
+            
+            // Auto-select first
+            selectMascot(mascotContainer.children[0], 0);
+            
+            loginModal.classList.remove('hidden');
+            loginModal.classList.add('flex');
+        }
+
+        // Make global so onclick works
+        window.selectMascot = function(el, id) {
+            // clear all
+            Array.from(mascotContainer.children).forEach(c => c.classList.remove('selected'));
+            el.classList.add('selected');
+            mascotInput.value = id;
+        }
+
+        function handleLoginSubmit(e) {
+            e.preventDefault();
+            const name = document.getElementById('user-fullname-input').value;
+            const username = document.getElementById('user-name-input').value;
+            const email = document.getElementById('user-email-input').value;
+            const college = document.getElementById('user-college-input').value;
+            const mascotId = mascotInput.value;
+
+            userProfile = {
+                name, username, email, college, mascotId,
+                joinedDate: new Date().toISOString(),
+                streak: 1 
+            };
+
+            localStorage.setItem('caseBuddyUser', JSON.stringify(userProfile));
+            
+            loginModal.classList.add('hidden');
+            loginModal.classList.remove('flex');
+            renderNav();
+        }
+
+        window.logout = function() {
+            localStorage.removeItem('caseBuddyUser');
+            userProfile = null;
+            renderNav();
+            showView(welcomeView);
+        }
+
+        // Login Event Listeners
+        loginForm.addEventListener('submit', handleLoginSubmit);
+        skipLoginBtn.addEventListener('click', () => {
+            sessionStorage.setItem('loginSkipped', 'true');
+            loginModal.classList.add('hidden');
+            loginModal.classList.remove('flex');
+        });
+
+
         // --- Initial Load & Event Listeners ---
         document.addEventListener('DOMContentLoaded', () => { 
             const uniqueTypes = [...new Set(allCases.map(c => c.type))].sort();
@@ -963,16 +1261,17 @@
             populateCompanyModal();
             
             showView(welcomeView);
-            updateOverallRatingDisplay(0); // Initialize overall rating display
+            updateOverallRatingDisplay(0); 
             
             // Initialize Dashboard
             initializeDashboard();
+
+            // Initialize Login System
+            initLoginSystem();
         });
 
         // Navigation
         homeButton.addEventListener('click', () => showView(welcomeView));
-        navDashboardBtn.addEventListener('click', () => showView(dashboardView));
-        navAboutBtn.addEventListener('click', () => showView(aboutView));
         backToFiltersBtn.addEventListener('click', () => showView(welcomeView));
         backToLibraryBtn.addEventListener('click', () => showView(caseLibraryView));
         
@@ -1467,4 +1766,3 @@
     </script>
 </body>
 </html>
-
