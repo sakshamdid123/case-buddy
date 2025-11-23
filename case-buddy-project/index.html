@@ -6,29 +6,27 @@
     <title>Case Buddy</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <script src="https://mozilla.github.io/pdf.js/build/pdf.mjs" type="module"></script>
+    <!-- Removed the standalone script tag for pdf.js to prevent conflicts. We import it directly in the module below. -->
     <style>
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #f1f5f9; /* A slightly off-white for better contrast */
+            background-color: #f1f5f9;
         }
-        main {
-             background-color: #ffffff;
-        }
-        /* Gradient for text and backgrounds */
+        main { background-color: #ffffff; }
+        
+        /* Gradient Utilities */
         .gradient-text {
-            background-image: linear-gradient(to right, #3b82f6, #10b981); /* blue-500 to emerald-500 */
+            background-image: linear-gradient(to right, #3b82f6, #10b981);
             -webkit-background-clip: text;
             background-clip: text;
             color: transparent;
         }
-        .gradient-bg {
-             background-image: linear-gradient(to right, #3b82f6, #10b981);
-        }
-        /* Styles for filter buttons */
+        .gradient-bg { background-image: linear-gradient(to right, #3b82f6, #10b981); }
+        
+        /* UI Components */
         .filter-btn {
             transition: all 0.2s ease-in-out;
-            border: 1px solid #d1d5db; /* gray-300 */
+            border: 1px solid #d1d5db;
         }
         .filter-btn.active {
             background-image: linear-gradient(to right, #3b82f6, #10b981);
@@ -37,158 +35,89 @@
             transform: scale(1.05);
             box-shadow: 0 4px 14px 0 rgba(0, 118, 255, 0.39);
         }
-        /* Styles for case cards */
         .case-card {
             transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
-            border: 1px solid #e2e8f0; /* slate-200 */
+            border: 1px solid #e2e8f0;
         }
         .case-card:hover {
             transform: translateY(-5px);
             box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.07), 0 4px 6px -4px rgb(0 0 0 / 0.07);
             border-color: #3b82f6; 
         }
-        /* Modal backdrop styles */
-        #company-modal, #warning-modal, #feedback-modal, #login-modal {
-            backdrop-filter: blur(4px);
-        }
-        /* PDF Viewer Styles */
+        
+        /* Modals */
+        #company-modal, #warning-modal, #feedback-modal, #login-modal { backdrop-filter: blur(4px); }
+        
+        /* PDF Viewer */
         #pdf-render-container { position: relative; overflow-y: auto; }
-        #pdf-canvas { 
-            display: block; 
-            margin: 0 auto;
-            transition: opacity 0.3s ease-in-out;
-        }
+        #pdf-canvas { display: block; margin: 0 auto; transition: opacity 0.3s ease-in-out; }
         #pdf-controls {
-            position: absolute;
-            bottom: 1rem;
-            left: 50%;
-            transform: translateX(-50%);
-            background-color: rgba(0, 0, 0, 0.6);
-            border-radius: 0.5rem;
-            padding: 0.5rem 1rem;
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            z-index: 10;
+            position: absolute; bottom: 1rem; left: 50%; transform: translateX(-50%);
+            background-color: rgba(0, 0, 0, 0.6); border-radius: 0.5rem; padding: 0.5rem 1rem;
+            display: flex; align-items: center; gap: 1rem; z-index: 10;
         }
         
-        /* Updated Star Rating Styles */
-        .star-rating {
-            direction: rtl; /* Reverses item order for CSS sibling selector trick */
-            display: inline-flex;
-        }
-        .star-rating input[type="radio"] { 
-            display: none; 
-        }
-        .star-rating label {
-            cursor: pointer;
-            color: #d1d5db; /* gray-300 */
-            font-size: 2.5rem;
-            transition: color 0.2s ease-in-out;
-        }
-        /* This single rule handles hover and checked states correctly */
-        .star-rating label:hover,
-        .star-rating label:hover ~ label,
-        .star-rating input[type="radio"]:checked ~ label {
-            color: #f59e0b; /* amber-500 */
-        }
+        /* Ratings */
+        .star-rating { direction: rtl; display: inline-flex; }
+        .star-rating input[type="radio"] { display: none; }
+        .star-rating label { cursor: pointer; color: #d1d5db; font-size: 2.5rem; transition: color 0.2s; }
+        .star-rating label:hover, .star-rating label:hover ~ label, .star-rating input[type="radio"]:checked ~ label { color: #f59e0b; }
+        #overall-rating-display .star { color: #d1d5db; font-size: 2.5rem; }
+        #overall-rating-display .star.filled { color: #f59e0b; }
         
-        /* Overall Rating Display Styles */
-        #overall-rating-display .star {
-            color: #d1d5db; /* gray-300 */
-            font-size: 2.5rem;
-        }
-        #overall-rating-display .star.filled {
-            color: #f59e0b; /* amber-500 */
-        }
-        
-        /* Scrollbar styling */
+        /* Misc */
         ::-webkit-scrollbar { width: 8px; }
         ::-webkit-scrollbar-track { background: #f1f5f9; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
         ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
-
-        /* Dashboard specific styles */
         .dashboard-animate-fade-in { animation: fadeIn 0.5s; } 
         @keyframes fadeIn { 0% { opacity: 0; } 100% { opacity: 1; } }
 
-        /* --- LOGIN SYSTEM STYLES --- */
+        /* Login/Profile Styles */
+        .mascot-option { transition: all 0.3s ease; border: 2px solid transparent; position: relative; overflow: hidden; }
+        .mascot-option:hover { transform: translateY(-2px); box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); }
+        .mascot-option.selected { border-color: var(--mascot-color); background-color: white; transform: scale(1.05); box-shadow: 0 0 0 4px var(--mascot-shadow); }
         
-        /* Mascot Selection */
-        .mascot-option {
-            transition: all 0.3s ease;
-            border: 2px solid transparent;
-            position: relative;
-            overflow: hidden;
-        }
-        .mascot-option:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-        }
-        /* The selected state uses CSS variables set inline for dynamic coloring */
-        .mascot-option.selected {
-            border-color: var(--mascot-color);
-            background-color: white;
-            transform: scale(1.05);
-            box-shadow: 0 0 0 4px var(--mascot-shadow);
-        }
+        .user-pill-container { position: relative; }
+        .user-pill { transition: all 0.2s ease; }
+        .user-pill:hover { background-color: #f8fafc; border-color: #cbd5e1; }
         
-        /* Profile Pill & Hover Card */
-        .user-pill-container {
-            position: relative;
-        }
-        .user-pill {
-            transition: all 0.2s ease;
-        }
-        .user-pill:hover {
-            background-color: #f8fafc;
-            border-color: #cbd5e1;
-        }
-        /* The Hover Card */
         .profile-hover-card {
-            opacity: 0;
-            visibility: hidden;
-            transform: translateY(10px);
-            transition: all 0.2s ease-in-out;
+            opacity: 0; visibility: hidden; transform: translateY(10px); transition: all 0.2s ease-in-out;
         }
-        .user-pill-container:hover .profile-hover-card {
-            opacity: 1;
-            visibility: visible;
-            transform: translateY(0);
-        }
+        .user-pill-container:hover .profile-hover-card { opacity: 1; visibility: visible; transform: translateY(0); }
     </style>
-<!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-EJTFDTP163"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-
-  gtag('config', 'G-EJTFDTP163');
-</script>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-EJTFDTP163"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-EJTFDTP163');
+    </script>
 </head>
 <body class="bg-slate-100 text-slate-800">
 
     <header class="bg-white sticky top-0 z-50 shadow-sm">
         <nav class="container mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex items-center justify-between h-16">
-                <div class="flex items-center gap-8">
-                    <div class="flex items-center cursor-pointer" id="home-button">
-                        <svg class="h-8 w-8" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="url(#grad1)">
-                            <defs>
-                               <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="0%">
-                                 <stop offset="0%" style="stop-color:#3b82f6;stop-opacity:1" />
-                                 <stop offset="100%" style="stop-color:#10b981;stop-opacity:1" />
-                               </linearGradient>
-                            </defs>
-                            <path d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" />
-                        </svg>
-                        <span class="ml-3 text-2xl font-bold gradient-text">Case Buddy</span>
-                    </div>
-                     <!-- Dynamic Nav Container -->
-                     <div class="flex items-center gap-4" id="nav-actions-container">
-                        <!-- Injected by JS: Dashboard, About, and User Profile/Login -->
-                    </div>
+                <!-- Logo Section -->
+                <div class="flex items-center cursor-pointer" id="home-button">
+                    <svg class="h-8 w-8" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="url(#grad1)">
+                        <defs>
+                           <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="0%">
+                             <stop offset="0%" style="stop-color:#3b82f6;stop-opacity:1" />
+                             <stop offset="100%" style="stop-color:#10b981;stop-opacity:1" />
+                           </linearGradient>
+                        </defs>
+                        <path d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" />
+                    </svg>
+                    <span class="ml-3 text-2xl font-bold gradient-text">Case Buddy</span>
+                </div>
+
+                <!-- Dynamic Nav Container (Buttons appear here) -->
+                <div class="flex items-center gap-4" id="nav-actions-container">
+                    <!-- Injected by JS: Dashboard, About, and User Profile/Login -->
                 </div>
             </div>
         </nav>
@@ -207,17 +136,13 @@
                 <!-- Case Type Filter -->
                 <div class="grid md:grid-cols-3 items-start gap-4">
                     <h2 class="text-lg font-semibold text-slate-700 mt-2">What's the case style?</h2>
-                    <div id="type-filters" class="md:col-span-2 flex flex-wrap gap-3">
-                        <!-- Type buttons will be injected here -->
-                    </div>
+                    <div id="type-filters" class="md:col-span-2 flex flex-wrap gap-3"></div>
                 </div>
 
                 <!-- Difficulty Filter -->
                 <div class="grid md:grid-cols-3 items-start gap-4">
                     <h2 class="text-lg font-semibold text-slate-700 mt-2">Choose your challenge.</h2>
-                    <div id="difficulty-filters" class="md:col-span-2 flex flex-wrap gap-3">
-                        <!-- Difficulty buttons will be injected here -->
-                    </div>
+                    <div id="difficulty-filters" class="md:col-span-2 flex flex-wrap gap-3"></div>
                 </div>
 
                 <!-- Company Filter -->
@@ -252,9 +177,7 @@
                      &larr; Back to Filters
                  </button>
             </div>
-            <div id="case-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                <!-- Case cards will be dynamically inserted here -->
-            </div>
+            <div id="case-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"></div>
         </div>
 
         <!-- DETAILED CASE VIEW -->
@@ -346,18 +269,10 @@
                 <div class="mt-12">
                     <h2 class="text-3xl font-bold text-slate-800 text-center">Meet the Founders</h2>
                     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 mt-8 text-center">
-                        <div class="p-4">
-                            <p class="font-semibold text-lg text-slate-700">Nitya Mall</p>
-                        </div>
-                        <div class="p-4">
-                            <p class="font-semibold text-lg text-slate-700">Niepun Singhal</p>
-                        </div>
-                        <div class="p-4">
-                            <p class="font-semibold text-lg text-slate-700">Pratik Agarwal</p>
-                        </div>
-                        <div class="p-4">
-                            <p class="font-semibold text-lg text-slate-700">Saksham Didwania</p>
-                        </div>
+                        <div class="p-4"><p class="font-semibold text-lg text-slate-700">Nitya Mall</p></div>
+                        <div class="p-4"><p class="font-semibold text-lg text-slate-700">Niepun Singhal</p></div>
+                        <div class="p-4"><p class="font-semibold text-lg text-slate-700">Pratik Agarwal</p></div>
+                        <div class="p-4"><p class="font-semibold text-lg text-slate-700">Saksham Didwania</p></div>
                     </div>
                 </div>
             </div>
@@ -370,16 +285,12 @@
                     <p class="font-bold">Disclaimer</p>
                     <p>This dashboard is for representational purposes only. The data is pre-filled and does not reflect your actual case performance yet.</p>
                 </div>
-
                 <header class="mb-4">
                     <h1 class="text-3xl font-bold text-slate-800">My Case Prep Dashboard</h1>
                     <p class="text-slate-500 mt-1">Your comprehensive performance and progress tracker.</p>
                 </header>
-                
                 <div class="flex justify-between items-center mb-4">
-                    <div id="dashboard-date-picker" class="flex gap-2 items-center">
-                        <!-- Date picker will be rendered here by JS -->
-                    </div>
+                    <div id="dashboard-date-picker" class="flex gap-2 items-center"></div>
                     <div class="flex gap-4 items-center text-xs text-gray-600">
                         <span class="font-semibold">Score Legend:</span>
                         <div class="flex items-center"><div class="w-3 h-3 rounded-full bg-red-500 mr-1.5"></div>Poor (&lt;70)</div>
@@ -387,45 +298,26 @@
                         <div class="flex items-center"><div class="w-3 h-3 rounded-full bg-green-500 mr-1.5"></div>Good (85+)</div>
                     </div>
                 </div>
-                <div id="dashboard-active-filters">
-                    <!-- Active filters will be rendered here by JS -->
-                </div>
-
+                <div id="dashboard-active-filters"></div>
                 <main class="space-y-6">
                     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                         <div class="lg:col-span-1 space-y-6">
                             <div class="bg-white p-6 rounded-lg shadow text-center">
                                 <h2 class="text-lg font-semibold text-gray-600">Case Score™</h2>
-                                <div id="dashboard-score-card" class="font-bold my-2">
-                                    <!-- Score will be rendered here by JS -->
-                                </div>
+                                <div id="dashboard-score-card" class="font-bold my-2"></div>
                                 <p class="text-gray-500 text-sm">Avg. score for selected filters.</p>
                             </div>
-                            <div id="dashboard-metric-breakdown">
-                                <!-- Detailed metrics will be rendered here by JS -->
-                            </div>
+                            <div id="dashboard-metric-breakdown"></div>
                         </div>
                         <div class="lg:col-span-2 space-y-6">
-                            <div id="dashboard-type-chart">
-                                <!-- Performance by type chart will be rendered here by JS -->
-                            </div>
-                            <div id="dashboard-difficulty-chart">
-                                <!-- Performance by difficulty chart will be rendered here by JS -->
-                            </div>
+                            <div id="dashboard-type-chart"></div>
+                            <div id="dashboard-difficulty-chart"></div>
                         </div>
                     </div>
-
-                    <div id="dashboard-key-takeaways">
-                        <!-- Key takeaways will be rendered here by JS -->
-                    </div>
-                    
+                    <div id="dashboard-key-takeaways"></div>
                     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 pt-6 border-t">
-                        <div id="dashboard-case-summary">
-                            <!-- Case summary table will be rendered here by JS -->
-                        </div>
-                        <div id="dashboard-calendar-tracker">
-                            <!-- Calendar will be rendered here by JS -->
-                        </div>
+                        <div id="dashboard-case-summary"></div>
+                        <div id="dashboard-calendar-tracker"></div>
                     </div>
                 </main>
             </div>
@@ -436,12 +328,8 @@
     <!-- COMPANY SELECTION MODAL -->
     <div id="company-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
         <div class="bg-white rounded-lg shadow-xl w-full max-w-2xl transform transition-all flex flex-col h-[80vh]">
-            <div class="p-6 border-b">
-                <h2 class="text-2xl font-bold gradient-text">Select Companies</h2>
-            </div>
-            <div id="company-list" class="p-6 overflow-y-auto flex-grow grid grid-cols-2 md:grid-cols-3 gap-4">
-                <!-- Company checkboxes will be injected here -->
-            </div>
+            <div class="p-6 border-b"><h2 class="text-2xl font-bold gradient-text">Select Companies</h2></div>
+            <div id="company-list" class="p-6 overflow-y-auto flex-grow grid grid-cols-2 md:grid-cols-3 gap-4"></div>
             <div class="p-4 bg-slate-50 border-t flex justify-between items-center">
                  <label class="flex items-center space-x-2 font-semibold">
                      <input type="checkbox" id="all-companies-checkbox" class="h-5 w-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500">
@@ -474,9 +362,7 @@
     <div id="feedback-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
         <div class="bg-white rounded-lg shadow-xl p-8 w-full max-w-lg transform transition-all" id="feedback-modal-content">
             <h2 class="text-2xl font-bold mb-6 gradient-text">Case Feedback</h2>
-
             <div id="rating-parameters" class="space-y-4">
-                 <!-- Structure -->
                  <div class="flex justify-between items-center">
                     <label class="text-slate-700 font-semibold">Structure</label>
                     <div class="star-rating" data-parameter="structure" data-weight="0.35">
@@ -487,7 +373,6 @@
                         <input type="radio" id="structure-star1" name="structure-rating" value="1" /><label for="structure-star1">&#9733;</label>
                     </div>
                 </div>
-                <!-- Case Understanding -->
                 <div class="flex justify-between items-center">
                     <label class="text-slate-700 font-semibold">Case Understanding</label>
                     <div class="star-rating" data-parameter="understanding" data-weight="0.25">
@@ -498,7 +383,6 @@
                         <input type="radio" id="understanding-star1" name="understanding-rating" value="1" /><label for="understanding-star1">&#9733;</label>
                     </div>
                 </div>
-                 <!-- Delivery -->
                  <div class="flex justify-between items-center">
                     <label class="text-slate-700 font-semibold">Delivery</label>
                     <div class="star-rating" data-parameter="delivery" data-weight="0.25">
@@ -509,7 +393,6 @@
                         <input type="radio" id="delivery-star1" name="delivery-rating" value="1" /><label for="delivery-star1">&#9733;</label>
                     </div>
                 </div>
-                 <!-- Creativity -->
                  <div class="flex justify-between items-center">
                     <label class="text-slate-700 font-semibold">Creativity</label>
                     <div class="star-rating" data-parameter="creativity" data-weight="0.15">
@@ -521,29 +404,22 @@
                     </div>
                 </div>
             </div>
-
             <hr class="my-6">
-
             <div class="text-center">
                 <div class="flex justify-center items-center gap-2">
                     <p class="text-slate-700 font-semibold">Overall Rating</p>
                     <div class="group relative">
-                        <!-- Info icon that triggers tooltip on hover -->
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-slate-400 cursor-pointer" viewBox="0 0 20 20" fill="currentColor">
                             <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
                         </svg>
-                        <!-- The tooltip content -->
                         <div class="absolute bottom-full z-10 mb-2 w-64 bg-slate-800 text-white text-xs rounded-lg py-2 px-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
                             Weighted average: Structure (35%), Case Understanding (25%), Delivery (25%), Creativity (15%).
                             <svg class="absolute text-slate-800 h-2 w-full left-0 top-full" x="0px" y="0px" viewBox="0 0 255 255" xml:space="preserve"><polygon class="fill-current" points="0,0 127.5,127.5 255,0"/></svg>
                         </div>
                     </div>
                 </div>
-                <div id="overall-rating-display" class="flex justify-center mt-1">
-                    <!-- Stars will be injected here by JS -->
-                </div>
+                <div id="overall-rating-display" class="flex justify-center mt-1"></div>
             </div>
-            
             <div class="flex justify-end space-x-4 mt-8">
                 <button id="save-feedback-btn" class="gradient-bg text-white px-6 py-2 rounded-lg font-semibold hover:opacity-90 transition">Save</button>
             </div>
@@ -558,42 +434,32 @@
                     <h2 class="text-3xl font-extrabold gradient-text">Create Your Profile</h2>
                     <p class="text-slate-500 mt-2">Sign up to track your progress.</p>
                 </div>
-
                 <form id="login-form" class="space-y-5">
-                    <!-- Avatar Selection -->
                     <div>
                         <label class="block text-sm font-semibold text-slate-700 mb-3 text-center">Choose Your Archetype</label>
-                        <div class="flex justify-center gap-4" id="mascot-selection-container">
-                            <!-- Mascots injected by JS -->
-                        </div>
+                        <div class="flex justify-center gap-4" id="mascot-selection-container"></div>
                         <input type="hidden" id="selected-mascot-id" required>
                     </div>
-
                     <div class="space-y-4">
                         <div>
                             <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Full Name</label>
-                            <input type="text" id="user-fullname-input" required placeholder="John Doe" 
-                                class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition">
+                            <input type="text" id="user-fullname-input" required placeholder="John Doe" class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition">
                         </div>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
                                 <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Username</label>
-                                <input type="text" id="user-name-input" required placeholder="StratMaster" 
-                                    class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition">
+                                <input type="text" id="user-name-input" required placeholder="StratMaster" class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition">
                             </div>
                             <div>
                                 <label class="block text-xs font-bold uppercase text-slate-500 mb-1">College/Uni</label>
-                                <input type="text" id="user-college-input" placeholder="SRCC" 
-                                    class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition">
+                                <input type="text" id="user-college-input" placeholder="SRCC" class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition">
                             </div>
                         </div>
                         <div>
                             <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Email Address</label>
-                            <input type="email" id="user-email-input" required placeholder="john@example.com" 
-                                class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition">
+                            <input type="email" id="user-email-input" required placeholder="john@example.com" class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition">
                         </div>
                     </div>
-
                     <div class="pt-4 flex items-center justify-between">
                         <button type="button" id="skip-login-btn" class="text-slate-400 font-medium text-sm hover:text-slate-600">Skip for now</button>
                         <button type="submit" class="gradient-bg text-white px-8 py-2.5 rounded-lg font-bold shadow-md hover:opacity-90 transform transition hover:-translate-y-0.5">Login / Sign Up</button>
@@ -605,21 +471,22 @@
 
     <!-- CALENDAR DAY DETAIL MODAL -->
     <div id="calendar-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 dashboard-animate-fade-in">
-        <div id="calendar-modal-content" class="bg-white rounded-lg shadow-2xl p-6 w-full max-w-md">
-            <!-- Content will be injected by JS -->
-        </div>
+        <div id="calendar-modal-content" class="bg-white rounded-lg shadow-2xl p-6 w-full max-w-md"></div>
     </div>
 
-
+    <!-- Main Module Script -->
     <script type="module">
-        // --- PDF.js Setup ---
-        const { pdfjsLib } = globalThis;
-        pdfjsLib.GlobalWorkerOptions.workerSrc = `https://mozilla.github.io/pdf.js/build/pdf.worker.mjs`;
+        // --- Direct PDF.js Import (Fixes Global Variable Issue) ---
+        import * as pdfjsLib from 'https://mozilla.github.io/pdf.js/build/pdf.mjs';
+        
+        // Set Worker Source relative to the main library
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://mozilla.github.io/pdf.js/build/pdf.worker.mjs';
 
         // --- Data ---
         const allCases = [
             { id: 1, title: 'Accelerating Prosperity', type: 'Growth', difficulty: 'Easy', company: 'Kepler Cannon', problem: 'How would you, as a consultant, for PM Modi, advise him to grow the GDP of India faster than any other country and generate lots of jobs in the process? The aim is prosperity and has to be done by our recommendation only.'},
             { id: 2, title: 'An Apple a Day', type: 'Unconventional', difficulty: 'Easy', company: 'Accenture Strategy', problem: "You're a part of Apple's strategy team. Apple is considering to start renting out earphones on an early basis, should they go ahead with it or not?"},
+            // ... (Keeping the cases list truncated for brevity, but in real file ensure all 56 are present) ...
             { id: 3, title: 'Brewing Success', type: 'Market Entry', difficulty: 'Moderate', company: 'Accenture Strategy', problem: 'You have to open a coffee shop in Delhi. What are the factors you would consider?'},
             { id: 4, title: 'Bucks over Brands', type: 'Market Entry', difficulty: 'Moderate', company: 'LEK Capability Network', problem: 'Your Company has 2 online retail shops, one is a premium retail shop and the other one is a cheap retail shop. Both are very similar in nature, so figure out the possible reasons as to why the cheaper retail store has a higher profit margin than the premium shop.'},
             { id: 5, title: 'Building the Bank', type: 'Profitability', difficulty: 'High', company: 'McKinsey & Co.', problem: 'The client in a Banking Client from a large private sector firm - like Axis Bank- in India. The company wants to start a 3-in-1 account: a savings account + DMAT account + Trading account. The company already has a customer base of 5 million people. How would you determine how many people are interested to sign up for this?'},
@@ -1155,12 +1022,12 @@
 
                 const dashboardBtn = document.createElement('button');
                 dashboardBtn.textContent = 'Dashboard';
-                dashboardBtn.className = 'text-slate-600 hover:text-blue-600 font-semibold transition-colors text-sm hidden sm:block';
+                dashboardBtn.className = 'text-slate-600 hover:text-blue-600 font-semibold transition-colors text-sm';
                 dashboardBtn.addEventListener('click', () => showView(dashboardView));
 
                 const aboutBtn = document.createElement('button');
                 aboutBtn.textContent = 'About';
-                aboutBtn.className = 'text-slate-600 hover:text-blue-600 font-semibold transition-colors text-sm hidden sm:block';
+                aboutBtn.className = 'text-slate-600 hover:text-blue-600 font-semibold transition-colors text-sm';
                 aboutBtn.addEventListener('click', () => showView(aboutView));
 
                 navActionsContainer.appendChild(dashboardBtn);
