@@ -6,6 +6,8 @@
     <title>Case Buddy</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Phosphor Icons for clean UI -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
     
     <style>
         body {
@@ -46,7 +48,7 @@
         }
         
         /* Modals */
-        #company-modal, #warning-modal, #feedback-modal, #login-modal { backdrop-filter: blur(4px); }
+        #company-modal, #warning-modal, #feedback-modal, #login-modal, #insight-modal { backdrop-filter: blur(4px); }
         
         /* PDF Viewer */
         #pdf-render-container { position: relative; overflow-y: auto; }
@@ -94,18 +96,8 @@
         .bg-neo-pink { background-color: #fff1f2; color: #be123c; }
         .bg-neo-cream { background-color: #fffbeb; color: #b45309; }
         .bg-neo-dark { background-color: #1e293b; color: #f8fafc; }
-    </style>
-    <!-- Google tag (gtag.js) -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-EJTFDTP163"></script>
-    <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-      gtag('config', 'G-EJTFDTP163');
-    </script>
-    <script src="https://unpkg.com/@phosphor-icons/web"></script>
-    <style>
-        /* AI Sandbox Animations */
+
+        /* Voice Recorder Animations */
         @keyframes pulse-red {
             0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
             70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
@@ -117,19 +109,27 @@
             color: #ef4444 !important;
             border-color: #ef4444 !important;
         }
-        /* AI Typing Effect */
+        .ai-content h3 { font-weight: 700; color: #334155; margin-top: 1rem; margin-bottom: 0.5rem; }
+        .ai-content ul { list-style-type: disc; padding-left: 1.5rem; margin-bottom: 1rem; }
+        .ai-content li { margin-bottom: 0.25rem; }
+        .ai-content strong { color: #0f172a; }
+
+        /* Typing cursor for streaming effect */
         .cursor-blink::after {
             content: '|';
             animation: blink 1s infinite;
             color: #3b82f6;
         }
         @keyframes blink { 50% { opacity: 0; } }
-        
-        .ai-content h3 { font-weight: 800; color: #1e293b; margin-top: 1rem; margin-bottom: 0.5rem; }
-        .ai-content ul { list-style-type: none; padding-left: 0; }
-        .ai-content li { margin-bottom: 0.5rem; padding-left: 1.5rem; position: relative; }
-        .ai-content li::before { content: "•"; color: #3b82f6; font-weight: bold; position: absolute; left: 0.5rem; }
     </style>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-EJTFDTP163"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-EJTFDTP163');
+    </script>
 </head>
 <body class="bg-slate-100 text-slate-800">
 
@@ -245,9 +245,10 @@
             </div>
         </div>
 
-        <!-- IN-PROGRESS VIEW -->
+        <!-- IN-PROGRESS VIEW (UPDATED WITH AI) -->
         <div id="in-progress-view" class="hidden">
              <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <!-- Left: PDF Viewer -->
                 <div class="bg-white p-6 rounded-lg shadow-md h-[85vh] flex flex-col lg:col-span-2">
                     <h2 id="casebook-title" class="text-2xl font-bold mb-4 shrink-0 gradient-text">Interviewer's Guide</h2>
                     <div id="pdf-render-container" class="flex-grow rounded-lg overflow-hidden border bg-slate-100 p-2">
@@ -263,53 +264,80 @@
                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
                             </button>
                             <button id="pdf-fullscreen" class="text-white hover:text-blue-300 ml-4">
-                               <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5v-4m0 0h-4m4 0l5-5" /></svg>
+                               <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5v-4m0 0h-4m4 0l-5-5" /></svg>
                             </button>
                         </div>
                     </div>
                 </div>
 
-                <div class="bg-white p-6 rounded-lg shadow-md flex flex-col">
-                    <h2 class="text-2xl font-bold mb-4 gradient-text">Instructions for Interviewer</h2>
-                    <div class="text-slate-600 space-y-3 flex-grow">
-                        <p>1. Use the casebook PDF on the left to guide the interviewee.</p>
-                        <p>2. Provide hints only when necessary to keep the case moving.</p>
-                        <p>3. Take notes on the interviewee's structure, creativity, and quantitative skills.</p>
-                        <p>4. Once the case is concluded, click "End this case" to provide feedback.</p>
-                    </div>
-                    <div class="mt-6 border-t pt-4">
+                <!-- Right: Interviewer Controls + Voice AI -->
+                <div class="bg-white rounded-lg shadow-md flex flex-col h-[85vh] border border-slate-200 overflow-hidden">
+                    <!-- Header -->
+                    <div class="p-4 border-b border-slate-100 bg-slate-50">
                         <div class="flex justify-between items-center mb-2">
-                            <h3 class="font-bold text-slate-700">AI Feedback Assistant</h3>
-                            <div id="system-status" class="text-[10px] font-mono bg-slate-800 text-yellow-400 px-2 py-1 rounded">
-                                Initializing AI...
+                            <h2 class="text-xl font-bold text-slate-800">Interviewer Controls</h2>
+                            <div class="bg-blue-100 text-blue-700 px-2 py-1 rounded text-xs font-bold flex items-center gap-1">
+                                <i class="ph ph-lightning-fill"></i> AI Powered
                             </div>
                         </div>
-                    
-                        <div class="relative mb-3">
-                            <textarea id="transcript-box" class="w-full h-32 p-3 text-sm text-slate-600 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none resize-none bg-slate-50" 
-                                placeholder="Loading models..."></textarea>
-                            
-                            <button id="record-btn" disabled class="absolute bottom-3 right-3 w-10 h-10 rounded-full bg-white shadow border border-slate-200 text-slate-400 flex items-center justify-center transition-all hover:text-blue-600">
-                                <i class="ph ph-microphone text-lg"></i>
-                            </button>
-                        </div>
-                    
-                        <div class="flex justify-between items-center mb-3">
-                            <button id="clear-btn" class="text-xs text-slate-400 hover:text-red-500 underline">Clear Text</button>
-                            <span class="text-[10px] text-slate-400">Powered by Gemini 1.5</span>
-                        </div>
-                    
-                        <button id="analyze-btn" disabled class="w-full bg-slate-200 text-slate-400 font-bold py-3 rounded-lg transition flex items-center justify-center gap-2 cursor-not-allowed mb-4">
-                            <span id="btn-text">Loading...</span>
-                            <i class="ph ph-spinner animate-spin hidden" id="loading-spinner"></i>
-                        </button>
-                    
-                        <div id="ai-result-container" class="hidden bg-slate-50 p-4 rounded-lg border border-slate-200 text-sm overflow-y-auto max-h-60">
-                            <div id="ai-output" class="text-slate-700 ai-content leading-relaxed"></div>
+                        <!-- Intelligent Status Bar -->
+                        <div id="system-status" class="text-[10px] font-mono bg-slate-800 text-yellow-400 p-2 rounded break-all">
+                            Initializing... Fetching available models...
                         </div>
                     </div>
-                    <div class="mt-6 text-right">
-                        <button id="end-case-btn" class="bg-red-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-red-700 transition">End this case</button>
+
+                    <!-- Scrollable Content -->
+                    <div class="flex-grow overflow-y-auto p-4 space-y-6 custom-scrollbar">
+                        <!-- Voice Recorder -->
+                        <div class="space-y-2">
+                            <label class="block text-sm font-semibold text-slate-700 flex justify-between">
+                                Feedback Transcript
+                                <span class="text-[10px] font-normal text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full">Auto-transcribing</span>
+                            </label>
+                            
+                            <div class="relative">
+                                <textarea id="transcript-box" class="w-full h-32 p-3 text-sm text-slate-600 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none resize-none bg-slate-50" 
+                                    placeholder="Wait for model initialization..."></textarea>
+                                
+                                <button id="record-btn" disabled class="absolute bottom-3 right-3 w-10 h-10 rounded-full bg-white shadow-md border border-slate-200 text-slate-400 transition-all group flex items-center justify-center z-10">
+                                    <i class="ph ph-microphone text-lg"></i>
+                                </button>
+                            </div>
+                            
+                            <div class="flex justify-end h-4">
+                                <button id="clear-btn" class="text-xs text-slate-400 hover:text-red-500 underline hidden">Clear</button>
+                            </div>
+                        </div>
+
+                        <!-- Action Area -->
+                        <button id="analyze-btn" disabled class="w-full bg-slate-200 text-slate-400 font-bold py-3 rounded-xl shadow-none transition transform flex items-center justify-center gap-2 cursor-not-allowed">
+                            <span id="btn-text">Loading Models...</span>
+                            <i class="ph ph-spinner animate-spin hidden" id="loading-spinner"></i>
+                        </button>
+
+                        <!-- AI Results -->
+                        <div id="ai-result-container" class="hidden dashboard-animate-fade-in pb-4">
+                            <div class="flex items-center gap-2 mb-3">
+                                <div class="h-px bg-slate-200 flex-grow"></div>
+                                <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">AI Analysis</span>
+                                <div class="h-px bg-slate-200 flex-grow"></div>
+                            </div>
+                            <div id="ai-output" class="text-xs text-slate-700 bg-white p-4 rounded-xl border border-slate-200 shadow-sm ai-content leading-relaxed cursor-blink"></div>
+                        </div>
+                        
+                        <!-- Static Guide -->
+                        <div class="bg-blue-50 p-3 rounded-lg text-sm text-slate-600 border border-blue-100">
+                            <h3 class="font-bold text-blue-800 mb-1 flex items-center gap-2"><i class="ph ph-info"></i> Guide</h3>
+                            <ul class="list-disc pl-4 space-y-1 text-xs">
+                                <li>Use the PDF to guide the interviewee.</li>
+                                <li>Provide hints only when necessary.</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Footer -->
+                    <div class="p-4 border-t border-slate-100 bg-white">
+                         <button id="end-case-btn" class="bg-red-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-red-700 transition w-full shadow-md">End Case & Rate</button>
                     </div>
                 </div>
             </div>
@@ -493,6 +521,17 @@
         </div>
     </div>
 
+    <!-- INSIGHT MODAL (FOR VIEWING AI FEEDBACK) -->
+    <div id="insight-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-2xl max-h-[80vh] overflow-y-auto transform transition-all p-6 relative">
+            <button onclick="document.getElementById('insight-modal').classList.add('hidden')" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600">
+                <i class="ph ph-x text-xl"></i>
+            </button>
+            <h2 class="text-2xl font-bold text-slate-800 mb-4 flex items-center gap-2"><i class="ph ph-sparkle text-purple-500"></i> AI Insights</h2>
+            <div id="insight-content" class="prose prose-slate ai-content text-sm"></div>
+        </div>
+    </div>
+
     <!-- LOGIN / PROFILE CREATION MODAL -->
     <div id="login-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
         <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg transform transition-all">
@@ -546,6 +585,10 @@
         // --- Direct PDF.js Import ---
         import * as pdfjsLib from 'https://mozilla.github.io/pdf.js/build/pdf.mjs';
         pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://mozilla.github.io/pdf.js/build/pdf.worker.mjs';
+
+        // --- Gemini API Key ---
+        const GEMINI_API_KEY = "AIzaSyAF1vxepCPUaHCC1CDe9uY3ypKt7polR_E";
+        let SELECTED_MODEL = "";
 
         // --- Data ---
         const allCases = [
@@ -682,13 +725,6 @@
             localStorage.setItem('caseBuddyUser', JSON.stringify(userProfile));
         }
 
-        // --- AI Sandbox Configuration ---
-        const GEMINI_API_KEY = "AIzaSyAF1vxepCPUaHCC1CDe9uY3ypKt7polR_E"; 
-        let SELECTED_MODEL = "";
-        let recognition;
-        let isRecording = false;
-        let finalTranscript = '';
-
         // --- DOM Elements ---
         const welcomeView = document.getElementById('welcome-view');
         const caseLibraryView = document.getElementById('case-library-view');
@@ -725,11 +761,16 @@
               nextPageBtn = document.getElementById('pdf-next'),
               fullscreenBtn = document.getElementById('pdf-fullscreen');
 
+        // Voice & AI Elements (These need to be selected dynamically since they are not in the original HTML)
+        // Wait, we are replacing the original HTML with the new structure so we can query them directly if we add them to the HTML structure above.
+        // I will add the HTML structure for the voice panel into the in-progress view.
+
         // Modals
         const companyModal = document.getElementById('company-modal');
         const warningModal = document.getElementById('warning-modal');
         const feedbackModal = document.getElementById('feedback-modal');
         const loginModal = document.getElementById('login-modal');
+        // Add Insight Modal to HTML
         
         const companyListContainer = document.getElementById('company-list');
         const allCompaniesCheckbox = document.getElementById('all-companies-checkbox');
