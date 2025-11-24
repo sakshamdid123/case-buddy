@@ -6,8 +6,6 @@
     <title>Case Buddy</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <!-- Phosphor Icons for clean UI -->
-    <script src="https://unpkg.com/@phosphor-icons/web"></script>
     
     <style>
         body {
@@ -48,7 +46,7 @@
         }
         
         /* Modals */
-        #company-modal, #warning-modal, #feedback-modal, #login-modal, #insight-modal { backdrop-filter: blur(4px); }
+        #company-modal, #warning-modal, #feedback-modal, #login-modal { backdrop-filter: blur(4px); }
         
         /* PDF Viewer */
         #pdf-render-container { position: relative; overflow-y: auto; }
@@ -96,23 +94,6 @@
         .bg-neo-pink { background-color: #fff1f2; color: #be123c; }
         .bg-neo-cream { background-color: #fffbeb; color: #b45309; }
         .bg-neo-dark { background-color: #1e293b; color: #f8fafc; }
-
-        /* Voice Recorder Animations */
-        @keyframes pulse-red {
-            0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
-            70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
-        }
-        .recording-active {
-            animation: pulse-red 1.5s infinite;
-            background-color: #fee2e2 !important;
-            color: #ef4444 !important;
-            border-color: #ef4444 !important;
-        }
-        .ai-content h3 { font-weight: 700; color: #334155; margin-top: 1rem; margin-bottom: 0.5rem; }
-        .ai-content ul { list-style-type: disc; padding-left: 1.5rem; margin-bottom: 1rem; }
-        .ai-content li { margin-bottom: 0.25rem; }
-        .ai-content strong { color: #0f172a; }
     </style>
     <!-- Google tag (gtag.js) -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-EJTFDTP163"></script>
@@ -240,7 +221,6 @@
         <!-- IN-PROGRESS VIEW -->
         <div id="in-progress-view" class="hidden">
              <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                <!-- Left: PDF Viewer -->
                 <div class="bg-white p-6 rounded-lg shadow-md h-[85vh] flex flex-col lg:col-span-2">
                     <h2 id="casebook-title" class="text-2xl font-bold mb-4 shrink-0 gradient-text">Interviewer's Guide</h2>
                     <div id="pdf-render-container" class="flex-grow rounded-lg overflow-hidden border bg-slate-100 p-2">
@@ -256,74 +236,22 @@
                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
                             </button>
                             <button id="pdf-fullscreen" class="text-white hover:text-blue-300 ml-4">
-                               <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5v-4m0 0h-4m4 0l-5-5" /></svg>
+                               <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5v-4m0 0h-4m4 0l5-5" /></svg>
                             </button>
                         </div>
                     </div>
                 </div>
 
-                <!-- Right: Interviewer Controls + Voice AI -->
-                <div class="bg-white p-6 rounded-lg shadow-md flex flex-col h-[85vh]">
-                    <div class="flex justify-between items-center mb-4">
-                        <h2 class="text-xl font-bold text-slate-800">Control Panel</h2>
-                        <div class="bg-blue-100 text-blue-700 px-2 py-1 rounded text-xs font-bold flex items-center gap-1">
-                            <i class="ph ph-lightning-fill"></i> AI Active
-                        </div>
+                <div class="bg-white p-6 rounded-lg shadow-md flex flex-col">
+                    <h2 class="text-2xl font-bold mb-4 gradient-text">Instructions for Interviewer</h2>
+                    <div class="text-slate-600 space-y-3 flex-grow">
+                        <p>1. Use the casebook PDF on the left to guide the interviewee.</p>
+                        <p>2. Provide hints only when necessary to keep the case moving.</p>
+                        <p>3. Take notes on the interviewee's structure, creativity, and quantitative skills.</p>
+                        <p>4. Once the case is concluded, click "End this case" to provide feedback.</p>
                     </div>
-                    
-                    <div class="flex-grow overflow-y-auto pr-2 space-y-6 custom-scrollbar">
-                        <!-- Static Instructions -->
-                        <div class="bg-blue-50 p-4 rounded-lg text-sm text-slate-600 border border-blue-100">
-                            <h3 class="font-bold text-blue-800 mb-2 flex items-center gap-2"><i class="ph ph-info"></i> Guide</h3>
-                            <ul class="list-disc pl-4 space-y-1">
-                                <li>Use the PDF on the left to guide the interviewee.</li>
-                                <li>Provide hints only when necessary.</li>
-                                <li>Use the recorder below for real-time AI analysis.</li>
-                            </ul>
-                        </div>
-
-                        <!-- Voice Recorder -->
-                        <div class="space-y-3">
-                            <label class="block text-sm font-semibold text-slate-700 flex justify-between">
-                                Verbal Feedback
-                                <span class="text-xs font-normal text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full">Auto-transcribing</span>
-                            </label>
-                            
-                            <div class="relative">
-                                <textarea id="transcript-box" class="w-full h-32 p-4 text-sm text-slate-600 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none resize-none bg-slate-50" 
-                                    placeholder="Tap mic & speak feedback..."></textarea>
-                                
-                                <!-- Floating Mic Button -->
-                                <button id="record-btn" class="absolute bottom-3 right-3 w-10 h-10 rounded-full bg-white shadow-md border border-slate-200 text-slate-500 hover:text-blue-600 hover:border-blue-500 transition-all group flex items-center justify-center z-10">
-                                    <i class="ph ph-microphone text-lg"></i>
-                                </button>
-                            </div>
-                            
-                            <div class="flex justify-between items-center h-4">
-                                <p id="status-text" class="text-xs text-slate-400 italic">Ready</p>
-                                <button id="clear-btn" class="text-xs text-slate-400 hover:text-red-500 underline hidden">Clear</button>
-                            </div>
-                        </div>
-
-                        <!-- Action Area -->
-                        <button id="analyze-btn" class="w-full bg-gradient-to-r from-blue-600 to-emerald-500 text-white font-bold py-3 rounded-xl shadow-md hover:opacity-90 transition transform hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
-                            <span id="btn-text">Generate AI Insights</span>
-                            <i class="ph ph-sparkle"></i>
-                        </button>
-
-                        <!-- AI Results -->
-                        <div id="ai-result-container" class="hidden dashboard-animate-fade-in pb-4">
-                            <div class="flex items-center gap-2 mb-3">
-                                <div class="h-px bg-slate-200 flex-grow"></div>
-                                <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Analysis</span>
-                                <div class="h-px bg-slate-200 flex-grow"></div>
-                            </div>
-                            <div id="ai-output" class="text-xs text-slate-700 bg-white p-4 rounded-xl border border-slate-200 shadow-sm ai-content leading-relaxed"></div>
-                        </div>
-                    </div>
-
-                    <div class="mt-4 pt-4 border-t text-right bg-white">
-                        <button id="end-case-btn" class="bg-red-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-red-700 transition w-full">End Case & Rate</button>
+                    <div class="mt-6 text-right">
+                        <button id="end-case-btn" class="bg-red-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-red-700 transition">End this case</button>
                     </div>
                 </div>
             </div>
@@ -507,17 +435,6 @@
         </div>
     </div>
 
-    <!-- INSIGHT MODAL (FOR VIEWING AI FEEDBACK) -->
-    <div id="insight-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-        <div class="bg-white rounded-xl shadow-2xl w-full max-w-2xl max-h-[80vh] overflow-y-auto transform transition-all p-6 relative">
-            <button onclick="document.getElementById('insight-modal').classList.add('hidden')" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600">
-                <i class="ph ph-x text-xl"></i>
-            </button>
-            <h2 class="text-2xl font-bold text-slate-800 mb-4 flex items-center gap-2"><i class="ph ph-sparkle text-purple-500"></i> AI Insights</h2>
-            <div id="insight-content" class="prose prose-slate ai-content text-sm"></div>
-        </div>
-    </div>
-
     <!-- LOGIN / PROFILE CREATION MODAL -->
     <div id="login-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
         <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg transform transition-all">
@@ -571,9 +488,6 @@
         // --- Direct PDF.js Import ---
         import * as pdfjsLib from 'https://mozilla.github.io/pdf.js/build/pdf.mjs';
         pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://mozilla.github.io/pdf.js/build/pdf.worker.mjs';
-
-        // --- Gemini API Key ---
-        const GEMINI_API_KEY = "AIzaSyAF1vxepCPUaHCC1CDe9uY3ypKt7polR_E";
 
         // --- Data ---
         const allCases = [
@@ -745,24 +659,12 @@
               prevPageBtn = document.getElementById('pdf-prev'),
               nextPageBtn = document.getElementById('pdf-next'),
               fullscreenBtn = document.getElementById('pdf-fullscreen');
-        
-        // Voice & AI Elements
-        const recordBtn = document.getElementById('record-btn');
-        const transcriptBox = document.getElementById('transcript-box');
-        const statusText = document.getElementById('status-text');
-        const analyzeBtn = document.getElementById('analyze-btn');
-        const aiContainer = document.getElementById('ai-result-container');
-        const aiOutput = document.getElementById('ai-output');
-        const btnText = document.getElementById('btn-text');
-        const clearBtn = document.getElementById('clear-btn');
 
         // Modals
         const companyModal = document.getElementById('company-modal');
         const warningModal = document.getElementById('warning-modal');
         const feedbackModal = document.getElementById('feedback-modal');
         const loginModal = document.getElementById('login-modal');
-        const insightModal = document.getElementById('insight-modal');
-        const insightContent = document.getElementById('insight-content');
         
         const companyListContainer = document.getElementById('company-list');
         const allCompaniesCheckbox = document.getElementById('all-companies-checkbox');
@@ -796,78 +698,6 @@
             { id: 3, color: '#f59e0b', shadow: 'rgba(245, 158, 11, 0.25)' }, // Amber
             { id: 4, color: '#64748b', shadow: 'rgba(100, 116, 139, 0.25)' }, // Slate
         ];
-
-        // --- Speech Recognition Logic ---
-        let recognition;
-        let isRecording = false;
-
-        if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
-            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-            recognition = new SpeechRecognition();
-            recognition.continuous = true;
-            recognition.interimResults = true;
-            recognition.lang = 'en-US';
-
-            recognition.onstart = () => {
-                isRecording = true;
-                recordBtn.classList.add('recording-active');
-                recordBtn.innerHTML = '<i class="ph ph-stop text-xl font-bold"></i>';
-                statusText.textContent = "Listening...";
-                statusText.className = "text-xs text-red-500 font-bold animate-pulse";
-                transcriptBox.placeholder = "Listening...";
-            };
-
-            recognition.onend = () => {
-                isRecording = false;
-                recordBtn.classList.remove('recording-active');
-                recordBtn.innerHTML = '<i class="ph ph-microphone text-lg"></i>';
-                statusText.textContent = "Recording stopped.";
-                statusText.className = "text-xs text-slate-400";
-            };
-
-            recognition.onresult = (event) => {
-                let finalTranscript = '';
-                for (let i = event.resultIndex; i < event.results.length; ++i) {
-                    if (event.results[i].isFinal) {
-                        finalTranscript += event.results[i][0].transcript;
-                    }
-                }
-                if (finalTranscript) {
-                    const currentText = transcriptBox.value;
-                    const prefix = (currentText && !currentText.endsWith(' ')) ? ' ' : '';
-                    transcriptBox.value = currentText + prefix + finalTranscript;
-                    transcriptBox.scrollTop = transcriptBox.scrollHeight;
-                    if(transcriptBox.value.length > 0) clearBtn.classList.remove('hidden');
-                }
-            };
-        } else {
-            transcriptBox.value = "Speech Recognition not supported in this browser.";
-            recordBtn.disabled = true;
-            recordBtn.classList.add('opacity-50', 'cursor-not-allowed');
-        }
-
-        // --- Gemini AI Logic ---
-        async function callGeminiAPI(feedbackText) {
-            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
-            const prompt = `
-                You are an expert case interview coach. Analyze this feedback transcript:
-                "${feedbackText}"
-                Output ONLY HTML. Structure exactly like this:
-                <h3>✅ Key Strengths</h3>
-                <ul><li>Point 1</li><li>Point 2</li></ul>
-                <h3>🚀 Areas for Improvement</h3>
-                <ul><li>Point 1</li><li>Point 2</li></ul>
-                Keep it professional and actionable.
-            `;
-            const response = await fetch(url, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
-            });
-            if (!response.ok) throw new Error('API Request Failed');
-            const data = await response.json();
-            return data.candidates[0].content.parts[0].text;
-        }
 
         // --- Main App Functions ---
 
@@ -916,10 +746,6 @@
             document.getElementById('casebook-title').textContent = `Interviewer's Guide: ${currentCase.title}`;
             const pdfPath = casebooks[currentCase.id] || casebooks.default;
             await initPdfViewer(pdfPath);
-            // Reset Recorder UI
-            transcriptBox.value = '';
-            aiContainer.classList.add('hidden');
-            aiOutput.innerHTML = '';
             showView(inProgressView);
         }
 
@@ -1108,6 +934,7 @@
                 totalScore += value * weight; // 5-point scale
             });
             
+            // Normalize to 100 point scale for consistency
             const finalScore = Math.round((totalScore / 5) * 100);
             updateOverallRatingDisplay(totalScore);
             return { finalScore, scores };
@@ -1140,9 +967,8 @@
             }
 
             const { finalScore, scores } = calculateOverallRating();
-            // Capture AI insights if generated
-            const aiInsightText = aiOutput.innerHTML !== '' ? aiOutput.innerHTML : null;
             
+            // Create Record
             const record = {
                 caseId: currentCase.id,
                 name: currentCase.title,
@@ -1150,20 +976,22 @@
                 type: currentCase.type,
                 difficulty: currentCase.difficulty,
                 date: new Date().toISOString().split('T')[0],
-                structuring: scores.structure ? scores.structure * 6 : 0, 
-                quantitative: scores.understanding ? scores.understanding * 3 : 0, 
-                insight: scores.delivery ? scores.delivery * 7 : 0, 
+                structuring: scores.structure ? scores.structure * 6 : 0, // Map 5->30 roughly
+                quantitative: scores.understanding ? scores.understanding * 3 : 0, // Map 5->15
+                insight: scores.delivery ? scores.delivery * 7 : 0, // Map
                 communication: scores.creativity ? scores.creativity * 4 : 0,
-                totalScore: finalScore,
-                aiInsights: aiInsightText // Saving the insight HTML
+                totalScore: finalScore
             };
 
+            // Update User Data
             if (!userProfile.history) userProfile.history = [];
             userProfile.history.push(record);
             
+            // Update Stats
             if (!userProfile.stats) userProfile.stats = { solved: 0, streak: 0, lastActive: null };
             userProfile.stats.solved++;
             
+            // Streak Logic
             const today = new Date().toDateString();
             const lastActive = userProfile.stats.lastActive ? new Date(userProfile.stats.lastActive).toDateString() : null;
             
@@ -1182,6 +1010,7 @@
             alert("Case tracked! Check your dashboard.");
             closeFeedbackModal();
             
+            // Refresh views
             renderNav();
             initializeDashboard();
         }
@@ -1199,6 +1028,7 @@
 
             if (userProfile) {
                 const mascot = mascots[userProfile.mascotId] || mascots[0];
+                const solvedCount = userProfile.stats?.solved || 0;
                 
                 const pillContainer = document.createElement('div');
                 pillContainer.className = 'user-pill-container relative py-2';
@@ -1261,6 +1091,7 @@
             const stats = userProfile.stats || { solved: 0, streak: 0 };
             const history = userProfile.history || [];
             
+            // Calculate Avg Score
             const avgScore = history.length > 0 
                 ? Math.round(history.reduce((a, b) => a + b.totalScore, 0) / history.length) 
                 : 0;
@@ -1285,7 +1116,7 @@
                         </div>
                     </div>
 
-                    <!-- Stats Grid -->
+                    <!-- Stats Grid (Neopolitan) -->
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
                         <div class="neo-card p-6 bg-neo-pink border-red-100">
                             <p class="text-xs font-bold uppercase opacity-70 mb-1">Cases Cracked</p>
@@ -1307,19 +1138,13 @@
                         ${history.length === 0 
                             ? `<div class="p-8 text-center text-slate-400">No cases solved yet. Go crack one!</div>`
                             : `<table class="w-full text-left">
-                                <thead class="bg-slate-50 text-xs text-slate-500 uppercase"><tr class="border-b"><th class="p-4">Date</th><th class="p-4">Case</th><th class="p-4">Score</th><th class="p-4 text-right">Action</th></tr></thead>
+                                <thead class="bg-slate-50 text-xs text-slate-500 uppercase"><tr class="border-b"><th class="p-4">Date</th><th class="p-4">Case</th><th class="p-4">Score</th></tr></thead>
                                 <tbody class="divide-y divide-slate-100">
-                                    ${history.slice().reverse().map((h, index) => `
+                                    ${history.slice().reverse().map(h => `
                                         <tr class="hover:bg-slate-50 transition">
                                             <td class="p-4 text-sm text-slate-500">${h.date}</td>
                                             <td class="p-4 font-medium text-slate-700">${h.name}</td>
                                             <td class="p-4 font-bold ${h.totalScore >= 85 ? 'text-green-600' : 'text-slate-600'}">${h.totalScore}</td>
-                                            <td class="p-4 text-right">
-                                                ${h.aiInsights 
-                                                    ? `<button onclick="window.viewInsight(${history.length - 1 - index})" class="text-blue-600 text-xs font-bold hover:underline">View Insights</button>`
-                                                    : `<span class="text-slate-300 text-xs">No Data</span>`
-                                                }
-                                            </td>
                                         </tr>
                                     `).join('')}
                                 </tbody>
@@ -1330,16 +1155,6 @@
             `;
             showView(profileView);
         }
-
-        // Make viewInsight global for onclick access
-        window.viewInsight = function(index) {
-             const record = userProfile.history[index];
-             if (record && record.aiInsights) {
-                 insightContent.innerHTML = record.aiInsights;
-                 insightModal.classList.remove('hidden');
-                 insightModal.classList.add('flex');
-             }
-        };
 
         function openLoginModal() {
             mascotContainer.innerHTML = mascots.map((m) => `
@@ -1389,8 +1204,8 @@
                 showView(welcomeView);
             }
         }
-        
-        // --- Listeners ---
+
+        // Login Event Listeners
         loginForm.addEventListener('submit', handleLoginSubmit);
         skipLoginBtn.addEventListener('click', () => {
             sessionStorage.setItem('loginSkipped', 'true');
@@ -1398,45 +1213,8 @@
             loginModal.classList.remove('flex');
         });
 
-        recordBtn.addEventListener('click', () => {
-            if (isRecording) {
-                recognition.stop();
-            } else {
-                recognition.start();
-            }
-        });
-        
-        clearBtn.addEventListener('click', () => {
-            transcriptBox.value = '';
-            clearBtn.classList.add('hidden');
-            aiContainer.classList.add('hidden');
-            statusText.textContent = 'Cleared';
-        });
 
-        analyzeBtn.addEventListener('click', async () => {
-            const text = transcriptBox.value.trim();
-            if (text.length < 5) { 
-                alert("Please record or type some feedback first.");
-                return;
-            }
-            analyzeBtn.disabled = true;
-            btnText.textContent = "Analyzing...";
-            aiContainer.classList.add('hidden');
-            try {
-                const insights = await callGeminiAPI(text);
-                aiOutput.innerHTML = insights.replace(/```html/g, '').replace(/```/g, '');
-                aiContainer.classList.remove('hidden');
-                aiContainer.scrollIntoView({ behavior: 'smooth' });
-            } catch (error) {
-                console.error(error);
-                alert("Error calling AI. Please check console.");
-            } finally {
-                analyzeBtn.disabled = false;
-                btnText.textContent = "Generate AI Insights";
-            }
-        });
-
-        // --- Initial Load ---
+        // --- Initial Load & Event Listeners ---
         document.addEventListener('DOMContentLoaded', () => { 
             const uniqueTypes = [...new Set(allCases.map(c => c.type))].sort();
             const uniqueDifficulties = [...new Set(allCases.map(c => c.difficulty))].sort();
@@ -1447,37 +1225,508 @@
             
             showView(welcomeView);
             updateOverallRatingDisplay(0); 
+            
+            // Initialize Dashboard
             initializeDashboard();
+
+            // Initialize Login System
             initLoginSystem();
         });
 
-        // Navigation & Actions
+        // Navigation
         homeButton.addEventListener('click', () => showView(welcomeView));
         backToFiltersBtn.addEventListener('click', () => showView(welcomeView));
         backToLibraryBtn.addEventListener('click', () => showView(caseLibraryView));
+        
+        // Actions
         searchCasesBtn.addEventListener('click', handleSearch);
         viewAllBtn.addEventListener('click', () => renderLibraryView(allCases));
         doCaseBtn.addEventListener('click', openWarningModal);
         endCaseBtn.addEventListener('click', openFeedbackModal);
         
+        // PDF Controls
         prevPageBtn.addEventListener('click', onPrevPage);
         nextPageBtn.addEventListener('click', onNextPage);
         fullscreenBtn.addEventListener('click', toggleFullscreen);
-        document.addEventListener('fullscreenchange', () => { if (pdfDoc) setTimeout(() => renderPage(pageNum, true), 100); });
+        document.addEventListener('fullscreenchange', () => {
+            if (pdfDoc) {
+                setTimeout(() => renderPage(pageNum, true), 100);
+            }
+        });
 
+        // Company Modal
         openCompanyModalBtn.addEventListener('click', openCompanyModal);
         applyCompaniesBtn.addEventListener('click', applyCompanySelection);
         companyModal.addEventListener('click', (e) => { if(e.target === companyModal) closeCompanyModal(); });
-        allCompaniesCheckbox.addEventListener('change', (e) => { companyListContainer.querySelectorAll('.company-checkbox').forEach(cb => { cb.checked = e.target.checked; }); });
-        clearCompaniesBtn.addEventListener('click', () => { companyListContainer.querySelectorAll('.company-checkbox').forEach(cb => { cb.checked = false; }); allCompaniesCheckbox.checked = false; });
+        allCompaniesCheckbox.addEventListener('change', (e) => {
+            companyListContainer.querySelectorAll('.company-checkbox').forEach(cb => { cb.checked = e.target.checked; });
+        });
+        clearCompaniesBtn.addEventListener('click', () => {
+             companyListContainer.querySelectorAll('.company-checkbox').forEach(cb => { cb.checked = false; });
+            allCompaniesCheckbox.checked = false;
+        });
+        
+        // Warning Modal
         cancelWarningBtn.addEventListener('click', closeWarningModal);
         proceedBtn.addEventListener('click', () => { closeWarningModal(); showInProgressView(); });
+
+        // Feedback Modal
         saveFeedbackBtn.addEventListener('click', saveFeedback);
         ratingParameters.addEventListener('change', calculateOverallRating);
 
-        // --- Initial Dashboard Render ---
-        renderDateRangePicker();
-        renderDashboard();
+        // ====================================================================
+        // --- DASHBOARD SCRIPT ---
+        // ====================================================================
+
+        function initializeDashboard() {
+            // Use User Data if available, else empty
+            const dashboardCaseData = userProfile ? (userProfile.history || []) : [];
+            const maxScores = { structuring: 30, quantitative: 15, insight: 35, communication: 20 };
+
+            let analyticalFilters = {};
+            let dateRange = { start: null, end: null };
+
+            const calculateWeightedScore = (caseItem) => {
+                // If history already has totalScore, use it, else calculate
+                if (caseItem.totalScore) return caseItem.totalScore;
+                const weights = { structuring: 30, quantitative: 15, insight: 35, communication: 20 };
+                return Math.round(Object.keys(weights).reduce((acc, key) => acc + (caseItem[key] / maxScores[key]) * weights[key], 0));
+            };
+            const getScoreColor = (score) => {
+                if (score >= 85) return 'from-green-500 to-green-400';
+                if (score >= 70) return 'from-amber-500 to-amber-400';
+                return 'from-red-600 to-red-500';
+            };
+            const getScoreTextColor = (score) => {
+                if (score >= 85) return 'text-green-600';
+                if (score >= 70) return 'text-amber-600';
+                return 'text-red-600';
+            };
+
+            function renderDashboard() {
+                // Filter logic
+                const globallyFilteredCases = dashboardCaseData.filter(c => {
+                    const caseDate = new Date(c.date);
+                    const isAfterStart = !dateRange.start || caseDate >= dateRange.start;
+                    const isBeforeEnd = !dateRange.end || caseDate <= dateRange.end;
+                    const typeMatch = !analyticalFilters.type || c.type === analyticalFilters.type;
+                    const difficultyMatch = !analyticalFilters.difficulty || c.difficulty === analyticalFilters.difficulty;
+                    return isAfterStart && isBeforeEnd && typeMatch && difficultyMatch;
+                });
+
+                renderActiveFilters(analyticalFilters);
+                renderScoreCard(globallyFilteredCases);
+                renderDetailedMetrics(globallyFilteredCases);
+                renderBarCharts(globallyFilteredCases);
+                renderKeyTakeaways(globallyFilteredCases);
+                renderCaseSummary(globallyFilteredCases);
+                renderCalendar(dashboardCaseData);
+            }
+
+            function renderDateRangePicker() {
+                const container = document.getElementById('dashboard-date-picker');
+                container.innerHTML = `
+                    <select id="date-range-type" class="text-sm border-gray-300 rounded-md shadow-sm">
+                        <option value="all">All Time</option>
+                        <option value="this_month">This Month</option>
+                        <option value="last_month">Last Month</option>
+                        <option value="custom">Custom Range</option>
+                    </select>
+                    <div id="custom-range-inputs" class="hidden items-center gap-2">
+                        <input type="date" id="date-start" class="text-sm border-gray-300 rounded-md shadow-sm"/>
+                        <input type="date" id="date-end" class="text-sm border-gray-300 rounded-md shadow-sm"/>
+                    </div>
+                    <button id="apply-date-range" class="text-sm bg-blue-600 text-white px-3 py-1 rounded-md hover:bg-blue-700">Apply</button>
+                `;
+
+                const rangeTypeSelect = document.getElementById('date-range-type');
+                const customInputs = document.getElementById('custom-range-inputs');
+                
+                rangeTypeSelect.addEventListener('change', (e) => {
+                    customInputs.classList.toggle('hidden', e.target.value !== 'custom');
+                });
+
+                document.getElementById('apply-date-range').addEventListener('click', () => {
+                    const rangeType = rangeTypeSelect.value;
+                    let start = null, end = null;
+                    const today = new Date();
+                    if (rangeType === 'this_month') {
+                        start = new Date(today.getFullYear(), today.getMonth(), 1);
+                        end = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+                    } else if (rangeType === 'last_month') {
+                        start = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+                        end = new Date(today.getFullYear(), today.getMonth(), 0);
+                    } else if (rangeType === 'custom') {
+                        const startVal = document.getElementById('date-start').value;
+                        const endVal = document.getElementById('date-end').value;
+                        if (startVal && endVal) {
+                            start = new Date(startVal);
+                            end = new Date(endVal);
+                        }
+                    }
+                    dateRange = { start, end };
+                    renderDashboard();
+                });
+            }
+
+            function renderActiveFilters(filters) {
+                const container = document.getElementById('dashboard-active-filters');
+                const active = Object.entries(filters).filter(([, value]) => value);
+                if (active.length === 0) {
+                    container.innerHTML = '';
+                    return;
+                }
+                
+                const filterItems = active.map(([key, value]) => `
+                    <div class="flex items-center bg-blue-200 text-blue-800 text-xs font-semibold px-2 py-1 rounded-full">
+                        <span class="capitalize">${key}: ${value}</span>
+                        <button data-key="${key}" class="ml-2 text-blue-600 hover:text-blue-900 clear-filter-btn">&times;</button>
+                    </div>
+                `).join('');
+
+                container.innerHTML = `
+                    <div class="flex items-center gap-2 mb-4 p-2 bg-blue-50 border border-blue-200 rounded-lg">
+                        <span class="font-semibold text-sm text-gray-700">Filters Applied:</span>
+                        ${filterItems}
+                        <button id="clear-all-filters-btn" class="ml-auto text-sm font-semibold text-blue-600 hover:text-blue-800">Clear All</button>
+                    </div>
+                `;
+
+                document.querySelectorAll('.clear-filter-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        const key = e.target.dataset.key;
+                        delete analyticalFilters[key];
+                        renderDashboard();
+                    });
+                });
+                document.getElementById('clear-all-filters-btn').addEventListener('click', () => {
+                    analyticalFilters = {};
+                    renderDashboard();
+                });
+            }
+
+            function renderScoreCard(cases) {
+                const container = document.getElementById('dashboard-score-card');
+                if(cases.length === 0) {
+                    container.innerHTML = `<div class="text-gray-400 italic">No data yet</div>`;
+                    return;
+                }
+                const score = Math.round(cases.reduce((acc, curr) => acc + calculateWeightedScore(curr), 0) / cases.length);
+                container.innerHTML = `
+                    <div class="${getScoreTextColor(score)}">
+                        <span class="text-6xl">${score}</span>
+                        <span class="text-2xl text-gray-400"> / 100</span>
+                    </div>
+                `;
+            }
+
+            function renderDetailedMetrics(cases) {
+                const container = document.getElementById('dashboard-metric-breakdown');
+                let content = '';
+                if (cases.length > 0) {
+                    const avgMetrics = {
+                        structuring: cases.reduce((acc, c) => acc + c.structuring, 0) / cases.length,
+                        quantitative: cases.reduce((acc, c) => acc + c.quantitative, 0) / cases.length,
+                        insight: cases.reduce((acc, c) => acc + c.insight, 0) / cases.length,
+                        communication: cases.reduce((acc, c) => acc + c.communication, 0) / cases.length,
+                    };
+                    const metricData = Object.keys(maxScores).map(key => ({ 
+                        name: key.charAt(0).toUpperCase() + key.slice(1), 
+                        score: avgMetrics[key], 
+                        maxScore: maxScores[key] 
+                    }));
+
+                    const itemsHTML = metricData.map(item => {
+                        const percentage = Math.round((item.score / item.maxScore) * 100);
+                        return `
+                            <div class="flex items-center">
+                                <div class="w-28 text-sm text-gray-600">${item.name}</div>
+                                <div class="flex-1 bg-gray-200 rounded-full h-6">
+                                    <div class="bg-gradient-to-r ${getScoreColor(percentage)} h-6 rounded-full text-white text-xs flex items-center justify-center font-semibold" style="width: ${percentage}%">${percentage}%</div>
+                                </div>
+                            </div>
+                        `;
+                    }).join('');
+
+                    content = `<div class="space-y-3">${itemsHTML}</div>`;
+                } else {
+                    content = `<p class="text-gray-500 text-center py-4">Solve a case to see your metrics!</p>`;
+                }
+                
+                container.innerHTML = `
+                    <div class="bg-white p-4 rounded-lg shadow dashboard-animate-fade-in">
+                        <h3 class="text-lg font-semibold text-gray-700 mb-4">Metric Breakdown</h3>
+                        ${content}
+                    </div>
+                `;
+            }
+
+            function renderBarCharts(cases) {
+                const performanceByGroup = (dataSource, groupingKey) => {
+                    const groups = {};
+                    dataSource.forEach(c => {
+                        const key = c[groupingKey];
+                        if (!groups[key]) groups[key] = { totalScore: 0, count: 0 };
+                        groups[key].totalScore += calculateWeightedScore(c);
+                        groups[key].count++;
+                    });
+                    return Object.entries(groups).map(([key, value]) => ({ name: key, score: Math.round(value.totalScore / value.count) })).sort((a, b) => b.score - a.score);
+                };
+
+                const performanceByTypeData = performanceByGroup(cases, 'type');
+                const performanceByDifficultyData = performanceByGroup(cases, 'difficulty');
+
+                renderSingleBarChart('dashboard-type-chart', 'Performance by Case Type', performanceByTypeData, 'type');
+                renderSingleBarChart('dashboard-difficulty-chart', 'Performance by Difficulty', performanceByDifficultyData, 'difficulty');
+            }
+
+            function renderSingleBarChart(containerId, title, data, filterType) {
+                const container = document.getElementById(containerId);
+                let content = '';
+                if (data.length > 0) {
+                    const barsHTML = data.map(item => {
+                        const isActive = analyticalFilters[filterType] === item.name;
+                        return `
+                            <div class="flex items-center group bar-chart-item" data-type="${filterType}" data-value="${item.name}">
+                                <div class="w-24 text-sm text-gray-600">${item.name}</div>
+                                <div class="flex-1 bg-gray-200 rounded-full h-6 cursor-pointer transition-all duration-200 ${isActive ? 'ring-2 ring-blue-500' : ''}">
+                                    <div class="bg-gradient-to-r ${getScoreColor(item.score)} h-6 rounded-full text-white text-xs flex items-center justify-center font-bold" style="width: ${item.score}%">${item.score}</div>
+                                </div>
+                            </div>
+                        `;
+                    }).join('');
+                    content = `<div class="space-y-2">${barsHTML}</div>`;
+                } else {
+                    content = `<p class="text-sm text-gray-500 text-center py-2">No data yet.</p>`;
+                }
+
+                container.innerHTML = `
+                    <div class="bg-white p-4 rounded-lg shadow">
+                        <div class="flex justify-between items-baseline mb-2">
+                            <h3 class="text-lg font-semibold text-gray-700">${title}</h3>
+                            <span class="text-xs text-gray-400 italic">Click bars to filter</span>
+                        </div>
+                        ${content}
+                    </div>
+                `;
+
+                document.querySelectorAll(`#${containerId} .bar-chart-item`).forEach(item => {
+                    item.addEventListener('click', (e) => {
+                        const current = e.currentTarget;
+                        const type = current.dataset.type;
+                        const value = current.dataset.value;
+                        analyticalFilters[type] = analyticalFilters[type] === value ? undefined : value;
+                        renderDashboard();
+                    });
+                });
+            }
+
+            function renderKeyTakeaways(cases) {
+                const container = document.getElementById('dashboard-key-takeaways');
+                if (cases.length < 2) {
+                    container.innerHTML = `<div class="bg-white p-6 rounded-lg shadow lg:col-span-3 text-center text-gray-500">Solve at least 2 cases to unlock insights.</div>`;
+                    return;
+                }
+
+                const getMetricPerformance = (caseSet) => {
+                    const performance = {};
+                    Object.keys(maxScores).forEach(key => {
+                        const avgScore = caseSet.reduce((acc, c) => acc + c[key], 0) / caseSet.length;
+                        performance[key] = Math.round((avgScore / maxScores[key]) * 100);
+                    });
+                    return performance;
+                };
+
+                const overallPerf = getMetricPerformance(cases);
+                const strength = Object.entries(overallPerf).reduce((max, item) => item[1] > max[1] ? item : max);
+                const weakness = Object.entries(overallPerf).reduce((min, item) => item[1] < min[1] ? item : min);
+
+                const types = [...new Set(cases.map(c => c.type))];
+                const typeScores = types.map(type => {
+                    const typeCases = cases.filter(c => c.type === type);
+                    return { name: type, score: Math.round(typeCases.reduce((acc, c) => acc + calculateWeightedScore(c), 0) / typeCases.length) };
+                });
+                const bestType = typeScores.reduce((max, item) => item.score > max.score ? item : max, {score: -1});
+                const worstType = typeScores.reduce((min, item) => item.score < min.score ? item : min, {score: 101});
+                
+                container.innerHTML = `
+                    <div class="bg-white p-6 rounded-lg shadow lg:col-span-3">
+                        <h2 class="text-xl font-semibold text-gray-700 mb-4">Key Takeaways</h2>
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 text-sm">
+                            <div class="bg-slate-50 p-4 rounded-lg">
+                                <h3 class="font-bold text-gray-800 mb-2 flex items-center">⭐ Your Strength</h3>
+                                <p>Your strongest area is <span class="font-bold text-green-600">${strength[0]}</span> with an average performance of <span class="font-bold">${strength[1]}%</span>.</p>
+                            </div>
+                            <div class="bg-slate-50 p-4 rounded-lg">
+                                <h3 class="font-bold text-gray-800 mb-2 flex items-center">🎯 Focus Area</h3>
+                                <p>The biggest opportunity for improvement is in <span class="font-bold text-red-600">${weakness[0]}</span>, currently at <span class="font-bold">${weakness[1]}%</span>.</p>
+                            </div>
+                            <div class="bg-slate-50 p-4 rounded-lg">
+                                <h3 class="font-bold text-gray-800 mb-2 flex items-center">🚀 Best Case Type</h3>
+                                <p>You excel at <span class="font-bold text-blue-600">${bestType.name}</span> cases, averaging a score of <span class="font-bold">${bestType.score}</span>.</p>
+                            </div>
+                            <div class="bg-slate-50 p-4 rounded-lg">
+                                <h3 class="font-bold text-gray-800 mb-2 flex items-center">🔍 Review Needed</h3>
+                                <p>Consider practicing more <span class="font-bold text-orange-600">${worstType.name}</span> cases, where your average score is <span class="font-bold">${worstType.score}</span>.</p>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            function renderCaseSummary(cases) {
+                const container = document.getElementById('dashboard-case-summary');
+                let tableBody = '';
+                if (cases.length > 0) {
+                    tableBody = cases.map(c => `
+                        <tr class="border-b last:border-none hover:bg-gray-50">
+                            <td class="py-3 px-3 text-sm text-gray-600">${c.date}</td>
+                            <td class="py-3 px-3">${c.company} - ${c.name}</td>
+                            <td class="py-3 px-3"><span class="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded-full">${c.type}</span></td>
+                            <td class="py-3 px-3"><span class="bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded-full">${c.difficulty}</span></td>
+                            <td class="py-3 px-3 text-right font-semibold">${calculateWeightedScore(c)}</td>
+                        </tr>
+                    `).join('');
+                } else {
+                    tableBody = `<tr><td colspan="5" class="text-center py-8 text-gray-500">No cases match the current filters.</td></tr>`;
+                }
+
+                container.innerHTML = `
+                    <div class="bg-white p-4 rounded-lg shadow">
+                        <h2 class="text-xl font-semibold text-gray-700 mb-4">Case Summary</h2>
+                        <div class="overflow-y-auto max-h-80">
+                            <table class="w-full text-left">
+                                <thead><tr class="border-b text-sm text-gray-500"><th class="py-2 px-3">Date</th><th class="py-2 px-3">Case Name</th><th class="py-2 px-3">Type</th><th class="py-2 px-3">Difficulty</th><th class="py-2 px-3 text-right">Score</th></tr></thead>
+                                <tbody>${tableBody}</tbody>
+                            </table>
+                        </div>
+                    </div>
+                `;
+            }
+
+            function renderCalendar(data) {
+                const container = document.getElementById('dashboard-calendar-tracker');
+                let currentDate = new Date();
+
+                const calendarData = {};
+                data.forEach(c => {
+                    if (!calendarData[c.date]) calendarData[c.date] = { count: 0, totalScore: 0, cases: [] };
+                    calendarData[c.date].count++;
+                    calendarData[c.date].totalScore += calculateWeightedScore(c);
+                    calendarData[c.date].cases.push(c);
+                });
+                Object.keys(calendarData).forEach(date => {
+                    calendarData[date].avgScore = Math.round(calendarData[date].totalScore / calendarData[date].count);
+                });
+
+                function drawCalendar() {
+                    const year = currentDate.getFullYear();
+                    const month = currentDate.getMonth();
+                    const daysInMonth = new Date(year, month + 1, 0).getDate();
+                    const startDay = new Date(year, month, 1).getDay();
+                    const calendarDays = Array(startDay).fill(null).concat(Array.from({ length: daysInMonth }, (_, i) => i + 1));
+                    const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+                    const daysHTML = calendarDays.map((day, index) => {
+                        // Format date as YYYY-MM-DD to match data
+                        let dateStr = '';
+                        if(day) {
+                            const offsetDate = new Date(year, month, day);
+                            // Adjust for local timezone to match input date format if needed, but simple ISO string split works for local-ish dates
+                            const y = offsetDate.getFullYear();
+                            const m = String(offsetDate.getMonth() + 1).padStart(2, '0');
+                            const d = String(offsetDate.getDate()).padStart(2, '0');
+                            dateStr = `${y}-${m}-${d}`;
+                        }
+                        
+                        const dayData = dateStr ? calendarData[dateStr] : null;
+                        let dayContent = '';
+                        if (dayData) {
+                            dayContent = `
+                                <div class="text-xs mt-1 space-y-1">
+                                    <div class="bg-blue-100 text-blue-800 rounded-full px-1">Cases: ${dayData.count}</div>
+                                    <div class="${getScoreColor(dayData.avgScore).replace('from-', 'bg-').split(' ')[0]} text-white rounded-full px-1">Avg: ${dayData.avgScore}</div>
+                                </div>
+                            `;
+                        }
+                        return `
+                            <div class="h-24 border rounded-md p-1 ${day ? (dayData ? 'cursor-pointer hover:bg-slate-100' : '') : 'bg-slate-50'}" data-date="${dateStr}">
+                                ${day ? `<div class="font-semibold text-gray-700">${day}</div>` : ''}
+                                ${dayContent}
+                            </div>
+                        `;
+                    }).join('');
+
+                    container.innerHTML = `
+                        <div class="bg-white p-4 rounded-lg shadow">
+                            <div class="flex justify-between items-center mb-4">
+                                <h2 class="text-xl font-semibold text-gray-700">Progress Calendar</h2>
+                                <div class="flex items-center gap-2">
+                                    <button id="cal-prev" class="px-2 py-1 rounded-md hover:bg-gray-200">&lt;</button>
+                                    <span class="font-bold w-32 text-center">${currentDate.toLocaleString('default', { month: 'long', year: 'numeric' })}</span>
+                                    <button id="cal-next" class="px-2 py-1 rounded-md hover:bg-gray-200">&gt;</button>
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-7 gap-1 text-center text-sm">
+                                ${dayNames.map(day => `<div class="font-bold text-gray-500">${day}</div>`).join('')}
+                                ${daysHTML}
+                            </div>
+                        </div>
+                    `;
+
+                    document.getElementById('cal-prev').addEventListener('click', () => {
+                        currentDate.setMonth(currentDate.getMonth() - 1);
+                        drawCalendar();
+                    });
+                    document.getElementById('cal-next').addEventListener('click', () => {
+                        currentDate.setMonth(currentDate.getMonth() + 1);
+                        drawCalendar();
+                    });
+                    
+                    container.querySelectorAll('[data-date]').forEach(cell => {
+                        if (calendarData[cell.dataset.date]) {
+                            cell.addEventListener('click', () => showCalendarModal(calendarData[cell.dataset.date]));
+                        }
+                    });
+                }
+                drawCalendar();
+            }
+            
+            function showCalendarModal(dayData) {
+                const modal = document.getElementById('calendar-modal');
+                const content = document.getElementById('calendar-modal-content');
+
+                const casesHTML = dayData.cases.map(c => `
+                    <div class="border rounded-lg p-3">
+                        <p class="font-semibold">${c.company} - ${c.name}</p>
+                        <div class="flex gap-2 mt-1 text-xs">
+                            <span class="bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full">${c.type}</span>
+                            <span class="bg-green-100 text-green-800 px-2 py-0.5 rounded-full">${c.difficulty}</span>
+                        </div>
+                    </div>
+                `).join('');
+
+                content.innerHTML = `
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-xl font-bold text-gray-800">Cases for ${dayData.cases[0].date}</h3>
+                        <button id="close-cal-modal" class="text-gray-500 hover:text-gray-800 text-2xl">&times;</button>
+                    </div>
+                    <div class="space-y-4">${casesHTML}</div>
+                `;
+                
+                modal.classList.remove('hidden');
+
+                const closeModal = () => modal.classList.add('hidden');
+                document.getElementById('close-cal-modal').addEventListener('click', closeModal);
+                modal.addEventListener('click', (e) => {
+                    if (e.target === modal) closeModal();
+                });
+            }
+
+            // --- Initial Dashboard Render ---
+            renderDateRangePicker();
+            renderDashboard();
+        }
     </script>
 </body>
 </html>
