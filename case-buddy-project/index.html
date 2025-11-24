@@ -275,9 +275,9 @@
                     <!-- Header -->
                     <div class="p-4 border-b border-slate-100 bg-slate-50">
                         <div class="flex justify-between items-center mb-2">
-                            <h2 class="text-xl font-bold text-slate-800">Interviewer Controls</h2>
+                            <h2 class="text-xl font-bold text-slate-800">Control Panel</h2>
                             <div class="bg-blue-100 text-blue-700 px-2 py-1 rounded text-xs font-bold flex items-center gap-1">
-                                <i class="ph ph-lightning-fill"></i> AI Powered
+                                <i class="ph ph-lightning-fill"></i> AI Active
                             </div>
                         </div>
                         <!-- Intelligent Status Bar -->
@@ -291,7 +291,7 @@
                         <!-- Voice Recorder -->
                         <div class="space-y-2">
                             <label class="block text-sm font-semibold text-slate-700 flex justify-between">
-                                Feedback Transcript
+                                Verbal Feedback
                                 <span class="text-[10px] font-normal text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full">Auto-transcribing</span>
                             </label>
                             
@@ -319,7 +319,7 @@
                         <div id="ai-result-container" class="hidden dashboard-animate-fade-in pb-4">
                             <div class="flex items-center gap-2 mb-3">
                                 <div class="h-px bg-slate-200 flex-grow"></div>
-                                <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">AI Analysis</span>
+                                <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Analysis</span>
                                 <div class="h-px bg-slate-200 flex-grow"></div>
                             </div>
                             <div id="ai-output" class="text-xs text-slate-700 bg-white p-4 rounded-xl border border-slate-200 shadow-sm ai-content leading-relaxed cursor-blink"></div>
@@ -725,6 +725,13 @@
             localStorage.setItem('caseBuddyUser', JSON.stringify(userProfile));
         }
 
+        // --- AI Sandbox Configuration ---
+        const GEMINI_API_KEY = "AIzaSyAF1vxepCPUaHCC1CDe9uY3ypKt7polR_E"; 
+        let SELECTED_MODEL = "";
+        let recognition;
+        let isRecording = false;
+        let finalTranscript = '';
+
         // --- DOM Elements ---
         const welcomeView = document.getElementById('welcome-view');
         const caseLibraryView = document.getElementById('case-library-view');
@@ -761,16 +768,16 @@
               nextPageBtn = document.getElementById('pdf-next'),
               fullscreenBtn = document.getElementById('pdf-fullscreen');
 
-        // Voice & AI Elements (These need to be selected dynamically since they are not in the original HTML)
-        // Wait, we are replacing the original HTML with the new structure so we can query them directly if we add them to the HTML structure above.
-        // I will add the HTML structure for the voice panel into the in-progress view.
+        // Voice & AI Elements (Created Dynamically in showInProgressView in the new structure)
+        let recordBtn, transcriptBox, statusText, analyzeBtn, aiContainer, aiOutput, btnText, clearBtn, loadingSpinner;
 
         // Modals
         const companyModal = document.getElementById('company-modal');
         const warningModal = document.getElementById('warning-modal');
         const feedbackModal = document.getElementById('feedback-modal');
         const loginModal = document.getElementById('login-modal');
-        // Add Insight Modal to HTML
+        const insightModal = document.getElementById('insight-modal');
+        const insightContent = document.getElementById('insight-content');
         
         const companyListContainer = document.getElementById('company-list');
         const allCompaniesCheckbox = document.getElementById('all-companies-checkbox');
@@ -2014,3 +2021,4 @@
     </script>
 </body>
 </html>
+
