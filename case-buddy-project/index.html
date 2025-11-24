@@ -6,8 +6,6 @@
     <title>Case Buddy</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <!-- Phosphor Icons for clean UI -->
-    <script src="https://unpkg.com/@phosphor-icons/web"></script>
     
     <style>
         body {
@@ -48,7 +46,7 @@
         }
         
         /* Modals */
-        #company-modal, #warning-modal, #feedback-modal, #login-modal, #insight-modal { backdrop-filter: blur(4px); }
+        #company-modal, #warning-modal, #feedback-modal, #login-modal { backdrop-filter: blur(4px); }
         
         /* PDF Viewer */
         #pdf-render-container { position: relative; overflow-y: auto; }
@@ -96,31 +94,6 @@
         .bg-neo-pink { background-color: #fff1f2; color: #be123c; }
         .bg-neo-cream { background-color: #fffbeb; color: #b45309; }
         .bg-neo-dark { background-color: #1e293b; color: #f8fafc; }
-
-        /* Voice Recorder Animations */
-        @keyframes pulse-red {
-            0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
-            70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
-        }
-        .recording-active {
-            animation: pulse-red 1.5s infinite;
-            background-color: #fee2e2 !important;
-            color: #ef4444 !important;
-            border-color: #ef4444 !important;
-        }
-        .ai-content h3 { font-weight: 700; color: #334155; margin-top: 1rem; margin-bottom: 0.5rem; }
-        .ai-content ul { list-style-type: disc; padding-left: 1.5rem; margin-bottom: 1rem; }
-        .ai-content li { margin-bottom: 0.25rem; }
-        .ai-content strong { color: #0f172a; }
-
-        /* Typing cursor for streaming effect */
-        .cursor-blink::after {
-            content: '|';
-            animation: blink 1s infinite;
-            color: #3b82f6;
-        }
-        @keyframes blink { 50% { opacity: 0; } }
     </style>
     <!-- Google tag (gtag.js) -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-EJTFDTP163"></script>
@@ -245,10 +218,9 @@
             </div>
         </div>
 
-        <!-- IN-PROGRESS VIEW (UPDATED WITH AI) -->
+        <!-- IN-PROGRESS VIEW -->
         <div id="in-progress-view" class="hidden">
              <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                <!-- Left: PDF Viewer -->
                 <div class="bg-white p-6 rounded-lg shadow-md h-[85vh] flex flex-col lg:col-span-2">
                     <h2 id="casebook-title" class="text-2xl font-bold mb-4 shrink-0 gradient-text">Interviewer's Guide</h2>
                     <div id="pdf-render-container" class="flex-grow rounded-lg overflow-hidden border bg-slate-100 p-2">
@@ -264,80 +236,22 @@
                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
                             </button>
                             <button id="pdf-fullscreen" class="text-white hover:text-blue-300 ml-4">
-                               <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5v-4m0 0h-4m4 0l-5-5" /></svg>
+                               <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5v-4m0 0h-4m4 0l5-5" /></svg>
                             </button>
                         </div>
                     </div>
                 </div>
 
-                <!-- Right: Interviewer Controls + Voice AI -->
-                <div class="bg-white rounded-lg shadow-md flex flex-col h-[85vh] border border-slate-200 overflow-hidden">
-                    <!-- Header -->
-                    <div class="p-4 border-b border-slate-100 bg-slate-50">
-                        <div class="flex justify-between items-center mb-2">
-                            <h2 class="text-xl font-bold text-slate-800">Control Panel</h2>
-                            <div class="bg-blue-100 text-blue-700 px-2 py-1 rounded text-xs font-bold flex items-center gap-1">
-                                <i class="ph ph-lightning-fill"></i> AI Active
-                            </div>
-                        </div>
-                        <!-- Intelligent Status Bar -->
-                        <div id="system-status" class="text-[10px] font-mono bg-slate-800 text-yellow-400 p-2 rounded break-all">
-                            Initializing... Fetching available models...
-                        </div>
+                <div class="bg-white p-6 rounded-lg shadow-md flex flex-col">
+                    <h2 class="text-2xl font-bold mb-4 gradient-text">Instructions for Interviewer</h2>
+                    <div class="text-slate-600 space-y-3 flex-grow">
+                        <p>1. Use the casebook PDF on the left to guide the interviewee.</p>
+                        <p>2. Provide hints only when necessary to keep the case moving.</p>
+                        <p>3. Take notes on the interviewee's structure, creativity, and quantitative skills.</p>
+                        <p>4. Once the case is concluded, click "End this case" to provide feedback.</p>
                     </div>
-
-                    <!-- Scrollable Content -->
-                    <div class="flex-grow overflow-y-auto p-4 space-y-6 custom-scrollbar">
-                        <!-- Voice Recorder -->
-                        <div class="space-y-2">
-                            <label class="block text-sm font-semibold text-slate-700 flex justify-between">
-                                Verbal Feedback
-                                <span class="text-[10px] font-normal text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full">Auto-transcribing</span>
-                            </label>
-                            
-                            <div class="relative">
-                                <textarea id="transcript-box" class="w-full h-32 p-3 text-sm text-slate-600 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none resize-none bg-slate-50" 
-                                    placeholder="Wait for model initialization..."></textarea>
-                                
-                                <button id="record-btn" disabled class="absolute bottom-3 right-3 w-10 h-10 rounded-full bg-white shadow-md border border-slate-200 text-slate-400 transition-all group flex items-center justify-center z-10">
-                                    <i class="ph ph-microphone text-lg"></i>
-                                </button>
-                            </div>
-                            
-                            <div class="flex justify-end h-4">
-                                <button id="clear-btn" class="text-xs text-slate-400 hover:text-red-500 underline hidden">Clear</button>
-                            </div>
-                        </div>
-
-                        <!-- Action Area -->
-                        <button id="analyze-btn" disabled class="w-full bg-slate-200 text-slate-400 font-bold py-3 rounded-xl shadow-none transition transform flex items-center justify-center gap-2 cursor-not-allowed">
-                            <span id="btn-text">Loading Models...</span>
-                            <i class="ph ph-spinner animate-spin hidden" id="loading-spinner"></i>
-                        </button>
-
-                        <!-- AI Results -->
-                        <div id="ai-result-container" class="hidden dashboard-animate-fade-in pb-4">
-                            <div class="flex items-center gap-2 mb-3">
-                                <div class="h-px bg-slate-200 flex-grow"></div>
-                                <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Analysis</span>
-                                <div class="h-px bg-slate-200 flex-grow"></div>
-                            </div>
-                            <div id="ai-output" class="text-xs text-slate-700 bg-white p-4 rounded-xl border border-slate-200 shadow-sm ai-content leading-relaxed cursor-blink"></div>
-                        </div>
-                        
-                        <!-- Static Guide -->
-                        <div class="bg-blue-50 p-3 rounded-lg text-sm text-slate-600 border border-blue-100">
-                            <h3 class="font-bold text-blue-800 mb-1 flex items-center gap-2"><i class="ph ph-info"></i> Guide</h3>
-                            <ul class="list-disc pl-4 space-y-1 text-xs">
-                                <li>Use the PDF to guide the interviewee.</li>
-                                <li>Provide hints only when necessary.</li>
-                            </ul>
-                        </div>
-                    </div>
-
-                    <!-- Footer -->
-                    <div class="p-4 border-t border-slate-100 bg-white">
-                         <button id="end-case-btn" class="bg-red-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-red-700 transition w-full shadow-md">End Case & Rate</button>
+                    <div class="mt-6 text-right">
+                        <button id="end-case-btn" class="bg-red-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-red-700 transition">End this case</button>
                     </div>
                 </div>
             </div>
@@ -521,17 +435,6 @@
         </div>
     </div>
 
-    <!-- INSIGHT MODAL (FOR VIEWING AI FEEDBACK) -->
-    <div id="insight-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-        <div class="bg-white rounded-xl shadow-2xl w-full max-w-2xl max-h-[80vh] overflow-y-auto transform transition-all p-6 relative">
-            <button onclick="document.getElementById('insight-modal').classList.add('hidden')" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600">
-                <i class="ph ph-x text-xl"></i>
-            </button>
-            <h2 class="text-2xl font-bold text-slate-800 mb-4 flex items-center gap-2"><i class="ph ph-sparkle text-purple-500"></i> AI Insights</h2>
-            <div id="insight-content" class="prose prose-slate ai-content text-sm"></div>
-        </div>
-    </div>
-
     <!-- LOGIN / PROFILE CREATION MODAL -->
     <div id="login-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
         <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg transform transition-all">
@@ -585,10 +488,6 @@
         // --- Direct PDF.js Import ---
         import * as pdfjsLib from 'https://mozilla.github.io/pdf.js/build/pdf.mjs';
         pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://mozilla.github.io/pdf.js/build/pdf.worker.mjs';
-
-        // --- Gemini API Key ---
-        const GEMINI_API_KEY = "AIzaSyAF1vxepCPUaHCC1CDe9uY3ypKt7polR_E";
-        let SELECTED_MODEL = "";
 
         // --- Data ---
         const allCases = [
@@ -725,13 +624,6 @@
             localStorage.setItem('caseBuddyUser', JSON.stringify(userProfile));
         }
 
-        // --- AI Sandbox Configuration ---
-        const GEMINI_API_KEY = "AIzaSyAF1vxepCPUaHCC1CDe9uY3ypKt7polR_E"; 
-        let SELECTED_MODEL = "";
-        let recognition;
-        let isRecording = false;
-        let finalTranscript = '';
-
         // --- DOM Elements ---
         const welcomeView = document.getElementById('welcome-view');
         const caseLibraryView = document.getElementById('case-library-view');
@@ -768,16 +660,11 @@
               nextPageBtn = document.getElementById('pdf-next'),
               fullscreenBtn = document.getElementById('pdf-fullscreen');
 
-        // Voice & AI Elements (Created Dynamically in showInProgressView in the new structure)
-        let recordBtn, transcriptBox, statusText, analyzeBtn, aiContainer, aiOutput, btnText, clearBtn, loadingSpinner;
-
         // Modals
         const companyModal = document.getElementById('company-modal');
         const warningModal = document.getElementById('warning-modal');
         const feedbackModal = document.getElementById('feedback-modal');
         const loginModal = document.getElementById('login-modal');
-        const insightModal = document.getElementById('insight-modal');
-        const insightContent = document.getElementById('insight-content');
         
         const companyListContainer = document.getElementById('company-list');
         const allCompaniesCheckbox = document.getElementById('all-companies-checkbox');
@@ -1840,185 +1727,6 @@
             renderDateRangePicker();
             renderDashboard();
         }
-    
-            // ==========================================
-        // --- AI SANDBOX INTEGRATION LOGIC ---
-        // ==========================================
-
-        const recordBtn = document.getElementById('record-btn');
-        const transcriptBox = document.getElementById('transcript-box');
-        const statusText = document.getElementById('system-status');
-        const analyzeBtn = document.getElementById('analyze-btn');
-        const aiContainer = document.getElementById('ai-result-container');
-        const aiOutput = document.getElementById('ai-output');
-        const btnText = document.getElementById('btn-text');
-        const clearBtn = document.getElementById('clear-btn');
-        const loadingSpinner = document.getElementById('loading-spinner');
-    
-        // 1. Model Discovery
-        async function fetchAvailableModels() {
-            try {
-                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${GEMINI_API_KEY}`);
-                if (!response.ok) throw new Error("Failed to fetch models");
-                
-                const data = await response.json();
-                const models = data.models || [];
-                
-                // Priority: 1.5-flash -> 1.5-pro -> 1.0-pro
-                const validModels = models.filter(m => m.supportedGenerationMethods && m.supportedGenerationMethods.includes("generateContent"));
-                const preferred = validModels.find(m => m.name.includes("gemini-1.5-flash")) ||
-                                  validModels.find(m => m.name.includes("gemini-1.5-pro")) ||
-                                  validModels[0];
-    
-                if (preferred) {
-                    SELECTED_MODEL = preferred.name.replace("models/", "");
-                    statusText.textContent = `✅ Ready`;
-                    statusText.className = "text-[10px] font-mono bg-slate-800 text-green-400 px-2 py-1 rounded";
-                    enableAIUI();
-                } else {
-                    throw new Error("No Gemini models found.");
-                }
-            } catch (error) {
-                console.error(error);
-                statusText.textContent = "❌ API Error";
-                statusText.className = "text-[10px] font-mono bg-slate-800 text-red-400 px-2 py-1 rounded";
-                transcriptBox.value = "Error: Check API Key.";
-            }
-        }
-    
-        function enableAIUI() {
-            recordBtn.disabled = false;
-            recordBtn.classList.remove('text-slate-400');
-            recordBtn.classList.add('text-slate-500', 'hover:text-blue-600');
-            
-            analyzeBtn.disabled = false;
-            analyzeBtn.classList.remove('bg-slate-200', 'text-slate-400', 'cursor-not-allowed');
-            analyzeBtn.classList.add('gradient-bg', 'text-white', 'shadow-md', 'hover:opacity-90');
-            
-            btnText.textContent = "Generate Insights";
-            transcriptBox.placeholder = "Click the mic to record feedback...";
-            
-            if (!('webkitSpeechRecognition' in window || 'SpeechRecognition' in window)) {
-                transcriptBox.placeholder = "Speech not supported. Please type manually.";
-                recordBtn.disabled = true;
-            }
-        }
-    
-        // 2. Speech Recognition Logic
-        if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
-            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-            recognition = new SpeechRecognition();
-            recognition.continuous = true; 
-            recognition.interimResults = true; 
-            recognition.lang = 'en-US';
-    
-            recognition.onstart = () => {
-                isRecording = true;
-                recordBtn.classList.add('recording-active');
-                recordBtn.innerHTML = '<i class="ph ph-stop text-lg font-bold text-red-500"></i>';
-                statusText.textContent = "🎤 Listening...";
-            };
-    
-            recognition.onend = () => {
-                isRecording = false;
-                recordBtn.classList.remove('recording-active');
-                recordBtn.innerHTML = '<i class="ph ph-microphone text-lg"></i>';
-                statusText.textContent = "✅ Ready";
-                finalTranscript = transcriptBox.value;
-            };
-    
-            recognition.onresult = (event) => {
-                let interimTranscript = '';
-                for (let i = event.resultIndex; i < event.results.length; ++i) {
-                    if (event.results[i].isFinal) {
-                        finalTranscript += event.results[i][0].transcript;
-                    } else {
-                        interimTranscript += event.results[i][0].transcript;
-                    }
-                }
-                transcriptBox.value = finalTranscript + interimTranscript;
-                transcriptBox.scrollTop = transcriptBox.scrollHeight;
-            };
-        }
-    
-        // 3. Streaming API Logic
-        async function streamGeminiAPI(feedbackText) {
-            const modelToUse = SELECTED_MODEL || "gemini-1.5-flash";
-            const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelToUse}:streamGenerateContent?key=${GEMINI_API_KEY}`;
-            
-            const prompt = `You are a case interview coach. Analyze this feedback: "${feedbackText}". Output ONLY HTML (no markdown, no \`\`\`). Structure: <h3>✅ Key Strengths</h3><ul><li>...</li></ul><h3>🚀 Improvements</h3><ul><li>...</li></ul>. Keep it concise.`;
-    
-            const response = await fetch(url, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
-            });
-    
-            if (!response.ok) throw new Error("API Error");
-    
-            const reader = response.body.getReader();
-            while(true) {
-                const { done, value } = await reader.read();
-                if (done) break;
-                const textChunk = new TextDecoder().decode(value);
-                const matches = textChunk.matchAll(/"text":\s*"(.*?)"/g);
-                for (const match of matches) {
-                    let content = match[1].replace(/\\n/g, '').replace(/\\r/g, '').replace(/\\"/g, '"');
-                    aiOutput.innerHTML += content;
-                    aiContainer.scrollTop = aiContainer.scrollHeight;
-                }
-            }
-        }
-    
-        // 4. Event Listeners
-        transcriptBox.addEventListener('input', (e) => { finalTranscript = e.target.value; });
-    
-        recordBtn.addEventListener('click', () => {
-            if (!recognition) return;
-            if (isRecording) {
-                recognition.stop();
-            } else {
-                if (transcriptBox.value === "") finalTranscript = "";
-                recognition.start();
-            }
-        });
-    
-        clearBtn.addEventListener('click', () => {
-            finalTranscript = '';
-            transcriptBox.value = '';
-            aiContainer.classList.add('hidden');
-            aiOutput.innerHTML = '';
-        });
-    
-        analyzeBtn.addEventListener('click', async () => {
-            const text = transcriptBox.value.trim();
-            if (text.length < 5) { alert("Please input feedback first."); return; }
-    
-            analyzeBtn.disabled = true;
-            btnText.textContent = "Analyzing...";
-            loadingSpinner.classList.remove('hidden');
-            statusText.textContent = "🤖 Thinking...";
-            
-            aiContainer.classList.remove('hidden');
-            aiOutput.innerHTML = '';
-            aiOutput.classList.add('cursor-blink');
-    
-            try {
-                await streamGeminiAPI(text);
-                statusText.textContent = "✅ Done";
-            } catch (error) {
-                aiOutput.innerHTML += `<span class="text-red-500">Error: ${error.message}</span>`;
-            } finally {
-                analyzeBtn.disabled = false;
-                btnText.textContent = "Generate Insights";
-                loadingSpinner.classList.add('hidden');
-                aiOutput.classList.remove('cursor-blink');
-            }
-        });
-
-    // Initialize AI when the page loads
-    fetchAvailableModels();
     </script>
 </body>
 </html>
-
