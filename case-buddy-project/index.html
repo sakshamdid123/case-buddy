@@ -1059,51 +1059,55 @@
         }
 
         async function streamGeminiAPI(feedbackText) {
-            const modelToUse = SELECTED_MODEL || "gemini-1.5-flash"; 
+            const aiOutput = document.getElementById('ai-output');
+            const aiContainer = document.getElementById('ai-result-container');
+            const analyzeBtn = document.getElementById('analyze-btn');
+            const btnText = document.getElementById('btn-text');
+            const loadingSpinner = document.getElementById('loading-spinner');
             
-            const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelToUse}:streamGenerateContent?key=${GEMINI_API_KEY}`;
-            
-            const prompt = `
-                You are an expert case interview coach. Analyze this feedback transcript: "${feedbackText}"
-
-                Output ONLY HTML (no markdown). Structure exactly like this:
-                <h3>✅ Key Strengths</h3>
-                <ul><li>Point 1</li><li>Point 2</li></ul>
-                <h3>🚀 Areas for Improvement</h3>
-                <ul><li>Point 1</li><li>Point 2</li></ul>
-                
-                Keep it concise.
+            // UI Loading State
+            analyzeBtn.disabled = true;
+            btnText.textContent = "Analyzing...";
+            loadingSpinner.classList.remove('hidden');
+            aiContainer.classList.remove('hidden');
+            aiOutput.innerHTML = '<span class="text-slate-500 animate-pulse">Consulting the AI Coach...</span>';
+        
+            const fullPrompt = `
+                You are an expert case interview coach. Analyze this feedback: "${feedbackText}"
+                Output ONLY HTML. Use <h3> for headers and <ul><li> for lists.
+                Sections: ✅ Key Strengths, 🚀 Areas for Improvement. Concise.
             `;
-
-            const response = await fetch(url, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
-            });
-
-            if (!response.ok) {
-                const errText = await response.text();
-                throw new Error(`API Error ${response.status}: ${errText}`);
-            }
-            
-            const reader = response.body.getReader();
-            let textAccumulator = "";
-            
-            while(true) {
-                const { done, value } = await reader.read();
-                if (done) break;
+        
+            try {
+                // CALL YOUR OWN SERVER
+                const response = await fetch('/api/generate-feedback', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ prompt: fullPrompt })
+                });
+        
+                const data = await response.json();
                 
-                const textChunk = new TextDecoder().decode(value);
-                const matches = textChunk.matchAll(/"text":\s*"(.*?)"/g);
-                for (const match of matches) {
-                    let content = match[1];
-                    content = content.replace(/\\n/g, '').replace(/\\r/g, '').replace(/\\"/g, '"');
-                    aiOutput.innerHTML += content;
-                    aiContainer.scrollIntoView({ behavior: 'smooth' });
+                // Handle Gemini Response Structure
+                if (data.candidates && data.candidates[0].content) {
+                     let resultHtml = data.candidates[0].content.parts[0].text;
+                     // Clean Markdown if present
+                     resultHtml = resultHtml.replace(/```html/g, '').replace(/```/g, '');
+                     aiOutput.innerHTML = resultHtml;
+                } else {
+                     throw new Error("Invalid response from AI");
                 }
+        
+            } catch (error) {
+                console.error(error);
+                aiOutput.innerHTML = `<span class="text-red-500">Error: ${error.message}. Please try again.</span>`;
+            } finally {
+                // Reset UI
+                analyzeBtn.disabled = false;
+                btnText.textContent = "Generate Insights";
+                loadingSpinner.classList.add('hidden');
             }
         }
-
 
         // --- Modal Logic ---
         function openCompanyModal() { companyModal.classList.remove('hidden'); companyModal.classList.add('flex'); }
@@ -1991,3 +1995,4 @@
     </script>
 </body>
 </html>
+
