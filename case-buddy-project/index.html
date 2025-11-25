@@ -6,6 +6,7 @@
     <title>Case Buddy</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
     
     <style>
         body {
@@ -94,8 +95,34 @@
         .bg-neo-pink { background-color: #fff1f2; color: #be123c; }
         .bg-neo-cream { background-color: #fffbeb; color: #b45309; }
         .bg-neo-dark { background-color: #1e293b; color: #f8fafc; }
+
+        /* --- SANDBOX STYLES --- */
+        @keyframes pulse-red {
+            0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+        }
+        .recording-active {
+            animation: pulse-red 1.5s infinite;
+            background-color: #fee2e2 !important;
+            color: #ef4444 !important;
+            border-color: #ef4444 !important;
+        }
+
+        .ai-content h3 { font-weight: 800; color: #1e293b; margin-top: 1rem; margin-bottom: 0.5rem; font-size: 1.1rem; }
+        .ai-content ul { list-style-type: none; padding-left: 0; margin-bottom: 1rem; }
+        .ai-content li { margin-bottom: 0.5rem; padding-left: 1.5rem; position: relative; }
+        .ai-content li::before { content: "•"; color: #3b82f6; font-weight: bold; position: absolute; left: 0.5rem; }
+        .ai-content strong { color: #0f172a; font-weight: 700; }
+        
+        /* Typing cursor for streaming effect */
+        .cursor-blink::after {
+            content: '|';
+            animation: blink 1s infinite;
+            color: #3b82f6;
+        }
+        @keyframes blink { 50% { opacity: 0; } }
     </style>
-    <!-- Google tag (gtag.js) -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-EJTFDTP163"></script>
     <script>
       window.dataLayer = window.dataLayer || [];
@@ -109,7 +136,6 @@
     <header class="bg-white sticky top-0 z-50 shadow-sm">
         <nav class="container mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex items-center justify-between h-16">
-                <!-- Logo Section -->
                 <div class="flex items-center cursor-pointer" id="home-button">
                     <svg class="h-8 w-8" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="url(#grad1)">
                         <defs>
@@ -123,17 +149,14 @@
                     <span class="ml-3 text-2xl font-bold gradient-text">Case Buddy</span>
                 </div>
 
-                <!-- Dynamic Nav Container -->
                 <div class="flex items-center gap-4" id="nav-actions-container">
-                    <!-- Injected by JS -->
-                </div>
+                    </div>
             </div>
         </nav>
     </header>
 
     <main class="container mx-auto p-4 sm:p-6 lg:p-8 mt-4 rounded-lg shadow-md bg-white">
 
-        <!-- WELCOME / FILTER VIEW -->
         <div id="welcome-view">
             <div class="text-center my-12">
                 <h1 class="text-5xl md:text-6xl font-extrabold gradient-text">Ready to crack a case?</h1>
@@ -141,19 +164,16 @@
             </div>
 
             <div class="max-w-4xl mx-auto p-8 space-y-10">
-                <!-- Case Type Filter -->
                 <div class="grid md:grid-cols-3 items-start gap-4">
                     <h2 class="text-lg font-semibold text-slate-700 mt-2">What's the case style?</h2>
                     <div id="type-filters" class="md:col-span-2 flex flex-wrap gap-3"></div>
                 </div>
 
-                <!-- Difficulty Filter -->
                 <div class="grid md:grid-cols-3 items-start gap-4">
                     <h2 class="text-lg font-semibold text-slate-700 mt-2">Choose your challenge.</h2>
                     <div id="difficulty-filters" class="md:col-span-2 flex flex-wrap gap-3"></div>
                 </div>
 
-                <!-- Company Filter -->
                 <div class="grid md:grid-cols-3 items-start gap-4">
                     <h2 class="text-lg font-semibold text-slate-700 mt-2">Any firm in mind?</h2>
                     <div class="md:col-span-2">
@@ -164,7 +184,6 @@
                     </div>
                 </div>
 
-                <!-- Action Buttons -->
                 <div class="text-center pt-8">
                     <button id="search-cases-btn" class="gradient-bg text-white px-10 py-3 rounded-lg font-semibold hover:opacity-90 transition transform hover:scale-105 shadow-lg">
                         Find Your Case
@@ -177,7 +196,6 @@
             </div>
         </div>
         
-        <!-- CASE LIBRARY VIEW -->
         <div id="case-library-view" class="hidden">
             <div class="flex justify-between items-center mb-8">
                  <h1 class="text-4xl font-bold gradient-text">Case Library</h1>
@@ -188,7 +206,6 @@
             <div id="case-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"></div>
         </div>
 
-        <!-- DETAILED CASE VIEW -->
         <div id="detailed-case-view" class="hidden">
              <div class="flex items-center space-x-4 mb-6">
                 <span id="case-detail-type" class="bg-blue-100 text-blue-800 text-sm font-medium px-3 py-1 rounded-full"></span>
@@ -218,7 +235,6 @@
             </div>
         </div>
 
-        <!-- IN-PROGRESS VIEW -->
         <div id="in-progress-view" class="hidden">
              <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 <div class="bg-white p-6 rounded-lg shadow-md h-[85vh] flex flex-col lg:col-span-2">
@@ -242,22 +258,64 @@
                     </div>
                 </div>
 
-                <div class="bg-white p-6 rounded-lg shadow-md flex flex-col">
-                    <h2 class="text-2xl font-bold mb-4 gradient-text">Instructions for Interviewer</h2>
-                    <div class="text-slate-600 space-y-3 flex-grow">
-                        <p>1. Use the casebook PDF on the left to guide the interviewee.</p>
-                        <p>2. Provide hints only when necessary to keep the case moving.</p>
-                        <p>3. Take notes on the interviewee's structure, creativity, and quantitative skills.</p>
-                        <p>4. Once the case is concluded, click "End this case" to provide feedback.</p>
+                <div class="bg-white rounded-lg shadow-md flex flex-col h-[85vh] overflow-hidden border border-slate-200">
+                    <div class="p-4 border-b border-slate-100 bg-slate-50 shrink-0">
+                        <div class="flex justify-between items-center mb-3">
+                            <h2 class="text-lg font-bold text-slate-800">Interviewer Assistant</h2>
+                            <div class="flex gap-2">
+                                <div class="bg-blue-100 text-blue-700 px-2 py-1 rounded text-xs font-bold flex items-center gap-1">
+                                    <i class="ph ph-lightning-fill"></i> AI Powered
+                                </div>
+                                <button id="end-case-btn" class="bg-red-600 text-white text-xs px-3 py-1 rounded hover:bg-red-700 transition font-bold shadow-sm">
+                                    End Case
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div id="system-status" class="text-[10px] font-mono bg-slate-800 text-yellow-400 p-2 rounded break-all">
+                            Initializing... Fetching available models...
+                        </div>
                     </div>
-                    <div class="mt-6 text-right">
-                        <button id="end-case-btn" class="bg-red-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-red-700 transition">End this case</button>
+
+                    <div class="flex-grow p-4 overflow-y-auto space-y-4">
+                         <div class="space-y-2">
+                            <label class="block text-sm font-semibold text-slate-700 flex justify-between">
+                                Verbal Feedback
+                                <span class="text-xs font-normal text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full">Auto-transcribing</span>
+                            </label>
+                          
+                            <div class="relative">
+                                <textarea id="transcript-box" class="w-full h-32 p-3 text-sm text-slate-600 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none resize-none bg-slate-50" 
+                                    placeholder="Wait for model initialization..."></textarea>
+                              
+                                <button id="record-btn" disabled class="absolute bottom-3 right-3 w-10 h-10 rounded-full bg-white shadow-lg border border-slate-100 text-slate-400 transition-all group flex items-center justify-center z-10">
+                                    <i class="ph ph-microphone text-lg"></i>
+                                </button>
+                            </div>
+                          
+                            <div class="flex justify-between items-center h-4">
+                                <button id="clear-btn" class="text-xs text-slate-400 hover:text-red-500 underline">Clear Text</button>
+                            </div>
+                        </div>
+
+                        <button id="analyze-btn" disabled class="w-full bg-slate-200 text-slate-400 font-bold py-3 rounded-xl shadow-none transition transform flex items-center justify-center gap-2 cursor-not-allowed text-sm">
+                            <span id="btn-text">Loading Models...</span>
+                            <i class="ph ph-spinner animate-spin hidden" id="loading-spinner"></i>
+                        </button>
+
+                        <div id="ai-result-container" class="hidden dashboard-animate-fade-in pb-4">
+                            <div class="flex items-center gap-2 mb-2">
+                                <div class="h-px bg-slate-200 flex-grow"></div>
+                                <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">AI Analysis</span>
+                                <div class="h-px bg-slate-200 flex-grow"></div>
+                            </div>
+                            <div id="ai-output" class="text-xs text-slate-700 bg-white p-4 rounded-xl border border-slate-200 shadow-sm ai-content leading-relaxed cursor-blink"></div>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- ABOUT VIEW -->
         <div id="about-view" class="hidden">
             <div class="max-w-4xl mx-auto py-12">
                 <h1 class="text-5xl font-extrabold gradient-text text-center">About Case Buddy</h1>
@@ -286,7 +344,6 @@
             </div>
         </div>
         
-        <!-- DASHBOARD VIEW -->
         <div id="dashboard-view" class="hidden">
             <div class="max-w-7xl mx-auto">
                 <header class="mb-4">
@@ -327,14 +384,11 @@
             </div>
         </div>
 
-        <!-- PROFILE VIEW (NEW) -->
         <div id="profile-view" class="hidden">
-            <!-- Content Injected by JS -->
-        </div>
+            </div>
 
     </main>
 
-    <!-- COMPANY SELECTION MODAL -->
     <div id="company-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
         <div class="bg-white rounded-lg shadow-xl w-full max-w-2xl transform transition-all flex flex-col h-[80vh]">
             <div class="p-6 border-b"><h2 class="text-2xl font-bold gradient-text">Select Companies</h2></div>
@@ -352,7 +406,6 @@
         </div>
     </div>
     
-    <!-- WARNING MODAL -->
     <div id="warning-modal" class="hidden fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4">
         <div class="bg-white rounded-lg shadow-xl p-8 w-full max-w-md transform transition-all text-center">
             <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-yellow-100 mb-4">
@@ -367,7 +420,6 @@
         </div>
     </div>
 
-    <!-- FEEDBACK MODAL -->
     <div id="feedback-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
         <div class="bg-white rounded-lg shadow-xl p-8 w-full max-w-lg transform transition-all" id="feedback-modal-content">
             <h2 class="text-2xl font-bold mb-6 gradient-text">Case Feedback</h2>
@@ -435,7 +487,6 @@
         </div>
     </div>
 
-    <!-- LOGIN / PROFILE CREATION MODAL -->
     <div id="login-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
         <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg transform transition-all">
             <div class="p-8">
@@ -478,12 +529,10 @@
         </div>
     </div>
 
-    <!-- CALENDAR DAY DETAIL MODAL -->
     <div id="calendar-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 dashboard-animate-fade-in">
         <div id="calendar-modal-content" class="bg-white rounded-lg shadow-2xl p-6 w-full max-w-md"></div>
     </div>
 
-    <!-- Main Module Script -->
     <script type="module">
         // --- Direct PDF.js Import ---
         import * as pdfjsLib from 'https://mozilla.github.io/pdf.js/build/pdf.mjs';
@@ -624,6 +673,13 @@
             localStorage.setItem('caseBuddyUser', JSON.stringify(userProfile));
         }
 
+        // --- SANDBOX CONFIG & VARIABLES ---
+        const GEMINI_API_KEY = "AIzaSyDzBkbki8MO1l5Ecqf6abarbieD7F4Gab4"; 
+        let SELECTED_MODEL = "";
+        let recognition;
+        let isRecording = false;
+        let finalTranscript = '';
+
         // --- DOM Elements ---
         const welcomeView = document.getElementById('welcome-view');
         const caseLibraryView = document.getElementById('case-library-view');
@@ -650,7 +706,7 @@
         const backToLibraryBtn = document.getElementById('back-to-library-btn');
         const doCaseBtn = document.getElementById('do-case-btn');
 
-        // In-Progress View Elements
+        // In-Progress View Elements (Updated for Sandbox)
         const endCaseBtn = document.getElementById('end-case-btn');
         const pdfCanvas = document.getElementById('pdf-canvas'),
               pdfRenderContainer = document.getElementById('pdf-render-container'),
@@ -659,6 +715,17 @@
               prevPageBtn = document.getElementById('pdf-prev'),
               nextPageBtn = document.getElementById('pdf-next'),
               fullscreenBtn = document.getElementById('pdf-fullscreen');
+
+        // Sandbox Elements
+        const recordBtn = document.getElementById('record-btn');
+        const transcriptBox = document.getElementById('transcript-box');
+        const statusText = document.getElementById('system-status');
+        const analyzeBtn = document.getElementById('analyze-btn');
+        const aiContainer = document.getElementById('ai-result-container');
+        const aiOutput = document.getElementById('ai-output');
+        const btnText = document.getElementById('btn-text');
+        const clearBtn = document.getElementById('clear-btn');
+        const loadingSpinner = document.getElementById('loading-spinner');
 
         // Modals
         const companyModal = document.getElementById('company-modal');
@@ -747,6 +814,8 @@
             const pdfPath = casebooks[currentCase.id] || casebooks.default;
             await initPdfViewer(pdfPath);
             showView(inProgressView);
+            // Trigger auto-discovery of models when view opens (if not already done)
+            if(!SELECTED_MODEL) fetchAvailableModels();
         }
 
         // --- Filter Population and Handling ---
@@ -890,6 +959,151 @@
                 document.exitFullscreen();
             }
         }
+
+        // --- SANDBOX LOGIC (INTEGRATED) ---
+
+        async function fetchAvailableModels() {
+            try {
+                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${GEMINI_API_KEY}`);
+                if (!response.ok) throw new Error("Failed to fetch models");
+                
+                const data = await response.json();
+                const models = data.models || [];
+                
+                const validModels = models.filter(m => 
+                    m.supportedGenerationMethods && 
+                    m.supportedGenerationMethods.includes("generateContent")
+                );
+
+                const preferred = validModels.find(m => m.name.includes("gemini-1.5-flash")) ||
+                                  validModels.find(m => m.name.includes("gemini-1.5-pro")) ||
+                                  validModels.find(m => m.name.includes("gemini-pro")) ||
+                                  validModels[0];
+
+                if (preferred) {
+                    SELECTED_MODEL = preferred.name.replace("models/", ""); 
+                    statusText.textContent = `✅ Connected: ${SELECTED_MODEL}`;
+                    statusText.classList.remove('text-yellow-400');
+                    statusText.classList.add('text-green-400');
+                    enableSandboxUI();
+                } else {
+                    throw new Error("No compatible Gemini models found for this key.");
+                }
+
+            } catch (error) {
+                console.error(error);
+                statusText.textContent = "❌ API Error: " + error.message;
+                statusText.classList.add('text-red-400');
+                transcriptBox.value = "Error: Could not validate API Key or find models. Check console.";
+            }
+        }
+
+        function enableSandboxUI() {
+            recordBtn.disabled = false;
+            recordBtn.classList.remove('text-slate-400');
+            recordBtn.classList.add('text-slate-500', 'hover:text-blue-600', 'hover:border-blue-100');
+            
+            analyzeBtn.disabled = false;
+            analyzeBtn.classList.remove('bg-slate-200', 'text-slate-400', 'cursor-not-allowed', 'shadow-none');
+            analyzeBtn.classList.add('bg-gradient-to-r', 'from-blue-600', 'to-emerald-500', 'text-white', 'shadow-lg', 'hover:opacity-90', 'hover:-translate-y-0.5');
+            
+            btnText.textContent = "Generate Insights";
+            transcriptBox.placeholder = "1. Click Mic\n2. Speak Feedback\n3. Click Generate";
+            
+            if (!('webkitSpeechRecognition' in window || 'SpeechRecognition' in window)) {
+                transcriptBox.value = "⚠️ Browser does not support Speech Recognition (Use Chrome). You can still type manually.";
+                recordBtn.disabled = true;
+            } else {
+                setupSpeechRecognition();
+            }
+        }
+
+        function setupSpeechRecognition() {
+             const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+             recognition = new SpeechRecognition();
+             recognition.continuous = true; 
+             recognition.interimResults = true; 
+             recognition.lang = 'en-US';
+
+             recognition.onstart = () => {
+                isRecording = true;
+                recordBtn.classList.add('recording-active');
+                recordBtn.innerHTML = '<i class="ph ph-stop text-lg font-bold"></i>';
+                statusText.textContent = "🎤 Listening... Speak now.";
+                statusText.classList.replace('text-green-400', 'text-white');
+                
+                if (transcriptBox.value.includes("1. Click Mic")) transcriptBox.value = "";
+            };
+
+            recognition.onend = () => {
+                isRecording = false;
+                recordBtn.classList.remove('recording-active');
+                recordBtn.innerHTML = '<i class="ph ph-microphone text-lg"></i>';
+                statusText.textContent = `✅ Ready (${SELECTED_MODEL})`;
+                statusText.classList.replace('text-white', 'text-green-400');
+                finalTranscript = transcriptBox.value;
+            };
+
+            recognition.onresult = (event) => {
+                let interimTranscript = '';
+                for (let i = event.resultIndex; i < event.results.length; ++i) {
+                    if (event.results[i].isFinal) {
+                        finalTranscript += event.results[i][0].transcript;
+                    } else {
+                        interimTranscript += event.results[i][0].transcript;
+                    }
+                }
+                transcriptBox.value = finalTranscript + interimTranscript;
+                transcriptBox.scrollTop = transcriptBox.scrollHeight;
+            };
+        }
+
+        async function streamGeminiAPI(feedbackText) {
+            const modelToUse = SELECTED_MODEL || "gemini-1.5-flash"; 
+            
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelToUse}:streamGenerateContent?key=${GEMINI_API_KEY}`;
+            
+            const prompt = `
+                You are an expert case interview coach. Analyze this feedback transcript: "${feedbackText}"
+
+                Output ONLY HTML (no markdown). Structure exactly like this:
+                <h3>✅ Key Strengths</h3>
+                <ul><li>Point 1</li><li>Point 2</li></ul>
+                <h3>🚀 Areas for Improvement</h3>
+                <ul><li>Point 1</li><li>Point 2</li></ul>
+                
+                Keep it concise.
+            `;
+
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+            });
+
+            if (!response.ok) {
+                const errText = await response.text();
+                throw new Error(`API Error ${response.status}: ${errText}`);
+            }
+            
+            const reader = response.body.getReader();
+            let textAccumulator = "";
+            
+            while(true) {
+                const { done, value } = await reader.read();
+                if (done) break;
+                
+                const textChunk = new TextDecoder().decode(value);
+                const matches = textChunk.matchAll(/"text":\s*"(.*?)"/g);
+                for (const match of matches) {
+                    let content = match[1];
+                    content = content.replace(/\\n/g, '').replace(/\\r/g, '').replace(/\\"/g, '"');
+                    aiOutput.innerHTML += content;
+                    aiContainer.scrollIntoView({ behavior: 'smooth' });
+                }
+            }
+        }
+
 
         // --- Modal Logic ---
         function openCompanyModal() { companyModal.classList.remove('hidden'); companyModal.classList.add('flex'); }
@@ -1098,7 +1312,6 @@
 
             profileView.innerHTML = `
                 <div class="max-w-4xl mx-auto py-8 dashboard-animate-fade-in">
-                    <!-- Header Card -->
                     <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-8 mb-8 flex flex-col md:flex-row items-center gap-8">
                         <div class="w-32 h-32 rounded-full flex items-center justify-center p-6 shadow-inner" 
                              style="background-color: ${mascot.color}10; color: ${mascot.color};">
@@ -1116,7 +1329,6 @@
                         </div>
                     </div>
 
-                    <!-- Stats Grid (Neopolitan) -->
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
                         <div class="neo-card p-6 bg-neo-pink border-red-100">
                             <p class="text-xs font-bold uppercase opacity-70 mb-1">Cases Cracked</p>
@@ -1132,7 +1344,6 @@
                         </div>
                     </div>
 
-                    <!-- Recent Activity -->
                     <h3 class="text-xl font-bold text-slate-800 mb-4 px-2">Recent Activity</h3>
                     <div class="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden">
                         ${history.length === 0 
@@ -1244,6 +1455,59 @@
         doCaseBtn.addEventListener('click', openWarningModal);
         endCaseBtn.addEventListener('click', openFeedbackModal);
         
+        // Sandbox Listeners
+        transcriptBox.addEventListener('input', (e) => { finalTranscript = e.target.value; });
+        recordBtn.addEventListener('click', () => {
+            if (!recognition) return;
+            if (isRecording) {
+                recognition.stop();
+            } else {
+                if (transcriptBox.value.includes("1. Click Mic")) { finalTranscript = ""; transcriptBox.value = ""; }
+                recognition.start();
+            }
+        });
+        
+        clearBtn.addEventListener('click', () => {
+            finalTranscript = '';
+            transcriptBox.value = '';
+            aiContainer.classList.add('hidden');
+            aiOutput.innerHTML = '';
+        });
+
+        analyzeBtn.addEventListener('click', async () => {
+            const text = transcriptBox.value.trim();
+            if (text.length < 5 || text.includes("1. Click Mic")) {
+                alert("Please record or type some feedback first.");
+                return;
+            }
+
+            // UI State
+            analyzeBtn.disabled = true;
+            btnText.textContent = "Analyzing...";
+            loadingSpinner.classList.remove('hidden');
+            statusText.textContent = "🤖 Streaming response...";
+            
+            // Reset Output
+            aiContainer.classList.remove('hidden');
+            aiOutput.innerHTML = '';
+            aiOutput.classList.add('cursor-blink');
+            aiContainer.scrollIntoView({ behavior: 'smooth' });
+
+            try {
+                await streamGeminiAPI(text);
+                statusText.textContent = "✅ Analysis Complete";
+            } catch (error) {
+                console.error(error);
+                statusText.textContent = "❌ Error: " + error.message;
+                aiOutput.innerHTML += `<br><span class="text-red-500">Error: ${error.message}</span>`;
+            } finally {
+                analyzeBtn.disabled = false;
+                btnText.textContent = "Generate Insights";
+                loadingSpinner.classList.add('hidden');
+                aiOutput.classList.remove('cursor-blink');
+            }
+        });
+
         // PDF Controls
         prevPageBtn.addEventListener('click', onPrevPage);
         nextPageBtn.addEventListener('click', onNextPage);
@@ -1628,11 +1892,9 @@
                     const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
                     const daysHTML = calendarDays.map((day, index) => {
-                        // Format date as YYYY-MM-DD to match data
                         let dateStr = '';
                         if(day) {
                             const offsetDate = new Date(year, month, day);
-                            // Adjust for local timezone to match input date format if needed, but simple ISO string split works for local-ish dates
                             const y = offsetDate.getFullYear();
                             const m = String(offsetDate.getMonth() + 1).padStart(2, '0');
                             const d = String(offsetDate.getDate()).padStart(2, '0');
@@ -1705,7 +1967,7 @@
                         </div>
                     </div>
                 `).join('');
-
+                
                 content.innerHTML = `
                     <div class="flex justify-between items-center mb-4">
                         <h3 class="text-xl font-bold text-gray-800">Cases for ${dayData.cases[0].date}</h3>
@@ -1722,7 +1984,6 @@
                     if (e.target === modal) closeModal();
                 });
             }
-
             // --- Initial Dashboard Render ---
             renderDateRangePicker();
             renderDashboard();
