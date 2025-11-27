@@ -741,123 +741,6 @@
             default: 'cases/Accelerating Prosperity II Growth II Easy II Kepler Cannon.pdf'
         };
 
-                // --- ADD THESE VARIABLES AT THE TOP OF YOUR SCRIPT ---
-        let sessionInterval;
-        let sessionSeconds = 0;
-        
-        // --- PDF KEYBOARD NAVIGATION & TIMER (Add this inside showInProgressView) ---
-        async function showInProgressView() {
-            document.getElementById('casebook-title').textContent = currentCase.title; // Simpler title
-            const pdfPath = casebooks[currentCase.id] || casebooks.default;
-            await initPdfViewer(pdfPath);
-            
-            // Start Timer
-            startSessionTimer();
-            
-            // Initialize Voice Logic (Silent setup)
-            setupSpeechRecognition();
-            
-            showView(inProgressView);
-        }
-        
-        function startSessionTimer() {
-            sessionSeconds = 0;
-            const timerEl = document.getElementById('session-timer');
-            clearInterval(sessionInterval);
-            sessionInterval = setInterval(() => {
-                sessionSeconds++;
-                const mins = Math.floor(sessionSeconds / 60).toString().padStart(2, '0');
-                const secs = (sessionSeconds % 60).toString().padStart(2, '0');
-                timerEl.textContent = `${mins}:${secs}`;
-            }, 1000);
-        }
-        
-        // Add Global Keyboard Listener for PDF
-        document.addEventListener('keydown', (e) => {
-            if (!document.getElementById('in-progress-view').classList.contains('hidden')) {
-                if (e.key === 'ArrowRight') onNextPage();
-                if (e.key === 'ArrowLeft') onPrevPage();
-            }
-        });
-        
-        // --- UPDATED SANDBOX/FEEDBACK LOGIC ---
-        
-        // 1. Modify the Record Button Logic
-        recordBtn.addEventListener('click', () => {
-            if (!recognition) return;
-            
-            if (isRecording) {
-                // STOP RECORDING
-                recognition.stop();
-                recordBtn.classList.remove('recording');
-                recordBtn.innerHTML = '<i class="ph ph-microphone"></i>';
-                document.getElementById('record-instruction').textContent = "Recording saved.";
-                
-                // Show Generate Button
-                document.getElementById('analyze-btn').classList.remove('hidden');
-            } else {
-                // START RECORDING
-                transcriptBox.value = ""; // Clear previous
-                finalTranscript = "";
-                recognition.start();
-                recordBtn.classList.add('recording');
-                recordBtn.innerHTML = '<i class="ph ph-stop"></i>';
-                document.getElementById('record-instruction').textContent = "Listening... Tap to stop";
-                
-                // Hide previous results if any
-                document.getElementById('ai-result-container').classList.add('hidden');
-                document.getElementById('analyze-btn').classList.add('hidden');
-            }
-        });
-        
-        // 2. Modify the Analyze Button Logic (The "Generate" step)
-        analyzeBtn.addEventListener('click', async () => {
-            const text = transcriptBox.value.trim();
-            if (text.length < 2) {
-                alert("No audio detected. Please record again.");
-                return;
-            }
-        
-            // UI Transformation
-            const analyzeBtn = document.getElementById('analyze-btn');
-            const btnText = document.getElementById('btn-text');
-            
-            analyzeBtn.disabled = true;
-            btnText.textContent = "Coach is thinking...";
-            
-            // Hide Recorder UI temporarily to focus on result
-            document.getElementById('recording-ui').classList.add('hidden');
-            document.getElementById('ai-result-container').classList.remove('hidden');
-            document.getElementById('ai-output').innerHTML = '<div class="flex items-center gap-2 text-slate-400"><i class="ph ph-spinner animate-spin"></i> Analyzing your feedback...</div>';
-        
-            try {
-                await streamGeminiAPI(text);
-                // On success, styles are handled by streamGeminiAPI, 
-                // but we ensure the "Recorder" is hidden and "Result" is shown.
-            } catch (error) {
-                document.getElementById('recording-ui').classList.remove('hidden'); // Show recorder again on fail
-            } finally {
-                analyzeBtn.disabled = false;
-                btnText.textContent = "Generate Insights";
-            }
-        });
-        
-        // 3. Reset Button Logic
-        document.getElementById('reset-recording').addEventListener('click', () => {
-            document.getElementById('ai-result-container').classList.add('hidden');
-            document.getElementById('recording-ui').classList.remove('hidden');
-            document.getElementById('analyze-btn').classList.add('hidden');
-            document.getElementById('record-instruction').textContent = "Tap to record verbal feedback";
-            transcriptBox.value = "";
-        });
-        
-        // 4. Update saveFeedback to stop timer
-        const originalSaveFeedback = saveFeedback;
-        saveFeedback = function() {
-            clearInterval(sessionInterval);
-            originalSaveFeedback();
-        }
-
         // --- State Management ---
         let currentCase = null;
         let pdfDoc = null, pageNum = 1, pageRendering = false, pageNumPending = null;
@@ -2164,6 +2047,7 @@
     </script>
 </body>
 </html>
+
 
 
 
