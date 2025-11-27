@@ -49,15 +49,19 @@
         /* Modals */
         #company-modal, #warning-modal, #feedback-modal, #login-modal { backdrop-filter: blur(4px); }
         
-        /* --- NEW PDF VIEWER STYLES --- */
+        /* Clean, Desk-like PDF Viewer Background */
         #pdf-render-container { 
             position: relative; 
-            overflow: hidden; /* Changed from auto to hidden for cleaner look */
-            background-color: #1e293b; /* Darker background for contrast */
+            overflow: hidden; 
+            background-color: #e2e8f0; /* Soft Slate Gray instead of dark mode */
+            background-image: radial-gradient(#cbd5e1 1px, transparent 1px); /* Subtle dot pattern */
+            background-size: 20px 20px;
             display: flex;
             align-items: center;
             justify-content: center;
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.05); /* Inner depth */
         }
+        
         #pdf-canvas { 
             display: block; 
             transition: opacity 0.3s ease-in-out; 
@@ -358,30 +362,36 @@
                         <div class="absolute top-0 right-0 p-4 opacity-5 pointer-events-none">
                             <i class="ph ph-briefcase text-9xl text-blue-600"></i>
                         </div>
-
+                
                         <div>
-                            <div class="flex items-center gap-2 mb-4">
-                                 <div class="w-2.5 h-2.5 rounded-full bg-green-500 animate-pulse"></div>
-                                 <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Live Session</span>
+                            <!-- Header with Live Badge & New Timer -->
+                            <div class="flex items-center justify-between mb-4">
+                                <div class="flex items-center gap-2">
+                                        <div class="w-2.5 h-2.5 rounded-full bg-green-500 animate-pulse"></div>
+                                        <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Live Session</span>
+                                </div>
+                                <div class="font-mono text-xl font-bold text-slate-700 bg-slate-100 px-3 py-1 rounded-lg border border-slate-200" id="session-timer">
+                                    00:00
+                                </div>
                             </div>
                             <h2 id="casebook-title" class="text-xl font-bold text-slate-800 leading-tight mb-2"></h2>
                             <p class="text-slate-500 text-sm">Use the arrow keys or controls to navigate the case guide.</p>
                         </div>
-
+                
                         <div class="space-y-4">
-                             <div class="bg-blue-50 border border-blue-100 rounded-xl p-4">
+                                <div class="bg-blue-50 border border-blue-100 rounded-xl p-4">
                                 <h4 class="font-bold text-blue-800 text-sm mb-1"><i class="ph ph-lightbulb mr-1"></i> Pro Tip</h4>
                                 <p class="text-xs text-blue-600 leading-relaxed">Focus on the candidate's structure first before diving into calculations.</p>
                             </div>
-
+                
                             <button id="end-case-btn" class="w-full bg-red-50 text-red-600 hover:bg-red-100 border border-red-100 py-4 rounded-xl font-bold transition flex items-center justify-center gap-2 group mt-auto">
                                 <i class="ph ph-stop-circle text-xl"></i>
                                 End Case & Evaluate
                             </button>
                         </div>
                     </div>
-
-                    <!-- STATE 2: FEEDBACK & EVALUATION (Hidden initially) -->
+                
+                    <!-- STATE 2: FEEDBACK & EVALUATION -->
                     <div id="interview-feedback-panel" class="hidden bg-white rounded-2xl shadow-lg border border-slate-100 flex flex-col h-full dashboard-animate-fade-in">
                         <div class="p-5 border-b border-slate-100 bg-slate-50 flex justify-between items-center rounded-t-2xl">
                             <h3 class="font-bold text-slate-700 flex items-center gap-2">
@@ -392,30 +402,38 @@
                         
                         <div class="flex-grow p-6 overflow-y-auto space-y-8 scrollbar-thin">
                             
-                            <!-- 1. Star Ratings (Inline) -->
+                            <!-- 1. Star Ratings (Restored 4 Weighted Factors) -->
                             <div>
                                 <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Performance Score</label>
                                 <div id="rating-parameters-inline" class="space-y-3">
+                                    <!-- Structure (35%) -->
                                     <div class="flex justify-between items-center">
-                                        <span class="text-sm font-semibold text-slate-600">Structure</span>
-                                        <div class="star-rating inline-rating" data-param="structure"><input type="radio" value="5" name="s5" id="s5"><label for="s5">★</label><input type="radio" value="4" name="s4" id="s4"><label for="s4">★</label><input type="radio" value="3" name="s3" id="s3"><label for="s3">★</label><input type="radio" value="2" name="s2" id="s2"><label for="s2">★</label><input type="radio" value="1" name="s1" id="s1"><label for="s1">★</label></div>
+                                        <span class="text-sm font-semibold text-slate-600">Structure <span class="text-xs text-slate-400 font-normal">(35%)</span></span>
+                                        <div class="star-rating inline-rating" data-param="structure" data-weight="0.35"><input type="radio" value="5" name="s5" id="s5"><label for="s5">★</label><input type="radio" value="4" name="s4" id="s4"><label for="s4">★</label><input type="radio" value="3" name="s3" id="s3"><label for="s3">★</label><input type="radio" value="2" name="s2" id="s2"><label for="s2">★</label><input type="radio" value="1" name="s1" id="s1"><label for="s1">★</label></div>
                                     </div>
+                                    <!-- Understanding (25%) -->
                                     <div class="flex justify-between items-center">
-                                        <span class="text-sm font-semibold text-slate-600">Analysis</span>
-                                        <div class="star-rating inline-rating" data-param="understanding"><input type="radio" value="5" name="u5" id="u5"><label for="u5">★</label><input type="radio" value="4" name="u4" id="u4"><label for="u4">★</label><input type="radio" value="3" name="u3" id="u3"><label for="u3">★</label><input type="radio" value="2" name="u2" id="u2"><label for="u2">★</label><input type="radio" value="1" name="u1" id="u1"><label for="u1">★</label></div>
+                                        <span class="text-sm font-semibold text-slate-600">Understanding <span class="text-xs text-slate-400 font-normal">(25%)</span></span>
+                                        <div class="star-rating inline-rating" data-param="understanding" data-weight="0.25"><input type="radio" value="5" name="u5" id="u5"><label for="u5">★</label><input type="radio" value="4" name="u4" id="u4"><label for="u4">★</label><input type="radio" value="3" name="u3" id="u3"><label for="u3">★</label><input type="radio" value="2" name="u2" id="u2"><label for="u2">★</label><input type="radio" value="1" name="u1" id="u1"><label for="u1">★</label></div>
                                     </div>
+                                    <!-- Delivery (25%) -->
                                     <div class="flex justify-between items-center">
-                                        <span class="text-sm font-semibold text-slate-600">Delivery</span>
-                                        <div class="star-rating inline-rating" data-param="delivery"><input type="radio" value="5" name="d5" id="d5"><label for="d5">★</label><input type="radio" value="4" name="d4" id="d4"><label for="d4">★</label><input type="radio" value="3" name="d3" id="d3"><label for="d3">★</label><input type="radio" value="2" name="d2" id="d2"><label for="d2">★</label><input type="radio" value="1" name="d1" id="d1"><label for="d1">★</label></div>
+                                        <span class="text-sm font-semibold text-slate-600">Delivery <span class="text-xs text-slate-400 font-normal">(25%)</span></span>
+                                        <div class="star-rating inline-rating" data-param="delivery" data-weight="0.25"><input type="radio" value="5" name="d5" id="d5"><label for="d5">★</label><input type="radio" value="4" name="d4" id="d4"><label for="d4">★</label><input type="radio" value="3" name="d3" id="d3"><label for="d3">★</label><input type="radio" value="2" name="d2" id="d2"><label for="d2">★</label><input type="radio" value="1" name="d1" id="d1"><label for="d1">★</label></div>
+                                    </div>
+                                    <!-- Creativity (15%) - RESTORED -->
+                                    <div class="flex justify-between items-center">
+                                        <span class="text-sm font-semibold text-slate-600">Creativity <span class="text-xs text-slate-400 font-normal">(15%)</span></span>
+                                        <div class="star-rating inline-rating" data-param="creativity" data-weight="0.15"><input type="radio" value="5" name="c5" id="c5"><label for="c5">★</label><input type="radio" value="4" name="c4" id="c4"><label for="c4">★</label><input type="radio" value="3" name="c3" id="c3"><label for="c3">★</label><input type="radio" value="2" name="c2" id="c2"><label for="c2">★</label><input type="radio" value="1" name="c1" id="c1"><label for="c1">★</label></div>
                                     </div>
                                 </div>
                             </div>
-
+                
                             <!-- 2. Voice Feedback Interaction -->
                             <div>
                                 <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-4">Verbal Feedback</label>
                                 
-                                <!-- Hidden Textarea for Logic Continuity -->
+                                <!-- Hidden Textarea -->
                                 <textarea id="hidden-transcript-box" class="absolute opacity-0 pointer-events-none -z-10"></textarea>
                                 
                                 <!-- Mic Interface -->
@@ -428,8 +446,8 @@
                                     </div>
                                     <p id="mic-status-text" class="text-sm text-slate-500 font-medium">Tap to record feedback</p>
                                 </div>
-
-                                <!-- AI Result Container (Hidden until generated) -->
+                
+                                <!-- AI Result Container -->
                                 <div id="ai-insight-container" class="hidden">
                                     <div id="loading-ai" class="hidden flex items-center justify-center py-8">
                                         <i class="ph ph-spinner animate-spin text-2xl text-blue-500 mr-3"></i>
@@ -437,19 +455,19 @@
                                     </div>
                                     <div id="ai-output-content" class="ai-insight-card ai-content text-sm leading-relaxed dashboard-animate-fade-in"></div>
                                     <div class="text-right mt-2">
-                                         <button id="retry-feedback-btn" class="text-xs text-slate-400 hover:text-blue-500 underline">Redo Recording</button>
+                                            <button id="retry-feedback-btn" class="text-xs text-slate-400 hover:text-blue-500 underline">Redo Recording</button>
                                     </div>
                                 </div>
                             </div>
                         </div>
-
+                
                         <div class="p-4 border-t border-slate-100 bg-white rounded-b-2xl">
                             <button id="save-complete-btn" class="w-full gradient-bg text-white py-3.5 rounded-xl font-bold shadow-md hover:shadow-lg transition transform hover:-translate-y-0.5">
                                 Save & Complete Case
                             </button>
                         </div>
                     </div>
-
+                
                 </div>
             </div>
         </div>
@@ -742,7 +760,27 @@
         let selectedTypes = [];
         let selectedDifficulties = [];
         let selectedCompanies = [];
+
+        // --- NEW TIMER STATE ---
+        let timerInterval;
+        let secondsElapsed = 0;
+
+        function startTimer() {
+            secondsElapsed = 0;
+            document.getElementById('session-timer').textContent = "00:00";
+            clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                secondsElapsed++;
+                const mins = Math.floor(secondsElapsed / 60).toString().padStart(2, '0');
+                const secs = (secondsElapsed % 60).toString().padStart(2, '0');
+                document.getElementById('session-timer').textContent = `${mins}:${secs}`;
+            }, 1000);
+        }
         
+        function stopTimer() {
+            clearInterval(timerInterval);
+        }
+                
         // User State
         let userProfile = JSON.parse(localStorage.getItem('caseBuddyUser')) || null;
         if(userProfile && !userProfile.history) {
@@ -900,6 +938,8 @@
             // RESET FEEDBACK UI
             resetInlineFeedbackUI();
 
+            startTimer();
+
             await initPdfViewer(pdfPath);
             showView(views.progress);
             
@@ -1050,6 +1090,7 @@
         // --- NEW FEEDBACK LOGIC (INLINE PANEL) ---
 
         function transitionToFeedbackMode() {
+            stopTimer(); // <--- ADD THIS LINE
             // Hide Active, Show Feedback
             interviewActivePanel.classList.add('hidden');
             interviewActivePanel.classList.remove('flex');
@@ -1176,17 +1217,31 @@
                 loginModal.classList.add('flex');
                 return;
             }
-
-            // Calculate Score based on Inline Stars
-            let score = 0;
-            const params = ['structure', 'understanding', 'delivery'];
+        
+            // --- RESTORED WEIGHTED RATING LOGIC ---
+            let totalScore = 0;
+            const scores = {};
+            const params = [
+                { key: 'structure', weight: 0.35 },
+                { key: 'understanding', weight: 0.25 },
+                { key: 'delivery', weight: 0.25 },
+                { key: 'creativity', weight: 0.15 } // Restored Creativity
+            ];
+        
             params.forEach(p => {
-                const checked = document.querySelector(`.inline-rating[data-param="${p}"] input:checked`);
-                // Approx mapping: 5 stars = 100, 4 = 80 etc. Simplified.
-                if(checked) score += parseInt(checked.value) * 6.6; // Max approx 100 total
+                const checked = document.querySelector(`.inline-rating[data-param="${p.key}"] input:checked`);
+                const val = checked ? parseInt(checked.value) : 0;
+                scores[p.key] = val;
+                // Convert 5-star scale to 100-point scale component
+                // (Val / 5) * 100 * Weight
+                totalScore += (val / 5) * 100 * p.weight;
             });
-            score = Math.min(Math.round(score), 100);
-
+        
+            // Formatting duration
+            const mins = Math.floor(secondsElapsed / 60);
+            const secs = secondsElapsed % 60;
+            const durationStr = `${mins}m ${secs}s`;
+        
             const record = {
                 caseId: currentCase.id,
                 name: currentCase.title,
@@ -1194,31 +1249,41 @@
                 type: currentCase.type,
                 difficulty: currentCase.difficulty,
                 date: new Date().toISOString().split('T')[0],
-                totalScore: score,
-                // Add AI feedback to record
+                totalScore: Math.round(totalScore),
+                duration: durationStr, // Saving Timer Data
+                structuring: scores.structure * 6, // Approximate mapping for old dashboard logic
+                quantitative: scores.understanding * 3, 
+                insight: scores.delivery * 7,
+                communication: scores.creativity * 4,
                 aiFeedback: generatedAiFeedback || "No verbal feedback recorded."
             };
-
-            // Update User Data
+        
+            // Update User Data & Stats
             if (!userProfile.history) userProfile.history = [];
             userProfile.history.push(record);
             userProfile.stats.solved++;
             
-            // Update Streak (simplified logic)
+            // Streak Logic (Restored)
             const today = new Date().toDateString();
             const lastActive = userProfile.stats.lastActive ? new Date(userProfile.stats.lastActive).toDateString() : null;
+            
             if (lastActive !== today) {
-                userProfile.stats.streak = (lastActive === new Date(Date.now() - 864e5).toDateString()) ? userProfile.stats.streak + 1 : 1;
+                const yesterday = new Date();
+                yesterday.setDate(yesterday.getDate() - 1);
+                if (lastActive === yesterday.toDateString()) {
+                    userProfile.stats.streak++;
+                } else {
+                    userProfile.stats.streak = 1;
+                }
                 userProfile.stats.lastActive = new Date().toISOString();
             }
-
+        
             localStorage.setItem('caseBuddyUser', JSON.stringify(userProfile));
             
-            // Go to Dashboard
             showView(views.dashboard);
             initializeDashboard();
         }
-
+        
         // --- Modal Logic ---
         function openCompanyModal() { companyModal.classList.remove('hidden'); companyModal.classList.add('flex'); }
         function closeCompanyModal() { companyModal.classList.remove('flex'); companyModal.classList.add('hidden'); }
@@ -1289,21 +1354,60 @@
             const stats = userProfile.stats || { solved: 0, streak: 0 };
             const history = userProfile.history || [];
             const avgScore = history.length > 0 ? Math.round(history.reduce((a, b) => a + b.totalScore, 0) / history.length) : 0;
-
+        
+            // Use the original Aesthetic layout with Neo-cards
             views.profile.innerHTML = `
                 <div class="max-w-4xl mx-auto py-8 dashboard-animate-fade-in">
                     <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-8 mb-8 flex flex-col md:flex-row items-center gap-8">
-                        <div class="w-32 h-32 rounded-full flex items-center justify-center p-6 shadow-inner" style="background-color: ${mascot.color}10; color: ${mascot.color};">${commonAvatarSvg}</div>
+                        <div class="w-32 h-32 rounded-full flex items-center justify-center p-6 shadow-inner" 
+                             style="background-color: ${mascot.color}10; color: ${mascot.color};">
+                            ${commonAvatarSvg}
+                        </div>
                         <div class="text-center md:text-left flex-grow">
                             <h1 class="text-3xl font-extrabold text-slate-800 mb-1">${userProfile.name}</h1>
                             <p class="text-slate-500 font-medium text-sm mb-4">@${userProfile.username} • ${userProfile.college}</p>
-                            <div class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-slate-100 text-slate-600">Member since ${new Date(userProfile.joinedDate).toLocaleDateString()}</div>
+                            <div class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-slate-100 text-slate-600">
+                                Member since ${new Date(userProfile.joinedDate).toLocaleDateString()}
+                            </div>
                         </div>
                         <div class="text-right">
                             <button onclick="logout()" class="text-red-500 hover:text-red-700 font-semibold text-sm border border-red-100 hover:bg-red-50 px-4 py-2 rounded-lg transition">Log Out</button>
                         </div>
                     </div>
-                    <!-- Stats Grid Omitted for brevity, but logic remains intact -->
+        
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+                        <div class="neo-card p-6 bg-neo-pink border-red-100">
+                            <p class="text-xs font-bold uppercase opacity-70 mb-1">Cases Cracked</p>
+                            <p class="text-4xl neo-stat-value">${stats.solved}</p>
+                        </div>
+                        <div class="neo-card p-6 bg-neo-cream border-yellow-100">
+                            <p class="text-xs font-bold uppercase opacity-70 mb-1">Current Streak</p>
+                            <p class="text-4xl neo-stat-value">${stats.streak} <span class="text-lg">days</span></p>
+                        </div>
+                        <div class="neo-card p-6 bg-neo-dark">
+                            <p class="text-xs font-bold uppercase opacity-70 mb-1">Average Score</p>
+                            <p class="text-4xl neo-stat-value text-green-400">${avgScore}</p>
+                        </div>
+                    </div>
+        
+                    <h3 class="text-xl font-bold text-slate-800 mb-4 px-2">Recent Activity</h3>
+                    <div class="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden">
+                        ${history.length === 0 
+                            ? `<div class="p-8 text-center text-slate-400">No cases solved yet. Go crack one!</div>`
+                            : `<table class="w-full text-left">
+                                <thead class="bg-slate-50 text-xs text-slate-500 uppercase"><tr class="border-b"><th class="p-4">Date</th><th class="p-4">Case</th><th class="p-4">Score</th></tr></thead>
+                                <tbody class="divide-y divide-slate-100">
+                                    ${history.slice().reverse().map(h => `
+                                        <tr class="hover:bg-slate-50 transition">
+                                            <td class="p-4 text-sm text-slate-500">${h.date}</td>
+                                            <td class="p-4 font-medium text-slate-700">${h.name}</td>
+                                            <td class="p-4 font-bold ${h.totalScore >= 85 ? 'text-green-600' : 'text-slate-600'}">${h.totalScore}</td>
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
+                               </table>`
+                        }
+                    </div>
                 </div>
             `;
             showView(views.profile);
@@ -1867,3 +1971,4 @@
     </script>
 </body>
 </html>
+
