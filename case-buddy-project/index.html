@@ -896,16 +896,14 @@
         
         async function showInProgressView() {
             document.getElementById('casebook-title').textContent = currentCase.title; // Simpler title
-            const pdfPath = casebooks[currentCase.id] || casebooks.default;
-            await initPdfViewer(pdfPath);
-            
+            showView('inProgress');
             // Start Timer
             startSessionTimer();
             
             // Initialize Voice Logic (Silent setup)
             setupSpeechRecognition();
-            
-            showView('inProgress');
+            const pdfPath = casebooks[currentCase.id] || casebooks.default;
+            await initPdfViewer(pdfPath);
         }
 
         function startSessionTimer() {
@@ -2098,6 +2096,7 @@
     </script>
 </body>
 </html>
+
 
 
 
