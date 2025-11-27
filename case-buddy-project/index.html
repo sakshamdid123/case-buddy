@@ -740,860 +740,578 @@
             56: 'cases/Where are the Kids II Unconventional II Easy II Nation with Namo.pdf',
             default: 'cases/Accelerating Prosperity II Growth II Easy II Kepler Cannon.pdf'
         };
+// --- 3. STATE MANAGEMENT ---
+    let currentCase = null;
+    let pdfDoc = null, pageNum = 1, pageRendering = false, pageNumPending = null;
+    let currentRenderTask = null;
+    
+    // Filters
+    let selectedTypes = [];
+    let selectedDifficulties = [];
+    let selectedCompanies = [];
 
-        // --- State Management ---
-        let currentCase = null;
-        let pdfDoc = null, pageNum = 1, pageRendering = false, pageNumPending = null;
-        let currentRenderTask = null;
-        let selectedTypes = [];
-        let selectedDifficulties = [];
-        let selectedCompanies = [];
-        
-        // User State
-        let userProfile = JSON.parse(localStorage.getItem('caseBuddyUser')) || null;
-        if(userProfile && !userProfile.history) {
-            userProfile.history = [];
-            userProfile.stats = { solved: 0, streak: 1, lastActive: new Date().toISOString() };
-            localStorage.setItem('caseBuddyUser', JSON.stringify(userProfile));
-        }
+    // User Profile
+    let userProfile = JSON.parse(localStorage.getItem('caseBuddyUser')) || null;
+    if(userProfile && !userProfile.history) {
+        userProfile.history = [];
+        userProfile.stats = { solved: 0, streak: 1, lastActive: new Date().toISOString() };
+        localStorage.setItem('caseBuddyUser', JSON.stringify(userProfile));
+    }
 
-        // --- SANDBOX CONFIG & VARIABLES ---
-        let SELECTED_MODEL = "";
-        let recognition;
-        let isRecording = false;
-        let finalTranscript = '';
+    // --- NEW: SESSION & AI VARIABLES ---
+    let sessionInterval;
+    let sessionSeconds = 0;
+    let recognition;
+    let isRecording = false;
+    let finalTranscript = '';
 
-        // --- DOM Elements ---
-        const welcomeView = document.getElementById('welcome-view');
-        const caseLibraryView = document.getElementById('case-library-view');
-        const detailedCaseView = document.getElementById('detailed-case-view');
-        const inProgressView = document.getElementById('in-progress-view');
-        const aboutView = document.getElementById('about-view');
-        const dashboardView = document.getElementById('dashboard-view');
-        const profileView = document.getElementById('profile-view');
-        
-        const caseGrid = document.getElementById('case-grid');
-        const homeButton = document.getElementById('home-button');
-        const navActionsContainer = document.getElementById('nav-actions-container');
-        
-        // Filter elements
-        const typeFiltersContainer = document.getElementById('type-filters');
-        const difficultyFiltersContainer = document.getElementById('difficulty-filters');
-        const openCompanyModalBtn = document.getElementById('open-company-modal-btn');
-        const companyCountEl = document.getElementById('company-count');
-        const searchCasesBtn = document.getElementById('search-cases-btn');
-        const viewAllBtn = document.getElementById('view-all-btn');
-        const backToFiltersBtn = document.getElementById('back-to-filters-btn');
+    // --- 4. DOM ELEMENTS ---
+    const views = {
+        welcome: document.getElementById('welcome-view'),
+        library: document.getElementById('case-library-view'),
+        detailed: document.getElementById('detailed-case-view'),
+        inProgress: document.getElementById('in-progress-view'),
+        about: document.getElementById('about-view'),
+        dashboard: document.getElementById('dashboard-view'),
+        profile: document.getElementById('profile-view')
+    };
 
-        // Detailed View Elements
-        const backToLibraryBtn = document.getElementById('back-to-library-btn');
-        const doCaseBtn = document.getElementById('do-case-btn');
+    const pdfCanvas = document.getElementById('pdf-canvas');
+    // Note: In new HTML, the container ID is pdf-wrapper
+    const pdfWrapper = document.getElementById('pdf-wrapper'); 
+    const pageNumEl = document.getElementById('page-num');
+    const pageCountEl = document.getElementById('page-count');
 
-        // In-Progress View Elements (Updated for Sandbox)
-        const endCaseBtn = document.getElementById('end-case-btn');
-        const pdfCanvas = document.getElementById('pdf-canvas'),
-              pdfRenderContainer = document.getElementById('pdf-render-container'),
-              pageNumEl = document.getElementById('page-num'),
-              pageCountEl = document.getElementById('page-count'),
-              prevPageBtn = document.getElementById('pdf-prev'),
-              nextPageBtn = document.getElementById('pdf-next'),
-              fullscreenBtn = document.getElementById('pdf-fullscreen');
+    // --- 5. CORE FUNCTIONS ---
 
-        // Sandbox Elements
-        const recordBtn = document.getElementById('record-btn');
-        const transcriptBox = document.getElementById('transcript-box');
-        const statusText = document.getElementById('system-status');
-        const analyzeBtn = document.getElementById('analyze-btn');
-        const aiContainer = document.getElementById('ai-result-container');
-        const aiOutput = document.getElementById('ai-output');
-        const btnText = document.getElementById('btn-text');
-        const clearBtn = document.getElementById('clear-btn');
-        const loadingSpinner = document.getElementById('loading-spinner');
+    function showView(viewName) {
+        // Hide all views
+        Object.values(views).forEach(el => el.classList.add('hidden'));
+        // Show specific view
+        if(views[viewName]) views[viewName].classList.remove('hidden');
+        window.scrollTo(0, 0);
+    }
 
-        // Modals
-        const companyModal = document.getElementById('company-modal');
-        const warningModal = document.getElementById('warning-modal');
-        const feedbackModal = document.getElementById('feedback-modal');
-        const loginModal = document.getElementById('login-modal');
-        
-        const companyListContainer = document.getElementById('company-list');
-        const allCompaniesCheckbox = document.getElementById('all-companies-checkbox');
-        const clearCompaniesBtn = document.getElementById('clear-companies-btn');
-        const applyCompaniesBtn = document.getElementById('apply-companies-btn');
-        const cancelWarningBtn = document.getElementById('cancel-warning-btn');
-        const proceedBtn = document.getElementById('proceed-btn');
-        
-        // Feedback Modal Elements
-        const ratingParameters = document.getElementById('rating-parameters');
-        const overallRatingDisplay = document.getElementById('overall-rating-display');
-        const saveFeedbackBtn = document.getElementById('save-feedback-btn');
-
-        // Login Modal Elements
-        const loginForm = document.getElementById('login-form');
-        const mascotContainer = document.getElementById('mascot-selection-container');
-        const mascotInput = document.getElementById('selected-mascot-id');
-        const skipLoginBtn = document.getElementById('skip-login-btn');
-
-        // --- Gamification Data (Mascots) ---
-        const commonAvatarSvg = `
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-full h-full">
-                <path fill-rule="evenodd" d="M7.5 6a4.5 4.5 0 1 1 9 0 4.5 4.5 0 0 1-9 0ZM3.751 20.105a8.25 8.25 0 0 1 16.498 0 .75.75 0 0 1-.437.695A18.683 18.683 0 0 1 12 22.5c-2.786 0-5.433-.608-7.812-1.7a.75.75 0 0 1-.437-.695Z" clip-rule="evenodd" />
-            </svg>
+    function createCaseCard(caseData) {
+        const card = document.createElement('div');
+        card.className = 'case-card bg-white p-6 rounded-lg cursor-pointer flex flex-col';
+        card.innerHTML = `
+            <h3 class="font-bold text-xl mb-2 truncate">${caseData.title}</h3>
+            <p class="text-slate-500 text-sm mb-4 h-10 overflow-hidden flex-grow">${caseData.problem}</p>
+            <div class="flex items-center flex-wrap gap-2 text-sm text-slate-500 mt-4">
+                <span class="bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full font-medium">${caseData.type}</span>
+                <span class="bg-green-100 text-green-800 px-2 py-0.5 rounded-full font-medium">${caseData.company}</span>
+                <span class="bg-yellow-100 text-yellow-800 px-2 py-0.5 rounded-full font-medium">${caseData.difficulty}</span>
+            </div>
         `;
+        card.addEventListener('click', () => showDetailedCaseView(caseData.id));
+        return card;
+    }
 
-        const mascots = [
-            { id: 0, color: '#3b82f6', shadow: 'rgba(59, 130, 246, 0.25)' }, // Blue
-            { id: 1, color: '#6366f1', shadow: 'rgba(99, 102, 241, 0.25)' }, // Indigo
-            { id: 2, color: '#10b981', shadow: 'rgba(16, 185, 129, 0.25)' }, // Emerald
-            { id: 3, color: '#f59e0b', shadow: 'rgba(245, 158, 11, 0.25)' }, // Amber
-            { id: 4, color: '#64748b', shadow: 'rgba(100, 116, 139, 0.25)' }, // Slate
-        ];
+    function renderLibraryView(casesToRender) {
+        const grid = document.getElementById('case-grid');
+        grid.innerHTML = casesToRender.length === 0 ? `<p class="text-slate-500 col-span-full text-center text-lg">No cases match your criteria.</p>` : '';
+        casesToRender.forEach(c => grid.appendChild(createCaseCard(c)));
+        showView('library');
+    }
 
-        // --- Main App Functions ---
+    function showDetailedCaseView(caseId) {
+        const caseData = allCases.find(c => c.id === caseId);
+        if (!caseData) return;
+        currentCase = caseData;
+        document.getElementById('case-detail-type').textContent = caseData.type;
+        document.getElementById('case-detail-company').textContent = caseData.company;
+        document.getElementById('case-detail-difficulty').textContent = caseData.difficulty;
+        document.getElementById('case-detail-problem').textContent = caseData.problem;
+        showView('detailed');
+    }
 
-        function showView(viewToShow) {
-            [welcomeView, caseLibraryView, detailedCaseView, inProgressView, aboutView, dashboardView, profileView].forEach(view => {
-                view.classList.add('hidden');
-            });
-            viewToShow.classList.remove('hidden');
-            window.scrollTo(0, 0);
-        }
-
-        function createCaseCard(caseData) {
-            const card = document.createElement('div');
-            card.className = 'case-card bg-white p-6 rounded-lg cursor-pointer flex flex-col';
-            card.innerHTML = `
-                <h3 class="font-bold text-xl mb-2 truncate">${caseData.title}</h3>
-                <p class="text-slate-500 text-sm mb-4 h-10 overflow-hidden flex-grow">${caseData.problem}</p>
-                <div class="flex items-center flex-wrap gap-2 text-sm text-slate-500 mt-4">
-                    <span class="bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full font-medium">${caseData.type}</span>
-                    <span class="bg-green-100 text-green-800 px-2 py-0.5 rounded-full font-medium">${caseData.company}</span>
-                    <span class="bg-yellow-100 text-yellow-800 px-2 py-0.5 rounded-full font-medium">${caseData.difficulty}</span>
-                </div>
-            `;
-            card.addEventListener('click', () => showDetailedCaseView(caseData.id));
-            return card;
-        }
+    // --- NEW: INTERACTIVE SESSION LOGIC ---
+    async function showInProgressView() {
+        document.getElementById('casebook-title').textContent = currentCase.title;
+        const pdfPath = casebooks[currentCase.id] || casebooks.default;
         
-        function renderLibraryView(casesToRender) {
-            caseGrid.innerHTML = casesToRender.length === 0 ? `<p class="text-slate-500 col-span-full text-center text-lg">No cases match your criteria. Try broadening your search!</p>` : '';
-            casesToRender.forEach(c => caseGrid.appendChild(createCaseCard(c)));
-            showView(caseLibraryView);
-        }
+        await initPdfViewer(pdfPath);
+        startSessionTimer();
+        setupSpeechRecognition(); // Initialize silent
         
-        function showDetailedCaseView(caseId) {
-            const caseData = allCases.find(c => c.id === caseId);
-            if (!caseData) return;
-            currentCase = caseData;
-            document.getElementById('case-detail-type').textContent = caseData.type;
-            document.getElementById('case-detail-company').textContent = caseData.company;
-            document.getElementById('case-detail-difficulty').textContent = caseData.difficulty;
-            document.getElementById('case-detail-problem').textContent = caseData.problem;
-            showView(detailedCaseView);
-        }
+        showView('inProgress');
+    }
+
+    function startSessionTimer() {
+        sessionSeconds = 0;
+        const timerEl = document.getElementById('session-timer');
+        if (sessionInterval) clearInterval(sessionInterval);
         
-        async function showInProgressView() {
-            document.getElementById('casebook-title').textContent = `Interviewer's Guide: ${currentCase.title}`;
-            const pdfPath = casebooks[currentCase.id] || casebooks.default;
-            await initPdfViewer(pdfPath);
-            showView(inProgressView);
-            
-            // DIRECT FIX: Just enable the UI immediately. 
-            // The server handles the model now.
-            statusText.textContent = "✅ Connected to AI Coach";
-            statusText.classList.remove('text-yellow-400');
-            statusText.classList.add('text-green-400');
-            enableSandboxUI();
+        // Reset Text
+        if(timerEl) timerEl.textContent = "00:00";
+
+        sessionInterval = setInterval(() => {
+            sessionSeconds++;
+            const mins = Math.floor(sessionSeconds / 60).toString().padStart(2, '0');
+            const secs = (sessionSeconds % 60).toString().padStart(2, '0');
+            if(timerEl) timerEl.textContent = `${mins}:${secs}`;
+        }, 1000);
+    }
+
+    function setupSpeechRecognition() {
+        if (!('webkitSpeechRecognition' in window || 'SpeechRecognition' in window)) {
+            console.warn("Speech recognition not supported");
+            return;
         }
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        recognition = new SpeechRecognition();
+        recognition.continuous = true;
+        recognition.interimResults = true;
+        recognition.lang = 'en-US';
 
-        // --- Filter Population and Handling ---
-
-        function populateMultiSelectFilters(container, items, stateArray) {
-            container.innerHTML = '';
-            const allBtn = document.createElement('button');
-            allBtn.className = 'filter-btn px-4 py-2 rounded-lg font-medium active';
-            allBtn.textContent = 'All';
-            allBtn.dataset.value = 'All';
-            container.appendChild(allBtn);
-
-            items.forEach(item => {
-                const btn = document.createElement('button');
-                btn.className = 'filter-btn px-4 py-2 rounded-lg font-medium';
-                btn.textContent = item;
-                btn.dataset.value = item;
-                container.appendChild(btn);
-            });
-
-            container.addEventListener('click', (e) => {
-                if (e.target.tagName !== 'BUTTON') return;
-                const value = e.target.dataset.value;
-                const allButton = container.querySelector('[data-value="All"]');
-                
-                if (value === 'All') {
-                    e.target.classList.add('active');
-                    container.querySelectorAll('button:not([data-value="All"])').forEach(btn => btn.classList.remove('active'));
-                    stateArray.length = 0;
+        recognition.onstart = () => { isRecording = true; };
+        recognition.onend = () => { isRecording = false; };
+        
+        recognition.onresult = (event) => {
+            let interimTranscript = '';
+            for (let i = event.resultIndex; i < event.results.length; ++i) {
+                if (event.results[i].isFinal) {
+                    finalTranscript += event.results[i][0].transcript;
                 } else {
-                    allButton.classList.remove('active');
-                    e.target.classList.toggle('active');
-                    const index = stateArray.indexOf(value);
-                    if (index > -1) {
-                        stateArray.splice(index, 1);
-                    } else {
-                        stateArray.push(value);
-                    }
-                    if (container.querySelectorAll('button.active:not([data-value="All"])').length === 0) {
-                        allButton.classList.add('active');
-                    }
+                    interimTranscript += event.results[i][0].transcript;
                 }
-            });
-        }
-        
-        function populateCompanyModal() {
-            const companies = [...new Set(allCases.map(c => c.company))].sort();
-            companyListContainer.innerHTML = '';
-            companies.forEach(company => {
-                const label = document.createElement('label');
-                label.className = 'flex items-center space-x-2 text-slate-700';
-                label.innerHTML = `
-                    <input type="checkbox" value="${company}" class="h-5 w-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500 company-checkbox">
-                    <span>${company}</span>
-                `;
-                companyListContainer.appendChild(label);
-            });
-        }
-        
-        function handleSearch() {
-            const filteredCases = allCases.filter(c => {
-                const typeMatch = selectedTypes.length === 0 || selectedTypes.includes(c.type);
-                const difficultyMatch = selectedDifficulties.length === 0 || selectedDifficulties.includes(c.difficulty);
-                const companyMatch = selectedCompanies.length === 0 || selectedCompanies.includes(c.company);
-                return typeMatch && difficultyMatch && companyMatch;
-            });
-            renderLibraryView(filteredCases);
-        }
-
-        // --- PDF Viewer Functions ---
-        async function initPdfViewer(url) {
-            pageNum = 1;
-            try {
-                const loadingTask = pdfjsLib.getDocument(url);
-                pdfDoc = await loadingTask.promise;
-                pageCountEl.textContent = pdfDoc.numPages;
-                renderPage(pageNum);
-            } catch (error) {
-                console.error('Error loading PDF:', error);
-                pdfRenderContainer.innerHTML = `<p class="text-red-500 text-center">Error: Could not load PDF file. Please ensure the file '${url}' is in the correct folder.</p>`;
             }
-        }
+            const box = document.getElementById('transcript-box');
+            if(box) box.value = finalTranscript + interimTranscript;
+        };
+    }
 
-        function renderPage(num, isResize = false) {
-            if (pageRendering) {
-                if(currentRenderTask) currentRenderTask.cancel();
-                pageNumPending = num;
-                return;
-            }
-            pageRendering = true;
-
-            if (!isResize) pdfCanvas.style.opacity = '0';
-
-            pdfDoc.getPage(num).then(page => {
-                const devicePixelRatio = window.devicePixelRatio || 1;
-                const viewport1 = page.getViewport({ scale: 1 });
-                const scale = pdfRenderContainer.clientWidth / viewport1.width;
-                const viewport = page.getViewport({ scale: scale });
-                const context = pdfCanvas.getContext('2d');
-                
-                pdfCanvas.style.width = `${viewport.width}px`;
-                pdfCanvas.style.height = `${viewport.height}px`;
-                pdfCanvas.width = Math.floor(viewport.width * devicePixelRatio);
-                pdfCanvas.height = Math.floor(viewport.height * devicePixelRatio);
-                context.setTransform(devicePixelRatio, 0, 0, devicePixelRatio, 0, 0);
-
-                const renderContext = {
-                    canvasContext: context,
-                    viewport: viewport
-                };
-
-                currentRenderTask = page.render(renderContext);
-                currentRenderTask.promise.then(() => {
-                    pageRendering = false;
-                    currentRenderTask = null;
-                    if (!isResize) pdfCanvas.style.opacity = '1';
-                    if (pageNumPending !== null) {
-                        renderPage(pageNumPending);
-                        pageNumPending = null;
-                    }
-                });
+    // --- NEW: AI API INTEGRATION ---
+    async function streamGeminiAPI(feedbackText) {
+        try {
+            const response = await fetch('/api/generate-feedback', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 
+                    prompt: `Act as a senior McKinsey partner observing a case interview. Analyze this raw feedback transcript: "${feedbackText}". 
+                    Format output as concise HTML. Use <ul> for bullet points. 
+                    Structure: <h3>✅ Key Strengths</h3> [bullets] <h3>🚀 Areas for Improvement</h3> [bullets].` 
+                })
             });
-            pageNumEl.textContent = num;
-            updateNavButtons();
-        }
 
-        function onPrevPage() { if (pageNum <= 1) return; pageNum--; renderPage(pageNum); }
-        function onNextPage() { if (pageNum >= pdfDoc.numPages) return; pageNum++; renderPage(pageNum); }
-
-        function updateNavButtons() {
-            prevPageBtn.disabled = (pageNum <= 1);
-            nextPageBtn.disabled = (pageNum >= pdfDoc.numPages);
-        }
-
-        function toggleFullscreen() {
-             if (!document.fullscreenElement) {
-                pdfRenderContainer.requestFullscreen().catch(err => {
-                    console.error(`Error attempting to enable full-screen mode: ${err.message} (${err.name})`);
-                });
+            const data = await response.json();
+            
+            if (data.candidates && data.candidates[0].content) {
+                let resultHtml = data.candidates[0].content.parts[0].text;
+                resultHtml = resultHtml.replace(/```html/g, '').replace(/```/g, '');
+                document.getElementById('ai-output').innerHTML = resultHtml;
             } else {
-                document.exitFullscreen();
+                throw new Error("Invalid response from AI");
             }
+        } catch (error) {
+            console.error(error);
+            document.getElementById('ai-output').innerHTML = `<span class="text-red-500">Connection Error. Please check server.js</span>`;
         }
+    }
 
-        // --- SANDBOX LOGIC (INTEGRATED) ---
+    // --- 6. EVENT LISTENERS ---
 
-        function enableSandboxUI() {
-            recordBtn.disabled = false;
-            recordBtn.classList.remove('text-slate-400');
-            recordBtn.classList.add('text-slate-500', 'hover:text-blue-600', 'hover:border-blue-100');
-            
-            analyzeBtn.disabled = false;
-            analyzeBtn.classList.remove('bg-slate-200', 'text-slate-400', 'cursor-not-allowed', 'shadow-none');
-            analyzeBtn.classList.add('bg-gradient-to-r', 'from-blue-600', 'to-emerald-500', 'text-white', 'shadow-lg', 'hover:opacity-90', 'hover:-translate-y-0.5');
-            
-            btnText.textContent = "Generate Insights";
-            transcriptBox.placeholder = "1. Click Mic\n2. Speak Feedback\n3. Click Generate";
-            
-            if (!('webkitSpeechRecognition' in window || 'SpeechRecognition' in window)) {
-                transcriptBox.value = "⚠️ Browser does not support Speech Recognition (Use Chrome). You can still type manually.";
-                recordBtn.disabled = true;
-            } else {
-                setupSpeechRecognition();
-            }
-        }
+    // Navigation
+    document.getElementById('home-button').addEventListener('click', () => showView('welcome'));
+    document.getElementById('back-to-filters-btn').addEventListener('click', () => showView('welcome'));
+    document.getElementById('back-to-library-btn').addEventListener('click', () => showView('library'));
+    
+    // Core Buttons
+    document.getElementById('search-cases-btn').addEventListener('click', handleSearch);
+    document.getElementById('view-all-btn').addEventListener('click', () => renderLibraryView(allCases));
+    
+    // Warning Modal Flow
+    document.getElementById('do-case-btn').addEventListener('click', () => {
+        document.getElementById('warning-modal').classList.remove('hidden');
+        document.getElementById('warning-modal').classList.add('flex');
+    });
+    document.getElementById('cancel-warning-btn').addEventListener('click', () => {
+        document.getElementById('warning-modal').classList.remove('flex');
+        document.getElementById('warning-modal').classList.add('hidden');
+    });
+    document.getElementById('proceed-btn').addEventListener('click', () => {
+        document.getElementById('warning-modal').classList.remove('flex');
+        document.getElementById('warning-modal').classList.add('hidden');
+        showInProgressView();
+    });
 
-        function setupSpeechRecognition() {
-             const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-             recognition = new SpeechRecognition();
-             recognition.continuous = true; 
-             recognition.interimResults = true; 
-             recognition.lang = 'en-US';
-
-             recognition.onstart = () => {
-                isRecording = true;
-                recordBtn.classList.add('recording-active');
-                recordBtn.innerHTML = '<i class="ph ph-stop text-lg font-bold"></i>';
-                statusText.textContent = "🎤 Listening... Speak now.";
-                statusText.classList.replace('text-green-400', 'text-white');
-                
-                if (transcriptBox.value.includes("1. Click Mic")) transcriptBox.value = "";
-            };
-
-            recognition.onend = () => {
-                isRecording = false;
-                recordBtn.classList.remove('recording-active');
-                recordBtn.innerHTML = '<i class="ph ph-microphone text-lg"></i>';
-                statusText.textContent = "✅ Ready";    
-                statusText.classList.replace('text-white', 'text-green-400');
-                finalTranscript = transcriptBox.value;
-            };
-
-            recognition.onresult = (event) => {
-                let interimTranscript = '';
-                for (let i = event.resultIndex; i < event.results.length; ++i) {
-                    if (event.results[i].isFinal) {
-                        finalTranscript += event.results[i][0].transcript;
-                    } else {
-                        interimTranscript += event.results[i][0].transcript;
-                    }
-                }
-                transcriptBox.value = finalTranscript + interimTranscript;
-                transcriptBox.scrollTop = transcriptBox.scrollHeight;
-            };
-        }
-
-        async function streamGeminiAPI(feedbackText) {
-            const aiOutput = document.getElementById('ai-output');
-            const aiContainer = document.getElementById('ai-result-container');
-            const analyzeBtn = document.getElementById('analyze-btn');
-            const btnText = document.getElementById('btn-text');
-            const loadingSpinner = document.getElementById('loading-spinner');
-            
-            // UI Loading State
-            analyzeBtn.disabled = true;
-            btnText.textContent = "Analyzing...";
-            loadingSpinner.classList.remove('hidden');
-            aiContainer.classList.remove('hidden');
-            aiOutput.innerHTML = '<span class="text-slate-500 animate-pulse">Consulting the AI Coach...</span>';
+    // NEW: End Case Flow (Opens Feedback Modal)
+    document.getElementById('end-case-btn').addEventListener('click', () => {
+        const modal = document.getElementById('feedback-modal');
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
         
-            const fullPrompt = `
-                You are an expert case interview coach. Analyze this feedback: "${feedbackText}"
-                Output ONLY HTML. Use <h3> for headers and <ul><li> for lists.
-                Sections: ✅ Key Strengths, 🚀 Areas for Improvement. Concise.
-            `;
-        
-            try {
-                // CALL YOUR OWN SERVER
-                const response = await fetch('/api/generate-feedback', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ prompt: fullPrompt })
-                });
-        
-                const data = await response.json();
-                
-                // Handle Gemini Response Structure
-                if (data.candidates && data.candidates[0].content) {
-                     let resultHtml = data.candidates[0].content.parts[0].text;
-                     // Clean Markdown if present
-                     resultHtml = resultHtml.replace(/```html/g, '').replace(/```/g, '');
-                     aiOutput.innerHTML = resultHtml;
-                } else {
-                     throw new Error("Invalid response from AI");
-                }
-        
-            } catch (error) {
-                console.error(error);
-                aiOutput.innerHTML = `<span class="text-red-500">Error: ${error.message}. Please try again.</span>`;
-            } finally {
-                // Reset UI
-                analyzeBtn.disabled = false;
-                btnText.textContent = "Generate Insights";
-                loadingSpinner.classList.add('hidden');
-            }
-        }
+        // Reset Modal UI
+        document.getElementById('recording-ui').classList.remove('hidden');
+        document.getElementById('ai-result-container').classList.add('hidden');
+        document.getElementById('analyze-btn').classList.add('hidden');
+        document.getElementById('record-instruction').textContent = "Tap to record verbal feedback";
+        document.getElementById('transcript-box').value = "";
+        finalTranscript = "";
+    });
 
-        // --- Modal Logic ---
-        function openCompanyModal() { companyModal.classList.remove('hidden'); companyModal.classList.add('flex'); }
-        function closeCompanyModal() { companyModal.classList.remove('flex'); companyModal.classList.add('hidden'); }
-        function openWarningModal() { warningModal.classList.remove('hidden'); warningModal.classList.add('flex');}
-        function closeWarningModal() { warningModal.classList.remove('flex'); warningModal.classList.add('hidden');}
-        function openFeedbackModal() { 
-            resetFeedbackModal();
-            feedbackModal.classList.remove('hidden'); 
-            feedbackModal.classList.add('flex');
-        }
-        function closeFeedbackModal() { 
-            feedbackModal.classList.remove('flex'); 
-            feedbackModal.classList.add('hidden'); 
-            showView(caseLibraryView); 
-        }
-        
-        function applyCompanySelection() {
-            selectedCompanies = Array.from(companyListContainer.querySelectorAll('.company-checkbox:checked')).map(cb => cb.value);
-            if (selectedCompanies.length === 0) {
-                companyCountEl.textContent = 'All companies selected';
-            } else if (selectedCompanies.length === 1) {
-                companyCountEl.textContent = '1 company selected';
-            } else {
-                companyCountEl.textContent = `${selectedCompanies.length} companies selected`;
-            }
-            closeCompanyModal();
-        }
-
-        // --- Feedback Logic & Analytics ---
-        function calculateOverallRating() {
-            let totalScore = 0;
-            const ratingGroups = ratingParameters.querySelectorAll('.star-rating');
-            const scores = {};
-
-            ratingGroups.forEach(group => {
-                const param = group.dataset.parameter;
-                const weight = parseFloat(group.dataset.weight);
-                const checkedRadio = group.querySelector('input[type="radio"]:checked');
-                const value = checkedRadio ? parseInt(checkedRadio.value) : 0;
-                scores[param] = value;
-                totalScore += value * weight; // 5-point scale
-            });
-            
-            // Normalize to 100 point scale for consistency
-            const finalScore = Math.round((totalScore / 5) * 100);
-            updateOverallRatingDisplay(totalScore);
-            return { finalScore, scores };
-        }
-
-        function updateOverallRatingDisplay(score) {
-            overallRatingDisplay.innerHTML = ''; 
-            for (let i = 1; i <= 5; i++) {
-                const star = document.createElement('span');
-                star.classList.add('star');
-                if (i <= Math.round(score)) {
-                    star.classList.add('filled');
-                }
-                star.innerHTML = '&#9733;';
-                overallRatingDisplay.appendChild(star);
-            }
-        }
-        
-        function resetFeedbackModal() {
-            const allRadios = feedbackModal.querySelectorAll('input[type="radio"]');
-            allRadios.forEach(radio => radio.checked = false);
-            updateOverallRatingDisplay(0);
-        }
-
-        function saveFeedback() {
-            if (!userProfile) {
-                alert("Please create a profile to save your progress!");
-                openLoginModal();
-                return;
-            }
-
-            const { finalScore, scores } = calculateOverallRating();
-            
-            // Create Record
-            const record = {
-                caseId: currentCase.id,
-                name: currentCase.title,
-                company: currentCase.company,
-                type: currentCase.type,
-                difficulty: currentCase.difficulty,
-                date: new Date().toISOString().split('T')[0],
-                structuring: scores.structure ? scores.structure * 6 : 0, // Map 5->30 roughly
-                quantitative: scores.understanding ? scores.understanding * 3 : 0, // Map 5->15
-                insight: scores.delivery ? scores.delivery * 7 : 0, // Map
-                communication: scores.creativity ? scores.creativity * 4 : 0,
-                totalScore: finalScore
-            };
-
-            // Update User Data
-            if (!userProfile.history) userProfile.history = [];
-            userProfile.history.push(record);
-            
-            // Update Stats
-            if (!userProfile.stats) userProfile.stats = { solved: 0, streak: 0, lastActive: null };
-            userProfile.stats.solved++;
-            
-            // Streak Logic
-            const today = new Date().toDateString();
-            const lastActive = userProfile.stats.lastActive ? new Date(userProfile.stats.lastActive).toDateString() : null;
-            
-            if (lastActive !== today) {
-                const yesterday = new Date();
-                yesterday.setDate(yesterday.getDate() - 1);
-                if (lastActive === yesterday.toDateString()) {
-                    userProfile.stats.streak++;
-                } else {
-                    userProfile.stats.streak = 1;
-                }
-                userProfile.stats.lastActive = new Date().toISOString();
-            }
-
-            localStorage.setItem('caseBuddyUser', JSON.stringify(userProfile));
-            alert("Case tracked! Check your dashboard.");
-            closeFeedbackModal();
-            
-            // Refresh views
-            renderNav();
-            initializeDashboard();
-        }
-
-        // --- User Profile / Login System ---
-        function initLoginSystem() {
-            renderNav();
-            if (!userProfile && !sessionStorage.getItem('loginSkipped')) {
-                setTimeout(openLoginModal, 1500);
-            }
-        }
-
-        function renderNav() {
-            navActionsContainer.innerHTML = ''; 
-
-            if (userProfile) {
-                const mascot = mascots[userProfile.mascotId] || mascots[0];
-                const solvedCount = userProfile.stats?.solved || 0;
-                
-                const pillContainer = document.createElement('div');
-                pillContainer.className = 'user-pill-container relative py-2';
-
-                // Pill
-                pillContainer.innerHTML = `
-                    <div class="user-pill flex items-center gap-3 pl-1 pr-4 py-1.5 bg-white border border-slate-200 rounded-full cursor-pointer shadow-sm">
-                        <div class="w-8 h-8 rounded-full flex items-center justify-center p-1.5" 
-                             style="background-color: ${mascot.color}15; color: ${mascot.color};">
-                            ${commonAvatarSvg}
-                        </div>
-                        <div class="flex flex-col leading-none">
-                            <span class="text-xs font-bold text-slate-700">${userProfile.username}</span>
-                        </div>
-                    </div>
-                `;
-                
-                // Click to open profile
-                pillContainer.addEventListener('click', renderUserProfile);
-                navActionsContainer.appendChild(pillContainer);
-
-                const dashboardBtn = document.createElement('button');
-                dashboardBtn.textContent = 'Dashboard';
-                dashboardBtn.className = 'text-slate-600 hover:text-blue-600 font-semibold transition-colors text-sm';
-                dashboardBtn.addEventListener('click', () => showView(dashboardView));
-
-                const aboutBtn = document.createElement('button');
-                aboutBtn.textContent = 'About';
-                aboutBtn.className = 'text-slate-600 hover:text-blue-600 font-semibold transition-colors text-sm';
-                aboutBtn.addEventListener('click', () => showView(aboutView));
-
-                navActionsContainer.appendChild(dashboardBtn);
-                navActionsContainer.appendChild(aboutBtn);
-
-            } else {
-                const loginBtn = document.createElement('button');
-                loginBtn.textContent = 'Login / Sign Up';
-                loginBtn.className = 'text-sm font-bold text-white bg-slate-900 px-4 py-2 rounded-lg hover:bg-slate-800 transition';
-                loginBtn.addEventListener('click', openLoginModal);
-
-                const dashboardBtn = document.createElement('button');
-                dashboardBtn.textContent = 'Dashboard';
-                dashboardBtn.className = 'text-slate-600 hover:text-blue-600 font-semibold transition-colors text-sm';
-                dashboardBtn.addEventListener('click', () => showView(dashboardView));
-
-                const aboutBtn = document.createElement('button');
-                aboutBtn.textContent = 'About';
-                aboutBtn.className = 'text-slate-600 hover:text-blue-600 font-semibold transition-colors text-sm';
-                aboutBtn.addEventListener('click', () => showView(aboutView));
-
-                navActionsContainer.appendChild(loginBtn);
-                navActionsContainer.appendChild(dashboardBtn);
-                navActionsContainer.appendChild(aboutBtn);
-            }
-        }
-
-        function renderUserProfile() {
-            if(!userProfile) return;
-            const mascot = mascots[userProfile.mascotId] || mascots[0];
-            const stats = userProfile.stats || { solved: 0, streak: 0 };
-            const history = userProfile.history || [];
-            
-            // Calculate Avg Score
-            const avgScore = history.length > 0 
-                ? Math.round(history.reduce((a, b) => a + b.totalScore, 0) / history.length) 
-                : 0;
-
-            profileView.innerHTML = `
-                <div class="max-w-4xl mx-auto py-8 dashboard-animate-fade-in">
-                    <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-8 mb-8 flex flex-col md:flex-row items-center gap-8">
-                        <div class="w-32 h-32 rounded-full flex items-center justify-center p-6 shadow-inner" 
-                             style="background-color: ${mascot.color}10; color: ${mascot.color};">
-                            ${commonAvatarSvg}
-                        </div>
-                        <div class="text-center md:text-left flex-grow">
-                            <h1 class="text-3xl font-extrabold text-slate-800 mb-1">${userProfile.name}</h1>
-                            <p class="text-slate-500 font-medium text-sm mb-4">@${userProfile.username} • ${userProfile.college}</p>
-                            <div class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-slate-100 text-slate-600">
-                                Member since ${new Date(userProfile.joinedDate).toLocaleDateString()}
-                            </div>
-                        </div>
-                        <div class="text-right">
-                            <button onclick="logout()" class="text-red-500 hover:text-red-700 font-semibold text-sm border border-red-100 hover:bg-red-50 px-4 py-2 rounded-lg transition">Log Out</button>
-                        </div>
-                    </div>
-
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
-                        <div class="neo-card p-6 bg-neo-pink border-red-100">
-                            <p class="text-xs font-bold uppercase opacity-70 mb-1">Cases Cracked</p>
-                            <p class="text-4xl neo-stat-value">${stats.solved}</p>
-                        </div>
-                        <div class="neo-card p-6 bg-neo-cream border-yellow-100">
-                            <p class="text-xs font-bold uppercase opacity-70 mb-1">Current Streak</p>
-                            <p class="text-4xl neo-stat-value">${stats.streak} <span class="text-lg">days</span></p>
-                        </div>
-                        <div class="neo-card p-6 bg-neo-dark">
-                            <p class="text-xs font-bold uppercase opacity-70 mb-1">Average Score</p>
-                            <p class="text-4xl neo-stat-value text-green-400">${avgScore}</p>
-                        </div>
-                    </div>
-
-                    <h3 class="text-xl font-bold text-slate-800 mb-4 px-2">Recent Activity</h3>
-                    <div class="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden">
-                        ${history.length === 0 
-                            ? `<div class="p-8 text-center text-slate-400">No cases solved yet. Go crack one!</div>`
-                            : `<table class="w-full text-left">
-                                <thead class="bg-slate-50 text-xs text-slate-500 uppercase"><tr class="border-b"><th class="p-4">Date</th><th class="p-4">Case</th><th class="p-4">Score</th></tr></thead>
-                                <tbody class="divide-y divide-slate-100">
-                                    ${history.slice().reverse().map(h => `
-                                        <tr class="hover:bg-slate-50 transition">
-                                            <td class="p-4 text-sm text-slate-500">${h.date}</td>
-                                            <td class="p-4 font-medium text-slate-700">${h.name}</td>
-                                            <td class="p-4 font-bold ${h.totalScore >= 85 ? 'text-green-600' : 'text-slate-600'}">${h.totalScore}</td>
-                                        </tr>
-                                    `).join('')}
-                                </tbody>
-                               </table>`
-                        }
-                    </div>
-                </div>
-            `;
-            showView(profileView);
-        }
-
-        function openLoginModal() {
-            mascotContainer.innerHTML = mascots.map((m) => `
-                <div class="mascot-option w-16 h-16 rounded-full bg-white flex items-center justify-center cursor-pointer" 
-                     style="--mascot-color: ${m.color}; --mascot-shadow: ${m.shadow}; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);"
-                     data-id="${m.id}" onclick="selectMascot(this, ${m.id})">
-                    <div style="width: 2.5rem; height: 2.5rem; color: ${m.color};">${commonAvatarSvg}</div>
-                </div>
-            `).join('');
-            selectMascot(mascotContainer.children[0], 0);
-            loginModal.classList.remove('hidden');
-            loginModal.classList.add('flex');
-        }
-
-        window.selectMascot = function(el, id) {
-            Array.from(mascotContainer.children).forEach(c => c.classList.remove('selected'));
-            el.classList.add('selected');
-            mascotInput.value = id;
-        }
-
-        function handleLoginSubmit(e) {
-            e.preventDefault();
-            const name = document.getElementById('user-fullname-input').value;
-            const username = document.getElementById('user-name-input').value;
-            const email = document.getElementById('user-email-input').value;
-            const college = document.getElementById('user-college-input').value;
-            const mascotId = mascotInput.value;
-
-            userProfile = {
-                name, username, email, college, mascotId,
-                joinedDate: new Date().toISOString(),
-                history: [],
-                stats: { solved: 0, streak: 1, lastActive: new Date().toISOString() }
-            };
-
-            localStorage.setItem('caseBuddyUser', JSON.stringify(userProfile));
-            loginModal.classList.add('hidden');
-            loginModal.classList.remove('flex');
-            renderNav();
-        }
-
-        window.logout = function() {
-            if(confirm("Are you sure you want to log out?")) {
-                localStorage.removeItem('caseBuddyUser');
-                userProfile = null;
-                renderNav();
-                showView(welcomeView);
-            }
-        }
-
-        // Login Event Listeners
-        loginForm.addEventListener('submit', handleLoginSubmit);
-        skipLoginBtn.addEventListener('click', () => {
-            sessionStorage.setItem('loginSkipped', 'true');
-            loginModal.classList.add('hidden');
-            loginModal.classList.remove('flex');
-        });
-
-
-        // --- Initial Load & Event Listeners ---
-        document.addEventListener('DOMContentLoaded', () => { 
-            const uniqueTypes = [...new Set(allCases.map(c => c.type))].sort();
-            const uniqueDifficulties = [...new Set(allCases.map(c => c.difficulty))].sort();
-            
-            populateMultiSelectFilters(typeFiltersContainer, uniqueTypes, selectedTypes);
-            populateMultiSelectFilters(difficultyFiltersContainer, uniqueDifficulties, selectedDifficulties);
-            populateCompanyModal();
-            
-            showView(welcomeView);
-            updateOverallRatingDisplay(0); 
-            
-            // Initialize Dashboard
-            initializeDashboard();
-
-            // Initialize Login System
-            initLoginSystem();
-        });
-
-        // Navigation
-        homeButton.addEventListener('click', () => showView(welcomeView));
-        backToFiltersBtn.addEventListener('click', () => showView(welcomeView));
-        backToLibraryBtn.addEventListener('click', () => showView(caseLibraryView));
-        
-        // Actions
-        searchCasesBtn.addEventListener('click', handleSearch);
-        viewAllBtn.addEventListener('click', () => renderLibraryView(allCases));
-        doCaseBtn.addEventListener('click', openWarningModal);
-        endCaseBtn.addEventListener('click', openFeedbackModal);
-        
-        // Sandbox Listeners
-        transcriptBox.addEventListener('input', (e) => { finalTranscript = e.target.value; });
+    // NEW: Voice Recorder Logic
+    const recordBtn = document.getElementById('record-btn');
+    if(recordBtn) {
         recordBtn.addEventListener('click', () => {
-            if (!recognition) return;
-            if (isRecording) {
-                recognition.stop();
-            } else {
-                if (transcriptBox.value.includes("1. Click Mic")) { finalTranscript = ""; transcriptBox.value = ""; }
-                recognition.start();
-            }
-        });
-        
-        clearBtn.addEventListener('click', () => {
-            finalTranscript = '';
-            transcriptBox.value = '';
-            aiContainer.classList.add('hidden');
-            aiOutput.innerHTML = '';
-        });
-
-        analyzeBtn.addEventListener('click', async () => {
-            const text = transcriptBox.value.trim();
-            if (text.length < 5 || text.includes("1. Click Mic")) {
-                alert("Please record or type some feedback first.");
-                return;
-            }
-
-            // UI State
-            analyzeBtn.disabled = true;
-            btnText.textContent = "Analyzing...";
-            loadingSpinner.classList.remove('hidden');
-            statusText.textContent = "🤖 Streaming response...";
+            if (!recognition) { alert("Browser does not support speech recognition."); return; }
             
-            // Reset Output
-            aiContainer.classList.remove('hidden');
-            aiOutput.innerHTML = '';
-            aiOutput.classList.add('cursor-blink');
-            aiContainer.scrollIntoView({ behavior: 'smooth' });
+            if (isRecording) {
+                // STOP
+                recognition.stop();
+                recordBtn.classList.remove('recording');
+                document.getElementById('record-instruction').textContent = "Feedback captured.";
+                document.getElementById('analyze-btn').classList.remove('hidden');
+            } else {
+                // START
+                document.getElementById('transcript-box').value = "";
+                finalTranscript = "";
+                recognition.start();
+                recordBtn.classList.add('recording');
+                document.getElementById('record-instruction').textContent = "Listening... Tap to stop";
+                document.getElementById('analyze-btn').classList.add('hidden');
+            }
+        });
+    }
+
+    // NEW: Generate Insights Logic
+    const analyzeBtn = document.getElementById('analyze-btn');
+    if(analyzeBtn) {
+        analyzeBtn.addEventListener('click', async () => {
+            const text = document.getElementById('transcript-box').value.trim();
+            if (text.length < 2) { alert("Please record feedback first."); return; }
+
+            // UI Transition
+            analyzeBtn.disabled = true;
+            document.getElementById('btn-text').textContent = "Coach is thinking...";
+            
+            document.getElementById('recording-ui').classList.add('hidden');
+            document.getElementById('ai-result-container').classList.remove('hidden');
+            document.getElementById('ai-output').innerHTML = '<div class="flex items-center gap-2 text-slate-400">Thinking...</div>';
 
             try {
                 await streamGeminiAPI(text);
-                statusText.textContent = "✅ Analysis Complete";
             } catch (error) {
-                console.error(error);
-                statusText.textContent = "❌ Error: " + error.message;
-                aiOutput.innerHTML += `<br><span class="text-red-500">Error: ${error.message}</span>`;
+                document.getElementById('recording-ui').classList.remove('hidden');
             } finally {
                 analyzeBtn.disabled = false;
-                btnText.textContent = "Generate Insights";
-                loadingSpinner.classList.add('hidden');
-                aiOutput.classList.remove('cursor-blink');
+                document.getElementById('btn-text').textContent = "Generate Insights";
             }
         });
+    }
 
-        // PDF Controls
-        prevPageBtn.addEventListener('click', onPrevPage);
-        nextPageBtn.addEventListener('click', onNextPage);
-        fullscreenBtn.addEventListener('click', toggleFullscreen);
-        document.addEventListener('fullscreenchange', () => {
-            if (pdfDoc) {
-                setTimeout(() => renderPage(pageNum, true), 100);
+    // NEW: Reset Recording
+    document.getElementById('reset-recording').addEventListener('click', () => {
+        document.getElementById('ai-result-container').classList.add('hidden');
+        document.getElementById('recording-ui').classList.remove('hidden');
+        document.getElementById('analyze-btn').classList.add('hidden');
+        document.getElementById('record-instruction').textContent = "Tap to record verbal feedback";
+        document.getElementById('transcript-box').value = "";
+    });
+
+    // PDF Controls
+    document.getElementById('pdf-prev').addEventListener('click', onPrevPage);
+    document.getElementById('pdf-next').addEventListener('click', onNextPage);
+    document.getElementById('pdf-fullscreen').addEventListener('click', toggleFullscreen);
+    
+    // Keyboard Shortcuts
+    document.addEventListener('keydown', (e) => {
+        if (!document.getElementById('in-progress-view').classList.contains('hidden')) {
+            if (e.key === 'ArrowRight') onNextPage();
+            if (e.key === 'ArrowLeft') onPrevPage();
+        }
+    });
+
+    // Company Modal Controls
+    document.getElementById('open-company-modal-btn').addEventListener('click', openCompanyModal);
+    document.getElementById('clear-companies-btn').addEventListener('click', () => {
+        document.getElementById('company-list').querySelectorAll('input').forEach(cb => cb.checked = false);
+    });
+    document.getElementById('apply-companies-btn').addEventListener('click', applyCompanySelection);
+
+    // Save Feedback & Rating
+    document.getElementById('save-feedback-btn').addEventListener('click', saveFeedback);
+    document.getElementById('rating-parameters').addEventListener('change', calculateOverallRating);
+
+    // Login Form
+    document.getElementById('login-form').addEventListener('submit', handleLoginSubmit);
+    document.getElementById('skip-login-btn').addEventListener('click', () => {
+        sessionStorage.setItem('loginSkipped', 'true');
+        document.getElementById('login-modal').classList.remove('flex');
+        document.getElementById('login-modal').classList.add('hidden');
+    });
+
+    // --- 7. PDF LOGIC ---
+    async function initPdfViewer(url) {
+        pageNum = 1;
+        try {
+            const loadingTask = pdfjsLib.getDocument(url);
+            pdfDoc = await loadingTask.promise;
+            if(pageCountEl) pageCountEl.textContent = pdfDoc.numPages;
+            renderPage(pageNum);
+        } catch (error) {
+            console.error("PDF Error", error);
+        }
+    }
+
+    function renderPage(num) {
+        pageRendering = true;
+        pdfDoc.getPage(num).then(page => {
+            // New logic: Fit to wrapper width
+            const containerWidth = pdfWrapper.clientWidth || 600;
+            const viewport = page.getViewport({ scale: 1 });
+            const scale = containerWidth / viewport.width;
+            const scaledViewport = page.getViewport({ scale: scale });
+
+            const context = pdfCanvas.getContext('2d');
+            pdfCanvas.height = scaledViewport.height;
+            pdfCanvas.width = scaledViewport.width;
+            
+            const renderContext = { canvasContext: context, viewport: scaledViewport };
+            const renderTask = page.render(renderContext);
+
+            renderTask.promise.then(() => {
+                pageRendering = false;
+                if (pageNumPending !== null) {
+                    renderPage(pageNumPending);
+                    pageNumPending = null;
+                }
+            });
+        });
+        if(pageNumEl) pageNumEl.textContent = num;
+        updateNavButtons();
+    }
+
+    function onPrevPage() { if (pageNum <= 1) return; pageNum--; renderPage(pageNum); }
+    function onNextPage() { if (pageNum >= pdfDoc.numPages) return; pageNum++; renderPage(pageNum); }
+    function updateNavButtons() {
+        document.getElementById('pdf-prev').disabled = (pageNum <= 1);
+        document.getElementById('pdf-next').disabled = (pageNum >= pdfDoc.numPages);
+    }
+    function toggleFullscreen() {
+        if (!document.fullscreenElement) pdfWrapper.requestFullscreen().catch(e => console.log(e));
+        else document.exitFullscreen();
+    }
+
+    // --- 8. DASHBOARD & HELPERS ---
+    
+    function populateMultiSelectFilters(container, items, stateArray) {
+        container.innerHTML = '';
+        const allBtn = document.createElement('button');
+        allBtn.className = 'filter-btn px-4 py-2 rounded-lg font-medium active';
+        allBtn.textContent = 'All';
+        allBtn.dataset.value = 'All';
+        container.appendChild(allBtn);
+
+        items.forEach(item => {
+            const btn = document.createElement('button');
+            btn.className = 'filter-btn px-4 py-2 rounded-lg font-medium';
+            btn.textContent = item;
+            btn.dataset.value = item;
+            container.appendChild(btn);
+        });
+
+        // Add Click Listener
+        container.addEventListener('click', (e) => {
+            if (e.target.tagName !== 'BUTTON') return;
+            const value = e.target.dataset.value;
+            const allButton = container.querySelector('[data-value="All"]');
+            
+            if (value === 'All') {
+                e.target.classList.add('active');
+                container.querySelectorAll('button:not([data-value="All"])').forEach(btn => btn.classList.remove('active'));
+                stateArray.length = 0;
+            } else {
+                allButton.classList.remove('active');
+                e.target.classList.toggle('active');
+                const index = stateArray.indexOf(value);
+                if (index > -1) stateArray.splice(index, 1);
+                else stateArray.push(value);
+                
+                if (container.querySelectorAll('button.active:not([data-value="All"])').length === 0) {
+                    allButton.classList.add('active');
+                }
             }
         });
+    }
 
-        // Company Modal
-        openCompanyModalBtn.addEventListener('click', openCompanyModal);
-        applyCompaniesBtn.addEventListener('click', applyCompanySelection);
-        companyModal.addEventListener('click', (e) => { if(e.target === companyModal) closeCompanyModal(); });
-        allCompaniesCheckbox.addEventListener('change', (e) => {
-            companyListContainer.querySelectorAll('.company-checkbox').forEach(cb => { cb.checked = e.target.checked; });
+    function populateCompanyModal() {
+        const companies = [...new Set(allCases.map(c => c.company))].sort();
+        const list = document.getElementById('company-list');
+        list.innerHTML = '';
+        companies.forEach(company => {
+            const label = document.createElement('label');
+            label.className = 'flex items-center space-x-2 text-slate-700';
+            label.innerHTML = `<input type="checkbox" value="${company}" class="h-5 w-5 rounded border-gray-300 text-blue-600 company-checkbox"><span>${company}</span>`;
+            list.appendChild(label);
         });
-        clearCompaniesBtn.addEventListener('click', () => {
-             companyListContainer.querySelectorAll('.company-checkbox').forEach(cb => { cb.checked = false; });
-            allCompaniesCheckbox.checked = false;
+    }
+
+    function openCompanyModal() { document.getElementById('company-modal').classList.remove('hidden'); document.getElementById('company-modal').classList.add('flex'); }
+    function closeCompanyModal() { document.getElementById('company-modal').classList.remove('flex'); document.getElementById('company-modal').classList.add('hidden'); }
+    function applyCompanySelection() {
+        selectedCompanies = Array.from(document.querySelectorAll('.company-checkbox:checked')).map(cb => cb.value);
+        document.getElementById('company-count').textContent = selectedCompanies.length ? `${selectedCompanies.length} selected` : '';
+        closeCompanyModal();
+    }
+    function handleSearch() {
+        const filtered = allCases.filter(c => {
+            const typeMatch = selectedTypes.length === 0 || selectedTypes.includes(c.type);
+            const diffMatch = selectedDifficulties.length === 0 || selectedDifficulties.includes(c.difficulty);
+            const compMatch = selectedCompanies.length === 0 || selectedCompanies.includes(c.company);
+            return typeMatch && diffMatch && compMatch;
         });
+        renderLibraryView(filtered);
+    }
+
+    // --- 9. FEEDBACK & LOGIN LOGIC ---
+    function calculateOverallRating() {
+        let total = 0;
+        const groups = document.querySelectorAll('.star-rating');
+        const scores = {};
+        groups.forEach(g => {
+            const val = g.querySelector('input:checked')?.value || 0;
+            scores[g.dataset.parameter] = parseInt(val);
+            total += parseInt(val) * parseFloat(g.dataset.weight);
+        });
+        const final = Math.round((total / 5) * 100);
+        document.getElementById('overall-rating-display').textContent = final;
+        return { finalScore: final, scores };
+    }
+
+    function resetFeedbackModal() {
+        document.querySelectorAll('input[type="radio"]').forEach(r => r.checked = false);
+        document.getElementById('overall-rating-display').textContent = '0';
+    }
+
+    function saveFeedback() {
+        clearInterval(sessionInterval); // Stop timer on save
         
-        // Warning Modal
-        cancelWarningBtn.addEventListener('click', closeWarningModal);
-        proceedBtn.addEventListener('click', () => { closeWarningModal(); showInProgressView(); });
+        if (!userProfile) {
+            alert("Create profile to save.");
+            openLoginModal();
+            return;
+        }
+        
+        const { finalScore, scores } = calculateOverallRating();
+        const record = {
+            caseId: currentCase.id,
+            name: currentCase.title,
+            company: currentCase.company,
+            type: currentCase.type,
+            difficulty: currentCase.difficulty,
+            date: new Date().toISOString().split('T')[0],
+            structuring: (scores.structure || 0) * 6,
+            quantitative: (scores.understanding || 0) * 3,
+            insight: (scores.delivery || 0) * 7,
+            communication: (scores.creativity || 0) * 4,
+            totalScore: finalScore
+        };
 
-        // Feedback Modal
-        saveFeedbackBtn.addEventListener('click', saveFeedback);
-        ratingParameters.addEventListener('change', calculateOverallRating);
+        userProfile.history.push(record);
+        userProfile.stats.solved++;
+        // Simple streak logic
+        const today = new Date().toDateString();
+        const last = userProfile.stats.lastActive ? new Date(userProfile.stats.lastActive).toDateString() : null;
+        if(last !== today) {
+            // Check if consecutive day logic here... simplified for now
+            userProfile.stats.streak++; 
+            userProfile.stats.lastActive = new Date().toISOString();
+        }
+        
+        localStorage.setItem('caseBuddyUser', JSON.stringify(userProfile));
+        alert("Case Recorded!");
+        
+        document.getElementById('feedback-modal').classList.remove('flex');
+        document.getElementById('feedback-modal').classList.add('hidden');
+        
+        renderNav();
+        initializeDashboard();
+        showView('library');
+    }
 
+    // Login logic
+    function handleLoginSubmit(e) {
+        e.preventDefault();
+        const name = document.getElementById('user-fullname-input').value;
+        const username = document.getElementById('user-name-input').value;
+        const college = document.getElementById('user-college-input').value;
+        const mascotId = document.getElementById('selected-mascot-id').value;
+        
+        userProfile = {
+            name, username, college, mascotId,
+            joinedDate: new Date().toISOString(),
+            history: [],
+            stats: { solved: 0, streak: 1, lastActive: new Date().toISOString() }
+        };
+        localStorage.setItem('caseBuddyUser', JSON.stringify(userProfile));
+        document.getElementById('login-modal').classList.remove('flex');
+        document.getElementById('login-modal').classList.add('hidden');
+        renderNav();
+    }
+
+    function renderNav() {
+        const container = document.getElementById('nav-actions-container');
+        container.innerHTML = '';
+        if(userProfile) {
+            // Render User Pill
+            const mascot = mascots[userProfile.mascotId] || mascots[0];
+            const div = document.createElement('div');
+            div.className = 'user-pill flex items-center gap-2 border px-3 py-1 rounded-full cursor-pointer';
+            div.innerHTML = `<div class="w-6 h-6 rounded-full" style="background:${mascot.color}20; color:${mascot.color}">${commonAvatarSvg}</div><span class="text-xs font-bold">${userProfile.username}</span>`;
+            div.onclick = renderUserProfile;
+            container.appendChild(div);
+            
+            // Render Dash/About buttons
+            const dashBtn = document.createElement('button');
+            dashBtn.textContent = 'Dashboard';
+            dashBtn.className = 'text-sm font-semibold text-slate-600';
+            dashBtn.onclick = () => showView('dashboard');
+            container.appendChild(dashBtn);
+        } else {
+            const loginBtn = document.createElement('button');
+            loginBtn.textContent = 'Login';
+            loginBtn.className = 'bg-slate-900 text-white px-4 py-2 rounded-lg text-sm font-bold';
+            loginBtn.onclick = openLoginModal;
+            container.appendChild(loginBtn);
+        }
+    }
+
+    // Modal Helpers
+    window.closeFeedbackModal = function() {
+        document.getElementById('feedback-modal').classList.remove('flex');
+        document.getElementById('feedback-modal').classList.add('hidden');
+    };
+    window.selectMascot = function(el, id) {
+        document.querySelectorAll('.mascot-option').forEach(c => c.classList.remove('selected'));
+        el.classList.add('selected');
+        document.getElementById('selected-mascot-id').value = id;
+    };
+    window.logout = function() {
+        if(confirm("Log out?")) {
+            localStorage.removeItem('caseBuddyUser');
+            userProfile = null;
+            renderNav();
+            showView('welcome');
+        }
+    };
+
+    // --- 10. APP INIT ---
+    document.addEventListener('DOMContentLoaded', () => {
+        // Init Filters
+        const uniqueTypes = [...new Set(allCases.map(c => c.type))].sort();
+        const uniqueDiffs = [...new Set(allCases.map(c => c.difficulty))].sort();
+        populateMultiSelectFilters(document.getElementById('type-filters'), uniqueTypes, selectedTypes);
+        populateMultiSelectFilters(document.getElementById('difficulty-filters'), uniqueDiffs, selectedDifficulties);
+        populateCompanyModal();
+        
+        renderNav();
+        initLoginSystem();
+        initializeDashboard();
+        showView('welcome');
+    });
+        
         // ====================================================================
         // --- DASHBOARD SCRIPT ---
         // ====================================================================
@@ -1624,6 +1342,10 @@
             };
 
             function renderDashboard() {
+                if(!userProfile) return;
+                const cases = userProfile.history;
+                const score = cases.length ? Math.round(cases.reduce((a,b)=>a+b.totalScore,0)/cases.length) : 0;
+                document.getElementById('dashboard-score-card').innerHTML = `<span class="text-4xl font-bold ${score>80?'text-green-600':'text-slate-700'}">${score}</span>`;
                 // Filter logic
                 const globallyFilteredCases = dashboardCaseData.filter(c => {
                     const caseDate = new Date(c.date);
@@ -2047,4 +1769,5 @@
     </script>
 </body>
 </html>
+
 
