@@ -748,6 +748,11 @@
         let selectedTypes = [];
         let selectedDifficulties = [];
         let selectedCompanies = [];
+        let sessionInterval;
+        let sessionSeconds = 0;
+        let recognition;
+        let isRecording = false;
+        let finalTranscript = '';
         
         // User State
         let userProfile = JSON.parse(localStorage.getItem('caseBuddyUser')) || null;
@@ -893,17 +898,21 @@
         }
         
         async function showInProgressView() {
-            document.getElementById('casebook-title').textContent = `Interviewer's Guide: ${currentCase.title}`;
+            // 1. Update Title
+            document.getElementById('casebook-title').textContent = currentCase.title;
+            
+            // 2. Load PDF
             const pdfPath = casebooks[currentCase.id] || casebooks.default;
             await initPdfViewer(pdfPath);
-            showView(inProgressView);
             
-            // DIRECT FIX: Just enable the UI immediately. 
-            // The server handles the model now.
-            statusText.textContent = "✅ Connected to AI Coach";
-            statusText.classList.remove('text-yellow-400');
-            statusText.classList.add('text-green-400');
-            enableSandboxUI();
+            // 3. Start the new Timer
+            startSessionTimer();
+            
+            // 4. Initialize Voice Logic (Silent setup)
+            setupSpeechRecognition();
+            
+            // 5. Show the view
+            showView(inProgressView);
         }
 
         // --- Filter Population and Handling ---
@@ -984,6 +993,76 @@
             } catch (error) {
                 console.error('Error loading PDF:', error);
                 pdfRenderContainer.innerHTML = `<p class="text-red-500 text-center">Error: Could not load PDF file. Please ensure the file '${url}' is in the correct folder.</p>`;
+            }
+        }
+
+                // --- NEW: Timer Logic ---
+        function startSessionTimer() {
+            sessionSeconds = 0;
+            const timerEl = document.getElementById('session-timer');
+            if(sessionInterval) clearInterval(sessionInterval);
+            
+            sessionInterval = setInterval(() => {
+                sessionSeconds++;
+                const mins = Math.floor(sessionSeconds / 60).toString().padStart(2, '0');
+                const secs = (sessionSeconds % 60).toString().padStart(2, '0');
+                if(timerEl) timerEl.textContent = `${mins}:${secs}`;
+            }, 1000);
+        }
+        
+        // --- NEW: Speech Recognition Setup ---
+        function setupSpeechRecognition() {
+            if (!('webkitSpeechRecognition' in window || 'SpeechRecognition' in window)) {
+                console.warn("Speech recognition not supported in this browser.");
+                return;
+            }
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            recognition = new SpeechRecognition();
+            recognition.continuous = true;
+            recognition.interimResults = true;
+            recognition.lang = 'en-US';
+        
+            recognition.onstart = () => { isRecording = true; };
+            recognition.onend = () => { isRecording = false; };
+            
+            recognition.onresult = (event) => {
+                let interimTranscript = '';
+                for (let i = event.resultIndex; i < event.results.length; ++i) {
+                    if (event.results[i].isFinal) {
+                        finalTranscript += event.results[i][0].transcript;
+                    } else {
+                        interimTranscript += event.results[i][0].transcript;
+                    }
+                }
+                // Update the hidden textarea so we can send it to AI later
+                const box = document.getElementById('transcript-box');
+                if(box) box.value = finalTranscript + interimTranscript;
+            };
+        }
+        
+        // --- NEW: AI API Call ---
+        async function streamGeminiAPI(feedbackText) {
+            try {
+                const response = await fetch('/api/generate-feedback', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        prompt: `Act as a senior McKinsey partner. Provide concise, constructive feedback based on these interviewer notes: "${feedbackText}". Format with HTML <b> and <br>. Keep it encouraging but sharp.` 
+                    })
+                });
+        
+                const data = await response.json();
+                
+                if (data.candidates && data.candidates[0].content) {
+                    let resultHtml = data.candidates[0].content.parts[0].text;
+                    resultHtml = resultHtml.replace(/```html/g, '').replace(/```/g, '');
+                    document.getElementById('ai-output').innerHTML = resultHtml;
+                } else {
+                    throw new Error("Invalid AI response");
+                }
+            } catch (error) {
+                console.error(error);
+                document.getElementById('ai-output').innerHTML = `<span class="text-red-500">Error generating insights. Please try again.</span>`;
             }
         }
 
@@ -1230,6 +1309,8 @@
         }
 
         function saveFeedback() {
+            clearInterval(sessionInterval); // Stop the timer
+            
             if (!userProfile) {
                 alert("Please create a profile to save your progress!");
                 openLoginModal();
@@ -1593,6 +1674,83 @@
         // Feedback Modal
         saveFeedbackBtn.addEventListener('click', saveFeedback);
         ratingParameters.addEventListener('change', calculateOverallRating);
+
+        // --- NEW SANDBOX & AI LISTENERS (Paste this here) ---
+
+        // 1. Record Button (Mic) Logic
+        if(recordBtn) {
+            recordBtn.addEventListener('click', () => {
+                if (!recognition) { alert("Speech recognition not supported."); return; }
+                
+                if (isRecording) {
+                    // STOP RECORDING
+                    recognition.stop();
+                    recordBtn.classList.remove('recording');
+                    document.getElementById('record-instruction').textContent = "Feedback captured.";
+                    document.getElementById('analyze-btn').classList.remove('hidden');
+                } else {
+                    // START RECORDING
+                    if(transcriptBox) transcriptBox.value = "";
+                    finalTranscript = "";
+                    recognition.start();
+                    recordBtn.classList.add('recording');
+                    document.getElementById('record-instruction').textContent = "Listening... Tap to stop";
+                    
+                    // Reset UI
+                    document.getElementById('ai-result-container').classList.add('hidden');
+                    document.getElementById('analyze-btn').classList.add('hidden');
+                }
+            });
+        }
+
+        // 2. Generate Insights Button Logic
+        if(analyzeBtn) {
+            analyzeBtn.addEventListener('click', async () => {
+                const text = transcriptBox ? transcriptBox.value.trim() : "";
+                if (text.length < 2) { alert("No audio detected. Please record again."); return; }
+
+                // UI Transition
+                analyzeBtn.disabled = true;
+                const btnText = document.getElementById('btn-text');
+                if(btnText) btnText.textContent = "Coach is thinking...";
+                
+                // Hide Recorder, Show Result
+                document.getElementById('recording-ui').classList.add('hidden');
+                document.getElementById('ai-result-container').classList.remove('hidden');
+                document.getElementById('ai-output').innerHTML = '<div class="text-slate-400">Analyzing feedback...</div>';
+
+                try {
+                    await streamGeminiAPI(text);
+                } catch (error) {
+                    document.getElementById('recording-ui').classList.remove('hidden');
+                } finally {
+                    analyzeBtn.disabled = false;
+                    if(btnText) btnText.textContent = "Generate Insights";
+                }
+            });
+        }
+
+        // 3. Reset Recording Button Logic
+        const resetBtn = document.getElementById('reset-recording');
+        if(resetBtn) {
+            resetBtn.addEventListener('click', () => {
+                document.getElementById('ai-result-container').classList.add('hidden');
+                document.getElementById('recording-ui').classList.remove('hidden');
+                document.getElementById('analyze-btn').classList.add('hidden');
+                document.getElementById('record-instruction').textContent = "Tap to record verbal feedback";
+                if(transcriptBox) transcriptBox.value = "";
+            });
+        }
+
+        // 4. Keyboard Navigation for PDF
+        document.addEventListener('keydown', (e) => {
+            if (!document.getElementById('in-progress-view').classList.contains('hidden')) {
+                if (e.key === 'ArrowRight') onNextPage();
+                if (e.key === 'ArrowLeft') onPrevPage();
+            }
+        });
+
+        // -----------------------------------------------------------
 
         // ====================================================================
         // --- DASHBOARD SCRIPT ---
@@ -2047,6 +2205,7 @@
     </script>
 </body>
 </html>
+
 
 
 
