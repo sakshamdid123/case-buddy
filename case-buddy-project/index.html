@@ -57,7 +57,83 @@
             background-color: rgba(0, 0, 0, 0.6); border-radius: 0.5rem; padding: 0.5rem 1rem;
             display: flex; align-items: center; gap: 1rem; z-index: 10;
         }
+
+        /* --- NEW MINIMALIST PDF VIEWER --- */
+        #pdf-wrapper {
+            background-color: #1e293b; /* Slate-900 */
+            border-radius: 0.75rem;
+            box-shadow: inset 0 2px 4px 0 rgb(0 0 0 / 0.25);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
         
+        /* --- VOICE RECORDER ANIMATIONS --- */
+        .mic-container {
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 120px;
+            transition: all 0.3s ease;
+        }
+        
+        .mic-button {
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            box-shadow: 0 10px 15px -3px rgba(59, 130, 246, 0.3);
+            cursor: pointer;
+            z-index: 10;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .mic-button:hover { transform: scale(1.05); }
+        .mic-button.recording { background: #ef4444; box-shadow: 0 10px 15px -3px rgba(239, 68, 68, 0.3); }
+        
+        /* The Pulse Rings */
+        .mic-ring {
+            position: absolute;
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            border: 2px solid #ef4444;
+            opacity: 0;
+            z-index: 1;
+        }
+        
+        .mic-button.recording ~ .mic-ring { animation: ripple 1.5s infinite; }
+        .mic-button.recording ~ .mic-ring:nth-child(2) { animation-delay: 0.3s; }
+        .mic-button.recording ~ .mic-ring:nth-child(3) { animation-delay: 0.6s; }
+        
+        @keyframes ripple {
+            0% { transform: scale(1); opacity: 0.6; }
+            100% { transform: scale(3); opacity: 0; }
+        }
+        
+        /* AI Insight Card */
+        .insight-card {
+            background: #f8fafc;
+            border-left: 4px solid #10b981;
+            padding: 1.5rem;
+            border-radius: 0.5rem;
+            margin-top: 1rem;
+            animation: slideUp 0.4s ease-out;
+        }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        /* Utility to hide raw tech but keep functional */
+        .visually-hidden { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); border: 0; }
+                
         /* Ratings */
         .star-rating { direction: rtl; display: inline-flex; }
         .star-rating input[type="radio"] { display: none; }
@@ -236,81 +312,52 @@
         </div>
 
         <div id="in-progress-view" class="hidden">
-             <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                <div class="bg-white p-6 rounded-lg shadow-md h-[85vh] flex flex-col lg:col-span-2">
-                    <h2 id="casebook-title" class="text-2xl font-bold mb-4 shrink-0 gradient-text">Interviewer's Guide</h2>
-                    <div id="pdf-render-container" class="flex-grow rounded-lg overflow-hidden border bg-slate-100 p-2">
-                        <canvas id="pdf-canvas"></canvas>
-                        <div id="pdf-controls">
-                            <button id="pdf-prev" class="text-white hover:text-blue-300 disabled:opacity-50 disabled:cursor-not-allowed">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg>
-                            </button>
-                            <span class="text-white font-mono text-sm">
-                                <span id="page-num"></span> / <span id="page-count"></span>
-                            </span>
-                            <button id="pdf-next" class="text-white hover:text-blue-300 disabled:opacity-50 disabled:cursor-not-allowed">
-                               <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
-                            </button>
-                            <button id="pdf-fullscreen" class="text-white hover:text-blue-300 ml-4">
-                               <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5v-4m0 0h-4m4 0l5-5" /></svg>
-                            </button>
+            <div class="h-[calc(100vh-6rem)] flex gap-6">
+                
+                <div class="flex-grow flex flex-col bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                    <div class="h-14 px-6 border-b border-slate-100 flex justify-between items-center bg-white">
+                        <h2 id="casebook-title" class="font-bold text-slate-700 truncate max-w-lg">Casebook</h2>
+                        <div class="text-xs text-slate-400 font-mono">Use Arrow Keys ← → to navigate</div>
+                    </div>
+        
+                    <div id="pdf-wrapper" class="flex-grow relative bg-slate-900 group">
+                        <canvas id="pdf-canvas" class="shadow-2xl transition-opacity duration-200"></canvas>
+                        
+                        <div class="absolute bottom-6 left-1/2 -translate-x-1/2 bg-slate-800/90 backdrop-blur text-white px-4 py-2 rounded-full flex items-center gap-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300 shadow-xl">
+                            <button id="pdf-prev" class="hover:text-blue-400 transition"><i class="ph ph-caret-left text-xl"></i></button>
+                            <span class="font-mono text-sm tracking-widest"><span id="page-num">1</span> / <span id="page-count">--</span></span>
+                            <button id="pdf-next" class="hover:text-blue-400 transition"><i class="ph ph-caret-right text-xl"></i></button>
+                            <div class="w-px h-4 bg-slate-600"></div>
+                            <button id="pdf-fullscreen" class="hover:text-blue-400 transition"><i class="ph ph-arrows-out-simple"></i></button>
                         </div>
                     </div>
                 </div>
-
-                <div class="bg-white rounded-lg shadow-md flex flex-col h-[85vh] overflow-hidden border border-slate-200">
-                    <div class="p-4 border-b border-slate-100 bg-slate-50 shrink-0">
-                        <div class="flex justify-between items-center mb-3">
-                            <h2 class="text-lg font-bold text-slate-800">Interviewer Assistant</h2>
-                            <div class="flex gap-2">
-                                <div class="bg-blue-100 text-blue-700 px-2 py-1 rounded text-xs font-bold flex items-center gap-1">
-                                    <i class="ph ph-lightning-fill"></i> AI Powered
-                                </div>
-                                <button id="end-case-btn" class="bg-red-600 text-white text-xs px-3 py-1 rounded hover:bg-red-700 transition font-bold shadow-sm">
-                                    End Case
-                                </button>
+        
+                <div class="w-1/3 flex flex-col gap-4">
+                    
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="flex items-center gap-2">
+                                <div class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
+                                <span class="text-sm font-bold text-slate-500 uppercase tracking-wide">Live Session</span>
                             </div>
+                            <span id="session-timer" class="font-mono text-xl font-bold text-slate-700">00:00</span>
                         </div>
-                        
-                        <div id="system-status" class="text-[10px] font-mono bg-slate-800 text-yellow-400 p-2 rounded break-all">
-                            Initializing... Fetching available models...
-                        </div>
+                        <p class="text-slate-500 text-sm leading-relaxed">
+                            Guide the candidate through the case. Take mental notes on their structure. When finished, proceed to feedback.
+                        </p>
                     </div>
-
-                    <div class="flex-grow p-4 overflow-y-auto space-y-4">
-                         <div class="space-y-2">
-                            <label class="block text-sm font-semibold text-slate-700 flex justify-between">
-                                Verbal Feedback
-                                <span class="text-xs font-normal text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full">Auto-transcribing</span>
-                            </label>
-                          
-                            <div class="relative">
-                                <textarea id="transcript-box" class="w-full h-32 p-3 text-sm text-slate-600 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none resize-none bg-slate-50" 
-                                    placeholder="Wait for model initialization..."></textarea>
-                              
-                                <button id="record-btn" disabled class="absolute bottom-3 right-3 w-10 h-10 rounded-full bg-white shadow-lg border border-slate-100 text-slate-400 transition-all group flex items-center justify-center z-10">
-                                    <i class="ph ph-microphone text-lg"></i>
-                                </button>
-                            </div>
-                          
-                            <div class="flex justify-between items-center h-4">
-                                <button id="clear-btn" class="text-xs text-slate-400 hover:text-red-500 underline">Clear Text</button>
-                            </div>
+        
+                    <div class="bg-gradient-to-br from-slate-50 to-slate-100 p-6 rounded-2xl border border-slate-200 flex-grow flex flex-col justify-center items-center text-center">
+                        <div class="mb-6 p-4 bg-white rounded-full shadow-sm">
+                            <i class="ph ph-flag-checkered text-4xl text-blue-500"></i>
                         </div>
-
-                        <button id="analyze-btn" disabled class="w-full bg-slate-200 text-slate-400 font-bold py-3 rounded-xl shadow-none transition transform flex items-center justify-center gap-2 cursor-not-allowed text-sm">
-                            <span id="btn-text">Loading Models...</span>
-                            <i class="ph ph-spinner animate-spin hidden" id="loading-spinner"></i>
+                        <h3 class="text-lg font-bold text-slate-800 mb-2">Case Conclusion</h3>
+                        <p class="text-slate-500 text-sm mb-6">Ready to wrap up? Click below to start the feedback loop.</p>
+                        <button id="end-case-btn" class="w-full py-4 bg-slate-900 hover:bg-blue-600 text-white font-bold rounded-xl shadow-lg transition-all transform hover:-translate-y-1 flex items-center justify-center gap-2">
+                            <span>Complete & Rate Performance</span>
+                            <i class="ph ph-arrow-right-bold"></i>
                         </button>
-
-                        <div id="ai-result-container" class="hidden dashboard-animate-fade-in pb-4">
-                            <div class="flex items-center gap-2 mb-2">
-                                <div class="h-px bg-slate-200 flex-grow"></div>
-                                <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">AI Analysis</span>
-                                <div class="h-px bg-slate-200 flex-grow"></div>
-                            </div>
-                            <div id="ai-output" class="text-xs text-slate-700 bg-white p-4 rounded-xl border border-slate-200 shadow-sm ai-content leading-relaxed cursor-blink"></div>
-                        </div>
                     </div>
                 </div>
             </div>
@@ -420,69 +467,106 @@
         </div>
     </div>
 
-    <div id="feedback-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-        <div class="bg-white rounded-lg shadow-xl p-8 w-full max-w-lg transform transition-all" id="feedback-modal-content">
-            <h2 class="text-2xl font-bold mb-6 gradient-text">Case Feedback</h2>
-            <div id="rating-parameters" class="space-y-4">
-                 <div class="flex justify-between items-center">
-                    <label class="text-slate-700 font-semibold">Structure</label>
-                    <div class="star-rating" data-parameter="structure" data-weight="0.35">
-                        <input type="radio" id="structure-star5" name="structure-rating" value="5" /><label for="structure-star5">&#9733;</label>
-                        <input type="radio" id="structure-star4" name="structure-rating" value="4" /><label for="structure-star4">&#9733;</label>
-                        <input type="radio" id="structure-star3" name="structure-rating" value="3" /><label for="structure-star3">&#9733;</label>
-                        <input type="radio" id="structure-star2" name="structure-rating" value="2" /><label for="structure-star2">&#9733;</label>
-                        <input type="radio" id="structure-star1" name="structure-rating" value="1" /><label for="structure-star1">&#9733;</label>
-                    </div>
-                </div>
-                <div class="flex justify-between items-center">
-                    <label class="text-slate-700 font-semibold">Case Understanding</label>
-                    <div class="star-rating" data-parameter="understanding" data-weight="0.25">
-                        <input type="radio" id="understanding-star5" name="understanding-rating" value="5" /><label for="understanding-star5">&#9733;</label>
-                        <input type="radio" id="understanding-star4" name="understanding-rating" value="4" /><label for="understanding-star4">&#9733;</label>
-                        <input type="radio" id="understanding-star3" name="understanding-rating" value="3" /><label for="understanding-star3">&#9733;</label>
-                        <input type="radio" id="understanding-star2" name="understanding-rating" value="2" /><label for="understanding-star2">&#9733;</label>
-                        <input type="radio" id="understanding-star1" name="understanding-rating" value="1" /><label for="understanding-star1">&#9733;</label>
-                    </div>
-                </div>
-                 <div class="flex justify-between items-center">
-                    <label class="text-slate-700 font-semibold">Delivery</label>
-                    <div class="star-rating" data-parameter="delivery" data-weight="0.25">
-                        <input type="radio" id="delivery-star5" name="delivery-rating" value="5" /><label for="delivery-star5">&#9733;</label>
-                        <input type="radio" id="delivery-star4" name="delivery-rating" value="4" /><label for="delivery-star4">&#9733;</label>
-                        <input type="radio" id="delivery-star3" name="delivery-rating" value="3" /><label for="delivery-star3">&#9733;</label>
-                        <input type="radio" id="delivery-star2" name="delivery-rating" value="2" /><label for="delivery-star2">&#9733;</label>
-                        <input type="radio" id="delivery-star1" name="delivery-rating" value="1" /><label for="delivery-star1">&#9733;</label>
-                    </div>
-                </div>
-                 <div class="flex justify-between items-center">
-                    <label class="text-slate-700 font-semibold">Creativity</label>
-                    <div class="star-rating" data-parameter="creativity" data-weight="0.15">
-                        <input type="radio" id="creativity-star5" name="creativity-rating" value="5" /><label for="creativity-star5">&#9733;</label>
-                        <input type="radio" id="creativity-star4" name="creativity-rating" value="4" /><label for="creativity-star4">&#9733;</label>
-                        <input type="radio" id="creativity-star3" name="creativity-rating" value="3" /><label for="creativity-star3">&#9733;</label>
-                        <input type="radio" id="creativity-star2" name="creativity-rating" value="2" /><label for="creativity-star2">&#9733;</label>
-                        <input type="radio" id="creativity-star1" name="creativity-rating" value="1" /><label for="creativity-star1">&#9733;</label>
-                    </div>
-                </div>
+    <div id="feedback-modal" class="hidden fixed inset-0 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center z-50 p-4 transition-opacity duration-300">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl transform transition-all flex flex-col max-h-[90vh] overflow-hidden" id="feedback-modal-content">
+            
+            <div class="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+                <h2 class="text-2xl font-extrabold gradient-text">Performance Review</h2>
+                <button onclick="closeFeedbackModal()" class="text-slate-400 hover:text-slate-600"><i class="ph ph-x text-xl"></i></button>
             </div>
-            <hr class="my-6">
-            <div class="text-center">
-                <div class="flex justify-center items-center gap-2">
-                    <p class="text-slate-700 font-semibold">Overall Rating</p>
-                    <div class="group relative">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-slate-400 cursor-pointer" viewBox="0 0 20 20" fill="currentColor">
-                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
-                        </svg>
-                        <div class="absolute bottom-full z-10 mb-2 w-64 bg-slate-800 text-white text-xs rounded-lg py-2 px-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
-                            Weighted average: Structure (35%), Case Understanding (25%), Delivery (25%), Creativity (15%).
-                            <svg class="absolute text-slate-800 h-2 w-full left-0 top-full" x="0px" y="0px" viewBox="0 0 255 255" xml:space="preserve"><polygon class="fill-current" points="0,0 127.5,127.5 255,0"/></svg>
+    
+            <div class="overflow-y-auto p-8 space-y-8">
+                
+                <div>
+                    <h3 class="text-sm font-bold text-slate-400 uppercase tracking-wider mb-4">1. Scorecard</h3>
+                    <div id="rating-parameters" class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
+                        <div class="flex justify-between items-center p-3 bg-slate-50 rounded-lg">
+                            <label class="font-semibold text-slate-700">Structure</label>
+                            <div class="star-rating" data-parameter="structure" data-weight="0.35">
+                                <input type="radio" id="s5" name="s" value="5"/><label for="s5">★</label>
+                                <input type="radio" id="s4" name="s" value="4"/><label for="s4">★</label>
+                                <input type="radio" id="s3" name="s" value="3"/><label for="s3">★</label>
+                                <input type="radio" id="s2" name="s" value="2"/><label for="s2">★</label>
+                                <input type="radio" id="s1" name="s" value="1"/><label for="s1">★</label>
+                            </div>
+                        </div>
+                        <div class="flex justify-between items-center p-3 bg-slate-50 rounded-lg">
+                            <label class="font-semibold text-slate-700">Understanding</label>
+                            <div class="star-rating" data-parameter="understanding" data-weight="0.25">
+                                <input type="radio" id="u5" name="u" value="5"/><label for="u5">★</label>
+                                <input type="radio" id="u4" name="u" value="4"/><label for="u4">★</label>
+                                <input type="radio" id="u3" name="u" value="3"/><label for="u3">★</label>
+                                <input type="radio" id="u2" name="u" value="2"/><label for="u2">★</label>
+                                <input type="radio" id="u1" name="u" value="1"/><label for="u1">★</label>
+                            </div>
+                        </div>
+                        <div class="flex justify-between items-center p-3 bg-slate-50 rounded-lg">
+                            <label class="font-semibold text-slate-700">Delivery</label>
+                            <div class="star-rating" data-parameter="delivery" data-weight="0.25">
+                                <input type="radio" id="d5" name="d" value="5"/><label for="d5">★</label>
+                                <input type="radio" id="d4" name="d" value="4"/><label for="d4">★</label>
+                                <input type="radio" id="d3" name="d" value="3"/><label for="d3">★</label>
+                                <input type="radio" id="d2" name="d" value="2"/><label for="d2">★</label>
+                                <input type="radio" id="d1" name="d" value="1"/><label for="d1">★</label>
+                            </div>
+                        </div>
+                        <div class="flex justify-between items-center p-3 bg-slate-50 rounded-lg">
+                            <label class="font-semibold text-slate-700">Creativity</label>
+                            <div class="star-rating" data-parameter="creativity" data-weight="0.15">
+                                <input type="radio" id="c5" name="c" value="5"/><label for="c5">★</label>
+                                <input type="radio" id="c4" name="c" value="4"/><label for="c4">★</label>
+                                <input type="radio" id="c3" name="c" value="3"/><label for="c3">★</label>
+                                <input type="radio" id="c2" name="c" value="2"/><label for="c2">★</label>
+                                <input type="radio" id="c1" name="c" value="1"/><label for="c1">★</label>
+                            </div>
                         </div>
                     </div>
+                    <div class="flex justify-center items-center mt-4 gap-2">
+                        <span class="text-xs font-bold text-slate-400 uppercase">Calculated Score:</span>
+                        <div id="overall-rating-display" class="font-bold text-xl text-slate-800">0</div>
+                    </div>
                 </div>
-                <div id="overall-rating-display" class="flex justify-center mt-1"></div>
+    
+                <hr class="border-slate-100">
+    
+                <div>
+                    <h3 class="text-sm font-bold text-slate-400 uppercase tracking-wider mb-4">2. Qualitative Feedback (AI Powered)</h3>
+                    
+                    <textarea id="transcript-box" class="visually-hidden"></textarea>
+                    <div id="system-status" class="visually-hidden"></div>
+    
+                    <div id="recording-ui" class="flex flex-col items-center justify-center py-6 bg-slate-50 rounded-xl border border-slate-100 border-dashed">
+                        <p id="record-instruction" class="text-slate-500 font-medium mb-6">Tap to record verbal feedback</p>
+                        
+                        <div class="mic-container mb-4">
+                            <button id="record-btn" class="mic-button">
+                                <i class="ph ph-microphone"></i>
+                            </button>
+                            <div class="mic-ring"></div>
+                            <div class="mic-ring"></div>
+                        </div>
+    
+                        <button id="analyze-btn" class="hidden px-6 py-2 bg-slate-900 text-white rounded-full font-bold shadow-lg hover:bg-blue-600 transition flex items-center gap-2">
+                            <i class="ph ph-sparkle"></i> <span id="btn-text">Generate Insights</span>
+                        </button>
+                    </div>
+    
+                    <div id="ai-result-container" class="hidden">
+                        <div class="insight-card">
+                            <h4 class="font-bold text-slate-800 flex items-center gap-2 mb-3">
+                                <i class="ph ph-robot text-emerald-500"></i> AI Coach Feedback
+                            </h4>
+                            <div id="ai-output" class="text-sm text-slate-600 leading-relaxed space-y-2"></div>
+                        </div>
+                        <button id="reset-recording" class="text-xs text-slate-400 underline mt-2 hover:text-blue-500">Record again</button>
+                    </div>
+                </div>
+    
             </div>
-            <div class="flex justify-end space-x-4 mt-8">
-                <button id="save-feedback-btn" class="gradient-bg text-white px-6 py-2 rounded-lg font-semibold hover:opacity-90 transition">Save & Track</button>
+    
+            <div class="p-4 border-t border-slate-100 bg-white flex justify-end gap-3">
+                <button onclick="closeFeedbackModal()" class="px-6 py-2 text-slate-500 font-medium hover:bg-slate-100 rounded-lg transition">Cancel</button>
+                <button id="save-feedback-btn" class="gradient-bg text-white px-8 py-2 rounded-lg font-bold shadow-md hover:opacity-90 transition transform hover:-translate-y-0.5">Save to History</button>
             </div>
         </div>
     </div>
@@ -656,6 +740,123 @@
             56: 'cases/Where are the Kids II Unconventional II Easy II Nation with Namo.pdf',
             default: 'cases/Accelerating Prosperity II Growth II Easy II Kepler Cannon.pdf'
         };
+
+                // --- ADD THESE VARIABLES AT THE TOP OF YOUR SCRIPT ---
+        let sessionInterval;
+        let sessionSeconds = 0;
+        
+        // --- PDF KEYBOARD NAVIGATION & TIMER (Add this inside showInProgressView) ---
+        async function showInProgressView() {
+            document.getElementById('casebook-title').textContent = currentCase.title; // Simpler title
+            const pdfPath = casebooks[currentCase.id] || casebooks.default;
+            await initPdfViewer(pdfPath);
+            
+            // Start Timer
+            startSessionTimer();
+            
+            // Initialize Voice Logic (Silent setup)
+            setupSpeechRecognition();
+            
+            showView(inProgressView);
+        }
+        
+        function startSessionTimer() {
+            sessionSeconds = 0;
+            const timerEl = document.getElementById('session-timer');
+            clearInterval(sessionInterval);
+            sessionInterval = setInterval(() => {
+                sessionSeconds++;
+                const mins = Math.floor(sessionSeconds / 60).toString().padStart(2, '0');
+                const secs = (sessionSeconds % 60).toString().padStart(2, '0');
+                timerEl.textContent = `${mins}:${secs}`;
+            }, 1000);
+        }
+        
+        // Add Global Keyboard Listener for PDF
+        document.addEventListener('keydown', (e) => {
+            if (!document.getElementById('in-progress-view').classList.contains('hidden')) {
+                if (e.key === 'ArrowRight') onNextPage();
+                if (e.key === 'ArrowLeft') onPrevPage();
+            }
+        });
+        
+        // --- UPDATED SANDBOX/FEEDBACK LOGIC ---
+        
+        // 1. Modify the Record Button Logic
+        recordBtn.addEventListener('click', () => {
+            if (!recognition) return;
+            
+            if (isRecording) {
+                // STOP RECORDING
+                recognition.stop();
+                recordBtn.classList.remove('recording');
+                recordBtn.innerHTML = '<i class="ph ph-microphone"></i>';
+                document.getElementById('record-instruction').textContent = "Recording saved.";
+                
+                // Show Generate Button
+                document.getElementById('analyze-btn').classList.remove('hidden');
+            } else {
+                // START RECORDING
+                transcriptBox.value = ""; // Clear previous
+                finalTranscript = "";
+                recognition.start();
+                recordBtn.classList.add('recording');
+                recordBtn.innerHTML = '<i class="ph ph-stop"></i>';
+                document.getElementById('record-instruction').textContent = "Listening... Tap to stop";
+                
+                // Hide previous results if any
+                document.getElementById('ai-result-container').classList.add('hidden');
+                document.getElementById('analyze-btn').classList.add('hidden');
+            }
+        });
+        
+        // 2. Modify the Analyze Button Logic (The "Generate" step)
+        analyzeBtn.addEventListener('click', async () => {
+            const text = transcriptBox.value.trim();
+            if (text.length < 2) {
+                alert("No audio detected. Please record again.");
+                return;
+            }
+        
+            // UI Transformation
+            const analyzeBtn = document.getElementById('analyze-btn');
+            const btnText = document.getElementById('btn-text');
+            
+            analyzeBtn.disabled = true;
+            btnText.textContent = "Coach is thinking...";
+            
+            // Hide Recorder UI temporarily to focus on result
+            document.getElementById('recording-ui').classList.add('hidden');
+            document.getElementById('ai-result-container').classList.remove('hidden');
+            document.getElementById('ai-output').innerHTML = '<div class="flex items-center gap-2 text-slate-400"><i class="ph ph-spinner animate-spin"></i> Analyzing your feedback...</div>';
+        
+            try {
+                await streamGeminiAPI(text);
+                // On success, styles are handled by streamGeminiAPI, 
+                // but we ensure the "Recorder" is hidden and "Result" is shown.
+            } catch (error) {
+                document.getElementById('recording-ui').classList.remove('hidden'); // Show recorder again on fail
+            } finally {
+                analyzeBtn.disabled = false;
+                btnText.textContent = "Generate Insights";
+            }
+        });
+        
+        // 3. Reset Button Logic
+        document.getElementById('reset-recording').addEventListener('click', () => {
+            document.getElementById('ai-result-container').classList.add('hidden');
+            document.getElementById('recording-ui').classList.remove('hidden');
+            document.getElementById('analyze-btn').classList.add('hidden');
+            document.getElementById('record-instruction').textContent = "Tap to record verbal feedback";
+            transcriptBox.value = "";
+        });
+        
+        // 4. Update saveFeedback to stop timer
+        const originalSaveFeedback = saveFeedback;
+        saveFeedback = function() {
+            clearInterval(sessionInterval);
+            originalSaveFeedback();
+        }
 
         // --- State Management ---
         let currentCase = null;
@@ -1963,6 +2164,7 @@
     </script>
 </body>
 </html>
+
 
 
 
