@@ -740,10 +740,13 @@
         const welcomeView = document.getElementById('welcome-view');
         const caseLibraryView = document.getElementById('case-library-view');
         const detailedCaseView = document.getElementById('detailed-case-view');
-        const inProgressView = document.getElementById('in-progress-view');
         const aboutView = document.getElementById('about-view');
         const dashboardView = document.getElementById('dashboard-view');
         const profileView = document.getElementById('profile-view');
+
+        const views = {
+            inProgress: document.getElementById('in-progress-view'),
+        };
         
         const caseGrid = document.getElementById('case-grid');
         const homeButton = document.getElementById('home-button');
@@ -865,27 +868,31 @@
             showView(detailedCaseView);
         }
         
+        // --- NEW: INTERACTIVE SESSION LOGIC ---
         async function showInProgressView() {
-            document.getElementById('casebook-title').textContent = currentCase.title; // Simpler title
-            showView('inProgressView');
-            // Start Timer
-            startSessionTimer();
-            
-            // Initialize Voice Logic (Silent setup)
-            setupSpeechRecognition();
+            document.getElementById('casebook-title').textContent = currentCase.title;
             const pdfPath = casebooks[currentCase.id] || casebooks.default;
+            
             await initPdfViewer(pdfPath);
+            startSessionTimer();
+            setupSpeechRecognition(); 
+            
+            showView('inProgress');
         }
-
+        
         function startSessionTimer() {
             sessionSeconds = 0;
             const timerEl = document.getElementById('session-timer');
-            clearInterval(sessionInterval);
+            if (sessionInterval) clearInterval(sessionInterval);
+            
+            // Reset Text
+            if(timerEl) timerEl.textContent = "00:00";
+
             sessionInterval = setInterval(() => {
                 sessionSeconds++;
                 const mins = Math.floor(sessionSeconds / 60).toString().padStart(2, '0');
                 const secs = (sessionSeconds % 60).toString().padStart(2, '0');
-                timerEl.textContent = `${mins}:${secs}`;
+                if(timerEl) timerEl.textContent = `${mins}:${secs}`;
             }, 1000);
         }
 
@@ -989,22 +996,18 @@
             if (!isResize) pdfCanvas.style.opacity = '0';
 
             pdfDoc.getPage(num).then(page => {
-                const devicePixelRatio = window.devicePixelRatio || 1;
-                const viewport1 = page.getViewport({ scale: 1 });
-                const scale = pdfRenderContainer.clientWidth / viewport1.width;
-                const viewport = page.getViewport({ scale: scale });
-                const context = pdfCanvas.getContext('2d');
-                
-                pdfCanvas.style.width = `${viewport.width}px`;
-                pdfCanvas.style.height = `${viewport.height}px`;
-                pdfCanvas.width = Math.floor(viewport.width * devicePixelRatio);
-                pdfCanvas.height = Math.floor(viewport.height * devicePixelRatio);
-                context.setTransform(devicePixelRatio, 0, 0, devicePixelRatio, 0, 0);
+                const containerWidth = pdfWrapper.clientWidth || 600;
+                const viewport = page.getViewport({ scale: 1 });
+                const scale = containerWidth / viewport.width;
+                const scaledViewport = page.getViewport({ scale: scale });
 
-                const renderContext = {
-                    canvasContext: context,
-                    viewport: viewport
-                };
+                const context = pdfCanvas.getContext('2d');
+                pdfCanvas.height = scaledViewport.height;
+                pdfCanvas.width = scaledViewport.width;
+
+                const renderContext = { canvasContext: context, viewport: scaledViewport };
+                const renderTask = page.render(renderContext);
+
 
                 currentRenderTask = page.render(renderContext);
                 currentRenderTask.promise.then(() => {
@@ -1023,20 +1026,14 @@
 
         function onPrevPage() { if (pageNum <= 1) return; pageNum--; renderPage(pageNum); }
         function onNextPage() { if (pageNum >= pdfDoc.numPages) return; pageNum++; renderPage(pageNum); }
-
         function updateNavButtons() {
-            prevPageBtn.disabled = (pageNum <= 1);
-            nextPageBtn.disabled = (pageNum >= pdfDoc.numPages);
+            document.getElementById('pdf-prev').disabled = (pageNum <= 1);
+            document.getElementById('pdf-next').disabled = (pageNum >= pdfDoc.numPages);
         }
-
         function toggleFullscreen() {
-             if (!document.fullscreenElement) {
-                pdfRenderContainer.requestFullscreen().catch(err => {
-                    console.error(`Error attempting to enable full-screen mode: ${err.message} (${err.name})`);
-                });
-            } else {
-                document.exitFullscreen();
-            }
+            if (!document.fullscreenElement) pdfWrapper.requestFullscreen().catch(e => console.log(e));
+            else document.exitFullscreen();
+        }
         }
 
         // --- SANDBOX LOGIC (INTEGRATED) ---
@@ -1062,31 +1059,19 @@
         }
 
         function setupSpeechRecognition() {
-             const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-             recognition = new SpeechRecognition();
-             recognition.continuous = true; 
-             recognition.interimResults = true; 
-             recognition.lang = 'en-US';
+            if (!('webkitSpeechRecognition' in window || 'SpeechRecognition' in window)) {
+                console.warn("Speech recognition not supported");
+                return;
+            }
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            recognition = new SpeechRecognition();
+            recognition.continuous = true;
+            recognition.interimResults = true;
+            recognition.lang = 'en-US';
 
-             recognition.onstart = () => {
-                isRecording = true;
-                recordBtn.classList.add('recording-active');
-                recordBtn.innerHTML = '<i class="ph ph-stop text-lg font-bold"></i>';
-                statusText.textContent = "🎤 Listening... Speak now.";
-                statusText.classList.replace('text-green-400', 'text-white');
-                
-                if (transcriptBox.value.includes("1. Click Mic")) transcriptBox.value = "";
-            };
-
-            recognition.onend = () => {
-                isRecording = false;
-                recordBtn.classList.remove('recording-active');
-                recordBtn.innerHTML = '<i class="ph ph-microphone text-lg"></i>';
-                statusText.textContent = "✅ Ready";    
-                statusText.classList.replace('text-white', 'text-green-400');
-                finalTranscript = transcriptBox.value;
-            };
-
+            recognition.onstart = () => { isRecording = true; };
+            recognition.onend = () => { isRecording = false; };
+            
             recognition.onresult = (event) => {
                 let interimTranscript = '';
                 for (let i = event.resultIndex; i < event.results.length; ++i) {
@@ -1096,59 +1081,36 @@
                         interimTranscript += event.results[i][0].transcript;
                     }
                 }
-                transcriptBox.value = finalTranscript + interimTranscript;
-                transcriptBox.scrollTop = transcriptBox.scrollHeight;
+                const box = document.getElementById('transcript-box');
+                if(box) box.value = finalTranscript + interimTranscript;
             };
         }
 
+        // --- NEW: AI API INTEGRATION ---
         async function streamGeminiAPI(feedbackText) {
-            const aiOutput = document.getElementById('ai-output');
-            const aiContainer = document.getElementById('ai-result-container');
-            const analyzeBtn = document.getElementById('analyze-btn');
-            const btnText = document.getElementById('btn-text');
-            const loadingSpinner = document.getElementById('loading-spinner');
-            
-            // UI Loading State
-            analyzeBtn.disabled = true;
-            btnText.textContent = "Analyzing...";
-            loadingSpinner.classList.remove('hidden');
-            aiContainer.classList.remove('hidden');
-            aiOutput.innerHTML = '<span class="text-slate-500 animate-pulse">Consulting the AI Coach...</span>';
-        
-            const fullPrompt = `
-                You are an expert case interview coach. Analyze this feedback: "${feedbackText}"
-                Output ONLY HTML. Use <h3> for headers and <ul><li> for lists.
-                Sections: ✅ Key Strengths, 🚀 Areas for Improvement. Concise.
-            `;
-        
             try {
-                // CALL YOUR OWN SERVER
                 const response = await fetch('/api/generate-feedback', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ prompt: fullPrompt })
+                    body: JSON.stringify({ 
+                        prompt: `Act as a senior McKinsey partner observing a case interview. Analyze this raw feedback transcript: "${feedbackText}". 
+                        Format output as concise HTML. Use <ul> for bullet points. 
+                        Structure: <h3>✅ Key Strengths</h3> [bullets] <h3>🚀 Areas for Improvement</h3> [bullets].` 
+                    })
                 });
-        
+
                 const data = await response.json();
                 
-                // Handle Gemini Response Structure
                 if (data.candidates && data.candidates[0].content) {
-                     let resultHtml = data.candidates[0].content.parts[0].text;
-                     // Clean Markdown if present
-                     resultHtml = resultHtml.replace(/```html/g, '').replace(/```/g, '');
-                     aiOutput.innerHTML = resultHtml;
+                    let resultHtml = data.candidates[0].content.parts[0].text;
+                    resultHtml = resultHtml.replace(/```html/g, '').replace(/```/g, '');
+                    document.getElementById('ai-output').innerHTML = resultHtml;
                 } else {
-                     throw new Error("Invalid response from AI");
+                    throw new Error("Invalid response from AI");
                 }
-        
             } catch (error) {
                 console.error(error);
-                aiOutput.innerHTML = `<span class="text-red-500">Error: ${error.message}. Please try again.</span>`;
-            } finally {
-                // Reset UI
-                analyzeBtn.disabled = false;
-                btnText.textContent = "Generate Insights";
-                loadingSpinner.classList.add('hidden');
+                document.getElementById('ai-output').innerHTML = `<span class="text-red-500">Connection Error. Please check server.js</span>`;
             }
         }
 
@@ -1221,6 +1183,7 @@
         }
 
         function saveFeedback() {
+            clearInterval(sessionInterval);    
             if (!userProfile) {
                 alert("Please create a profile to save your progress!");
                 openLoginModal();
@@ -1568,51 +1531,107 @@
             }
         }); 
 
-        // 3. Reset Button Logic
+        // NEW: End Case Flow (Opens Feedback Modal)
+        document.getElementById('end-case-btn').addEventListener('click', () => {
+            const modal = document.getElementById('feedback-modal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            
+            // Reset Modal UI
+            document.getElementById('recording-ui').classList.remove('hidden');
+            document.getElementById('ai-result-container').classList.add('hidden');
+            document.getElementById('analyze-btn').classList.add('hidden');
+            document.getElementById('record-instruction').textContent = "Tap to record verbal feedback";
+            document.getElementById('transcript-box').value = "";
+            finalTranscript = "";
+        });
+
+        // PDF Controls
+        document.getElementById('pdf-prev').addEventListener('click', onPrevPage);
+        document.getElementById('pdf-next').addEventListener('click', onNextPage);
+        document.getElementById('pdf-fullscreen').addEventListener('click', toggleFullscreen);
+
+                // Keyboard Shortcuts
+        document.addEventListener('keydown', (e) => {
+            if (!document.getElementById('in-progress-view').classList.contains('hidden')) {
+                if (e.key === 'ArrowRight') onNextPage();
+                if (e.key === 'ArrowLeft') onPrevPage();
+            }
+        });
+        
+                // NEW: Voice Recorder Logic
+        const recordBtn = document.getElementById('record-btn');
+        if(recordBtn) {
+            recordBtn.addEventListener('click', () => {
+                if (!recognition) { alert("Browser does not support speech recognition."); return; }
+                
+                if (isRecording) {
+                    // STOP
+                    recognition.stop();
+                    recordBtn.classList.remove('recording');
+                    document.getElementById('record-instruction').textContent = "Feedback captured.";
+                    document.getElementById('analyze-btn').classList.remove('hidden');
+                } else {
+                    // START
+                    document.getElementById('transcript-box').value = "";
+                    finalTranscript = "";
+                    recognition.start();
+                    recordBtn.classList.add('recording');
+                    document.getElementById('record-instruction').textContent = "Listening... Tap to stop";
+                    document.getElementById('analyze-btn').classList.add('hidden');
+                }
+            });
+        }
+
+                // NEW: Generate Insights Logic
+        const analyzeBtn = document.getElementById('analyze-btn');
+        if(analyzeBtn) {
+            analyzeBtn.addEventListener('click', async () => {
+                const text = document.getElementById('transcript-box').value.trim();
+                if (text.length < 2) { alert("Please record feedback first."); return; }
+
+                // UI Transition
+                analyzeBtn.disabled = true;
+                document.getElementById('btn-text').textContent = "Coach is thinking...";
+                
+                document.getElementById('recording-ui').classList.add('hidden');
+                document.getElementById('ai-result-container').classList.remove('hidden');
+                document.getElementById('ai-output').innerHTML = '<div class="flex items-center gap-2 text-slate-400">Thinking...</div>';
+
+                try {
+                    await streamGeminiAPI(text);
+                } catch (error) {
+                    document.getElementById('recording-ui').classList.remove('hidden');
+                } finally {
+                    analyzeBtn.disabled = false;
+                    document.getElementById('btn-text').textContent = "Generate Insights";
+                }
+            });
+        }
+
+        // NEW: Reset Recording
         document.getElementById('reset-recording').addEventListener('click', () => {
             document.getElementById('ai-result-container').classList.add('hidden');
             document.getElementById('recording-ui').classList.remove('hidden');
             document.getElementById('analyze-btn').classList.add('hidden');
             document.getElementById('record-instruction').textContent = "Tap to record verbal feedback";
-            transcriptBox.value = "";
+            document.getElementById('transcript-box').value = "";
         });
 
-        // PDF Controls
-        prevPageBtn.addEventListener('click', onPrevPage);
-        nextPageBtn.addEventListener('click', onNextPage);
-        fullscreenBtn.addEventListener('click', toggleFullscreen);
-        document.addEventListener('fullscreenchange', () => {
-            if (pdfDoc) {
-                setTimeout(() => renderPage(pageNum, true), 100);
-            }
+        // Company Modal Controls
+        document.getElementById('open-company-modal-btn').addEventListener('click', openCompanyModal);
+        document.getElementById('clear-companies-btn').addEventListener('click', () => {
+            document.getElementById('company-list').querySelectorAll('input').forEach(cb => cb.checked = false);
         });
+        document.getElementById('apply-companies-btn').addEventListener('click', applyCompanySelection);
 
-        // Company Modal
-        openCompanyModalBtn.addEventListener('click', openCompanyModal);
-        applyCompaniesBtn.addEventListener('click', applyCompanySelection);
-        companyModal.addEventListener('click', (e) => { if(e.target === companyModal) closeCompanyModal(); });
-        allCompaniesCheckbox.addEventListener('change', (e) => {
-            companyListContainer.querySelectorAll('.company-checkbox').forEach(cb => { cb.checked = e.target.checked; });
-        });
-        clearCompaniesBtn.addEventListener('click', () => {
-             companyListContainer.querySelectorAll('.company-checkbox').forEach(cb => { cb.checked = false; });
-            allCompaniesCheckbox.checked = false;
-        });
+        // Save Feedback & Rating
+        document.getElementById('save-feedback-btn').addEventListener('click', saveFeedback);
+        document.getElementById('rating-parameters').addEventListener('change', calculateOverallRating);
         
         // Warning Modal
         cancelWarningBtn.addEventListener('click', closeWarningModal);
         proceedBtn.addEventListener('click', () => { closeWarningModal(); showInProgressView(); });
-
-        // 4. Update saveFeedback to stop timer
-        const originalSaveFeedback = saveFeedback;
-        saveFeedback = function() {
-            clearInterval(sessionInterval);
-            originalSaveFeedback();
-        }
-
-        // Feedback Modal
-        saveFeedbackBtn.addEventListener('click', saveFeedback);
-        ratingParameters.addEventListener('change', calculateOverallRating);
 
         // ====================================================================
         // --- DASHBOARD SCRIPT ---
@@ -2067,11 +2086,5 @@
     </script>
 </body>
 </html>
-
-
-
-
-
-
 
 
