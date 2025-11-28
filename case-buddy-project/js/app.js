@@ -1201,4 +1201,3 @@ function initializeDashboard() {
     // --- Initial Dashboard Render ---
     renderDateRangePicker();
     renderDashboard();
-}
