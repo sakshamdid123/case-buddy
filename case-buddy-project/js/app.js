@@ -2,6 +2,9 @@
 import * as pdfjsLib from 'https://mozilla.github.io/pdf.js/build/pdf.mjs';
 pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://mozilla.github.io/pdf.js/build/pdf.worker.mjs';
 
+// --- DATA IMPORT (FIX) ---
+import { allCases, casebooks, mascots, commonAvatarSvg } from './data.js';
+
 // --- State Management ---
 let currentCase = null;
 let pdfDoc = null, pageNum = 1, pageRendering = false, pageNumPending = null;
