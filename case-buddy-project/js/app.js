@@ -180,22 +180,19 @@ async function showInProgressView() {
     document.getElementById('casebook-title').textContent = `${currentCase.company}: ${currentCase.title}`;
     const pdfPath = casebooks[currentCase.id] || casebooks.default;
 
-    // RESET UI STATES
-    interviewFeedbackPanel.classList.remove('slide-up-active');
-    pdfRenderContainer.classList.remove('scale-in-center');
-    
-    // Reset Feedback UI
+    // RESET PANEL STATES
+    interviewActivePanel.classList.remove('hidden');
+    interviewActivePanel.classList.add('flex');
+    interviewFeedbackPanel.classList.add('hidden');
+    interviewFeedbackPanel.classList.remove('flex');
+
+    // RESET FEEDBACK UI
     resetInlineFeedbackUI();
 
     startTimer();
 
     await initPdfViewer(pdfPath);
     showView(views.progress);
-
-    // Trigger Load-in Animation after a slight delay for effect
-    setTimeout(() => {
-        pdfRenderContainer.classList.add('scale-in-center');
-    }, 100);
 
     // ENABLE ARROW KEYS
     document.addEventListener('keydown', handlePdfKeyboardNav);
@@ -278,18 +275,11 @@ async function initPdfViewer(url) {
         renderPage(pageNum);
     } catch (error) {
         console.error('Error loading PDF:', error);
+        pdfRenderContainer.innerHTML = `<p class="text-white text-center">Error loading PDF. Check console.</p>`;
     }
 }
 
-// FIX FOR POINT 4: Re-render on fullscreen change
-document.addEventListener('fullscreenchange', () => {
-    // Small timeout to allow the browser to update layout dimensions first
-    setTimeout(() => {
-        if (pdfDoc) renderPage(pageNum);
-    }, 100);
-});
-
-function renderPage(num) {
+function renderPage(num, isResize = false) {
     if (pageRendering) {
         if (currentRenderTask) currentRenderTask.cancel();
         pageNumPending = num;
@@ -297,26 +287,15 @@ function renderPage(num) {
     }
     pageRendering = true;
 
-    // Animation Reset
-    pdfCanvas.classList.remove('page-transition');
-    void pdfCanvas.offsetWidth; // Trigger reflow
-    
+    if (!isResize) pdfCanvas.style.opacity = '0';
+
     pdfDoc.getPage(num).then(page => {
         const devicePixelRatio = window.devicePixelRatio || 1;
-        
-        // Get the parent container dimensions
-        const container = document.getElementById('pdf-viewer-wrapper');
-        const containerWidth = container.clientWidth - 40; // padding
-        const containerHeight = container.clientHeight - 40;
-
+        // Calculate scale to fit container width, but max out at sensible zoom
+        const containerWidth = pdfRenderContainer.clientWidth;
         const unscaledViewport = page.getViewport({ scale: 1 });
-        
-        // Calculate scale to FIT the container (Contain, not Cover)
-        const widthScale = containerWidth / unscaledViewport.width;
-        const heightScale = containerHeight / unscaledViewport.height;
-        const scale = Math.min(widthScale, heightScale);
-
-        const viewport = page.getViewport({ scale: scale });
+        const scale = (containerWidth - 40) / unscaledViewport.width; // 40px padding buffer
+        const viewport = page.getViewport({ scale: Math.min(scale, 1.5) });
 
         const context = pdfCanvas.getContext('2d');
         pdfCanvas.style.width = `${viewport.width}px`;
@@ -331,10 +310,7 @@ function renderPage(num) {
         currentRenderTask.promise.then(() => {
             pageRendering = false;
             currentRenderTask = null;
-            
-            // Apply slide animation
-            pdfCanvas.classList.add('page-transition');
-            
+            if (!isResize) pdfCanvas.style.opacity = '1';
             if (pageNumPending !== null) {
                 renderPage(pageNumPending);
                 pageNumPending = null;
@@ -354,7 +330,7 @@ function handlePdfKeyboardNav(e) {
 
 function toggleFullscreen() {
     if (!document.fullscreenElement) {
-        document.getElementById('pdf-viewer-wrapper').requestFullscreen().catch(err => {
+        pdfRenderContainer.requestFullscreen().catch(err => {
             console.error(`Error attempting to enable full-screen mode: ${err.message} (${err.name})`);
         });
     } else {
@@ -365,9 +341,15 @@ function toggleFullscreen() {
 // --- NEW FEEDBACK LOGIC (INLINE PANEL) ---
 
 function transitionToFeedbackMode() {
-    stopTimer();
-    // TRIGGER ANIMATION: Slide up the feedback panel
-    interviewFeedbackPanel.classList.add('slide-up-active');
+    stopTimer(); // <--- ADD THIS LINE
+    // Hide Active, Show Feedback
+    interviewActivePanel.classList.add('hidden');
+    interviewActivePanel.classList.remove('flex');
+
+    interviewFeedbackPanel.classList.remove('hidden');
+    interviewFeedbackPanel.classList.add('flex');
+
+    // Initialize Mic
     setupSpeechRecognition();
 }
 
@@ -439,12 +421,17 @@ function setupSpeechRecognition() {
 
 async function processFeedbackWithAI(text) {
     // HIDE MIC, SHOW LOADING
-    // document.getElementById('mic-interface').classList.add('hidden'); // Don't hide mic col anymore
+    document.getElementById('mic-interface').classList.add('hidden');
+    aiInsightContainer.classList.remove('hidden');
     loadingAi.classList.remove('hidden');
-    document.getElementById('ai-output-content').innerHTML = ''; 
+    aiOutputContent.innerHTML = '';
     retryFeedbackBtn.classList.add('hidden');
 
-    // ... (Keep prompt logic same) ...
+    const fullPrompt = `
+                Act as a senior McKinsey partner. Convert this raw verbal feedback for a case interview into a structured, professional evaluation card (HTML format only, no markdown). 
+                Use <h3> for sections (Key Strengths, Areas for Improvement) and <ul><li> for points. Keep it encouraging but sharp. 
+                Feedback: "${text}"
+            `;
 
     try {
         const response = await fetch('/api/generate-feedback', {
@@ -460,12 +447,8 @@ async function processFeedbackWithAI(text) {
             resultHtml = resultHtml.replace(/```html/g, '').replace(/```/g, '');
 
             loadingAi.classList.add('hidden');
-            
-            // Show result in the new dedicated column
-            document.getElementById('ai-insight-container').classList.remove('hidden'); // Ensure container is visible if hidden
-            const outputDiv = document.getElementById('ai-output-content');
-            outputDiv.innerHTML = resultHtml;
-            
+            aiOutputContent.innerHTML = resultHtml;
+            generatedAiFeedback = resultHtml;
             retryFeedbackBtn.classList.remove('hidden');
         } else {
             throw new Error("Invalid response from AI");
@@ -473,7 +456,7 @@ async function processFeedbackWithAI(text) {
     } catch (error) {
         console.error(error);
         loadingAi.classList.add('hidden');
-        document.getElementById('ai-output-content').innerHTML = `<span class="text-red-500">Error generating insights. Please try again.</span>`;
+        aiOutputContent.innerHTML = `<span class="text-red-500">Error generating insights. Please try again.</span>`;
         retryFeedbackBtn.classList.remove('hidden');
     }
 }
