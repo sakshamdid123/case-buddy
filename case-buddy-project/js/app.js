@@ -279,6 +279,7 @@ async function initPdfViewer(url) {
     } catch (error) {
         console.error('Error loading PDF:', error);
     }
+}
 
 // FIX FOR POINT 4: Re-render on fullscreen change
 document.addEventListener('fullscreenchange', () => {
