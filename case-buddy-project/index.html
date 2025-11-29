@@ -123,116 +123,168 @@
         </div>
 
         <div id="in-progress-view" class="hidden h-[calc(100vh-80px)]">
-            <div class="flex flex-col h-full gap-4">
+            <div class="flex flex-col h-full gap-6">
                 
-                <div id="pdf-viewer-wrapper" class="relative flex-grow bg-slate-900 rounded-2xl shadow-2xl overflow-hidden group flex items-center justify-center">
-                    <div id="pdf-render-container" class="transition-transform duration-500 ease-out transform scale-95 opacity-0">
-                        <canvas id="pdf-canvas" class="shadow-2xl rounded-lg"></canvas>
+                <div id="pdf-viewer-wrapper" class="animate-pdf-entrance relative flex-grow rounded-2xl overflow-hidden flex items-center justify-center group">
+                    
+                    <div id="pdf-render-container" class="transition-transform duration-300 ease-out">
+                        <canvas id="pdf-canvas" class="shadow-xl rounded-lg"></canvas>
                     </div>
         
-                    <button id="pdf-fullscreen" class="absolute top-6 right-6 w-10 h-10 bg-white/10 backdrop-blur-md border border-white/20 rounded-full text-white flex items-center justify-center hover:bg-white/20 hover:scale-110 transition-all duration-300 z-50" title="Enter Focus Mode">
+                    <button id="pdf-fullscreen" class="absolute top-6 right-6 w-10 h-10 bg-white/50 backdrop-blur-md border border-gray-200 text-gray-600 rounded-full flex items-center justify-center hover:bg-white hover:shadow-lg hover:scale-110 transition-all duration-300 z-50">
                         <i class="ph ph-arrows-out-simple text-lg"></i>
                     </button>
         
-                    <div class="absolute bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-4 bg-black/40 backdrop-blur-xl border border-white/10 px-6 py-2 rounded-full shadow-2xl transition-all duration-300 hover:bg-black/60">
-                        <button id="pdf-prev" class="text-white/70 hover:text-white hover:-translate-x-1 transition-all">
+                    <div class="absolute bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-6 bg-white/80 backdrop-blur-xl border border-white/40 px-8 py-3 rounded-full shadow-2xl transition-all duration-300 hover:bg-white hover:scale-105">
+                        <button id="pdf-prev" class="text-slate-500 hover:text-slate-900 hover:-translate-x-1 transition-all">
                             <i class="ph ph-arrow-left text-xl"></i>
                         </button>
-                        <span class="text-white/90 font-mono text-xs font-bold tracking-widest">
-                            <span id="page-num">01</span> / <span id="page-count">--</span>
+                        <span class="text-slate-700 font-mono text-sm font-bold tracking-widest border-l border-r border-slate-300 px-4">
+                            <span id="page-num">01</span> <span class="text-slate-400 mx-1">/</span> <span id="page-count">--</span>
                         </span>
-                        <button id="pdf-next" class="text-white/70 hover:text-white hover:translate-x-1 transition-all">
+                        <button id="pdf-next" class="text-slate-500 hover:text-slate-900 hover:translate-x-1 transition-all">
                             <i class="ph ph-arrow-right text-xl"></i>
                         </button>
                     </div>
                 </div>
         
-                <div id="interviewer-deck" class="h-[250px] bg-white rounded-2xl shadow-lg border border-slate-200 flex overflow-hidden relative">
+                <div id="interviewer-deck" class="animate-deck-entrance h-[280px] bg-white rounded-2xl shadow-xl border border-slate-100 flex overflow-hidden relative">
                     
-                    <div class="w-1/4 p-6 border-r border-slate-100 flex flex-col justify-center items-center bg-slate-50">
-                        <div class="flex items-center gap-2 mb-2">
-                            <span class="relative flex h-3 w-3">
-                              <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-                              <span class="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
-                            </span>
-                            <span class="text-xs font-bold text-slate-400 uppercase tracking-widest">Live Session</span>
+                    <div class="w-[280px] bg-slate-50 border-r border-slate-100 p-6 flex flex-col justify-center items-center relative">
+                        <div class="absolute top-4 left-4">
+                            <div class="flex items-center gap-2 px-3 py-1 bg-white rounded-full border border-slate-200 shadow-sm">
+                                <div class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
+                                <span class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Live</span>
+                            </div>
                         </div>
-                        <div class="text-4xl font-mono font-bold text-slate-800" id="session-timer">00:00</div>
-                        <h2 id="casebook-title" class="text-xs font-medium text-slate-500 mt-2 text-center truncate w-full px-2"></h2>
+                        <div class="text-5xl font-mono font-bold text-slate-800 tracking-tighter" id="session-timer">00:00</div>
+                        <div class="mt-4 w-full text-center">
+                            <h2 id="casebook-title" class="text-sm font-semibold text-slate-600 leading-tight"></h2>
+                        </div>
                     </div>
         
-                    <div class="flex-grow relative">
+                    <div class="flex-grow relative bg-white">
                         
-                        <div id="interview-active-panel" class="absolute inset-0 flex items-center justify-around p-8 transition-all duration-500">
-                            <div class="text-center space-y-2 opacity-50 hover:opacity-100 transition-opacity">
-                                <i class="ph ph-eye text-3xl text-slate-400"></i>
-                                <p class="text-xs font-semibold text-slate-500">Observe</p>
-                            </div>
+                        <div id="interview-active-panel" class="absolute inset-0 flex items-center justify-center gap-16 transition-all duration-500">
                             
-                            <button id="end-case-btn" class="group relative flex flex-col items-center justify-center w-32 h-32 rounded-full bg-gradient-to-br from-red-50 to-red-100 border border-red-200 hover:shadow-xl hover:scale-105 transition-all duration-500">
-                                <div class="w-16 h-16 rounded-full bg-white flex items-center justify-center shadow-sm mb-2 group-hover:bg-red-500 group-hover:text-white transition-colors duration-300">
-                                    <i class="ph ph-stop text-2xl text-red-500 group-hover:text-white"></i>
+                            <div class="guide-step guide-left flex flex-col items-center gap-3 select-none">
+                                <div class="w-14 h-14 rounded-full bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-400">
+                                    <i class="ph ph-eye text-2xl"></i>
                                 </div>
-                                <span class="text-xs font-bold text-red-800 uppercase tracking-wide">End Case</span>
+                                <span class="text-xs font-bold text-slate-400 uppercase tracking-widest">1. Observe</span>
+                            </div>
+        
+                            <button id="end-case-btn" class="group relative z-10 flex flex-col items-center justify-center w-36 h-36 rounded-full bg-white border-4 border-red-50 shadow-lg hover:shadow-red-100/50 hover:border-red-100 hover:scale-105 transition-all duration-500">
+                                <div class="absolute inset-0 rounded-full bg-red-500 opacity-0 group-hover:opacity-5 transition-opacity duration-500"></div>
+                                <div class="w-16 h-16 rounded-full bg-red-50 text-red-500 flex items-center justify-center mb-2 group-hover:bg-red-500 group-hover:text-white transition-all duration-300 shadow-inner">
+                                    <i class="ph ph-stop-circle text-3xl"></i>
+                                </div>
+                                <span class="text-xs font-black text-red-900/80 uppercase tracking-widest group-hover:text-red-600 transition-colors">End Session</span>
                             </button>
         
-                            <div class="text-center space-y-2 opacity-50 hover:opacity-100 transition-opacity">
-                                <i class="ph ph-note-pencil text-3xl text-slate-400"></i>
-                                <p class="text-xs font-semibold text-slate-500">Notes</p>
+                            <div class="guide-step guide-right flex flex-col items-center gap-3 select-none">
+                                <div class="w-14 h-14 rounded-full bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-400">
+                                    <i class="ph ph-note-pencil text-2xl"></i>
+                                </div>
+                                <span class="text-xs font-bold text-slate-400 uppercase tracking-widest">2. Take Notes</span>
                             </div>
                         </div>
         
                         <div id="interview-feedback-panel" class="absolute inset-0 bg-white translate-y-full transition-transform duration-500 ease-in-out flex">
-                            <div class="w-1/2 p-6 flex flex-col justify-center border-r border-slate-100">
-                                <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4">Rate Performance</h4>
-                                <div class="grid grid-cols-2 gap-x-8 gap-y-2">
-                                    <div class="flex justify-between items-center">
-                                        <span class="text-xs font-bold text-slate-600">Structure</span>
-                                        <div class="star-rating inline-rating text-sm" data-param="structure"><input type="radio" value="5" name="s5" id="s5"><label for="s5">★</label><input type="radio" value="4" name="s4" id="s4"><label for="s4">★</label><input type="radio" value="3" name="s3" id="s3"><label for="s3">★</label><input type="radio" value="2" name="s2" id="s2"><label for="s2">★</label><input type="radio" value="1" name="s1" id="s1"><label for="s1">★</label></div>
+                            
+                            <div class="w-5/12 p-8 border-r border-slate-100 flex flex-col justify-center">
+                                <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-6 flex items-center gap-2">
+                                    <i class="ph ph-star-half text-yellow-500"></i> Performance Score
+                                </h4>
+                                <div class="grid grid-cols-1 gap-4"> 
+                                    <div class="rating-group flex justify-between items-center group cursor-pointer">
+                                        <span class="text-sm font-bold text-slate-600 group-hover:text-blue-600 transition-colors">Structuring</span>
+                                        <div class="star-rating inline-rating text-lg" data-param="structure">
+                                            <input type="radio" value="5" name="s5" id="s5"><label for="s5">★</label>
+                                            <input type="radio" value="4" name="s4" id="s4"><label for="s4">★</label>
+                                            <input type="radio" value="3" name="s3" id="s3"><label for="s3">★</label>
+                                            <input type="radio" value="2" name="s2" id="s2"><label for="s2">★</label>
+                                            <input type="radio" value="1" name="s1" id="s1"><label for="s1">★</label>
+                                        </div>
                                     </div>
-                                    <div class="flex justify-between items-center">
-                                        <span class="text-xs font-bold text-slate-600">Analysis</span>
-                                        <div class="star-rating inline-rating text-sm" data-param="understanding"><input type="radio" value="5" name="u5" id="u5"><label for="u5">★</label><input type="radio" value="4" name="u4" id="u4"><label for="u4">★</label><input type="radio" value="3" name="u3" id="u3"><label for="u3">★</label><input type="radio" value="2" name="u2" id="u2"><label for="u2">★</label><input type="radio" value="1" name="u1" id="u1"><label for="u1">★</label></div>
+                                    <div class="rating-group flex justify-between items-center group cursor-pointer">
+                                        <span class="text-sm font-bold text-slate-600 group-hover:text-blue-600 transition-colors">Analysis</span>
+                                        <div class="star-rating inline-rating text-lg" data-param="understanding">
+                                            <input type="radio" value="5" name="u5" id="u5"><label for="u5">★</label>
+                                            <input type="radio" value="4" name="u4" id="u4"><label for="u4">★</label>
+                                            <input type="radio" value="3" name="u3" id="u3"><label for="u3">★</label>
+                                            <input type="radio" value="2" name="u2" id="u2"><label for="u2">★</label>
+                                            <input type="radio" value="1" name="u1" id="u1"><label for="u1">★</label>
+                                        </div>
                                     </div>
-                                    <div class="flex justify-between items-center">
-                                        <span class="text-xs font-bold text-slate-600">Comms</span>
-                                        <div class="star-rating inline-rating text-sm" data-param="delivery"><input type="radio" value="5" name="d5" id="d5"><label for="d5">★</label><input type="radio" value="4" name="d4" id="d4"><label for="d4">★</label><input type="radio" value="3" name="d3" id="d3"><label for="d3">★</label><input type="radio" value="2" name="d2" id="d2"><label for="d2">★</label><input type="radio" value="1" name="d1" id="d1"><label for="d1">★</label></div>
+                                    <div class="rating-group flex justify-between items-center group cursor-pointer">
+                                        <span class="text-sm font-bold text-slate-600 group-hover:text-blue-600 transition-colors">Communication</span>
+                                        <div class="star-rating inline-rating text-lg" data-param="delivery">
+                                            <input type="radio" value="5" name="d5" id="d5"><label for="d5">★</label>
+                                            <input type="radio" value="4" name="d4" id="d4"><label for="d4">★</label>
+                                            <input type="radio" value="3" name="d3" id="d3"><label for="d3">★</label>
+                                            <input type="radio" value="2" name="d2" id="d2"><label for="d2">★</label>
+                                            <input type="radio" value="1" name="d1" id="d1"><label for="d1">★</label>
+                                        </div>
                                     </div>
-                                    <div class="flex justify-between items-center">
-                                        <span class="text-xs font-bold text-slate-600">Creativity</span>
-                                        <div class="star-rating inline-rating text-sm" data-param="creativity"><input type="radio" value="5" name="c5" id="c5"><label for="c5">★</label><input type="radio" value="4" name="c4" id="c4"><label for="c4">★</label><input type="radio" value="3" name="c3" id="c3"><label for="c3">★</label><input type="radio" value="2" name="c2" id="c2"><label for="c2">★</label><input type="radio" value="1" name="c1" id="c1"><label for="c1">★</label></div>
+                                    <div class="rating-group flex justify-between items-center group cursor-pointer">
+                                        <span class="text-sm font-bold text-slate-600 group-hover:text-blue-600 transition-colors">Creativity</span>
+                                        <div class="star-rating inline-rating text-lg" data-param="creativity">
+                                            <input type="radio" value="5" name="c5" id="c5"><label for="c5">★</label>
+                                            <input type="radio" value="4" name="c4" id="c4"><label for="c4">★</label>
+                                            <input type="radio" value="3" name="c3" id="c3"><label for="c3">★</label>
+                                            <input type="radio" value="2" name="c2" id="c2"><label for="c2">★</label>
+                                            <input type="radio" value="1" name="c1" id="c1"><label for="c1">★</label>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
         
-                            <div id="mic-interface" class="w-1/4 p-4 flex flex-col items-center justify-center border-r border-slate-100">
-                                <button id="inline-record-btn" class="mic-button w-12 h-12 text-lg mb-2">
-                                    <i class="ph ph-microphone"></i>
-                                </button>
-                                <p id="mic-status-text" class="text-[10px] text-slate-400 font-bold uppercase tracking-wide">Record Feedback</p>
+                            <div id="mic-interface" class="w-3/12 p-4 flex flex-col items-center justify-center border-r border-slate-100 bg-slate-50/50">
+                                <div class="relative">
+                                    <button id="inline-record-btn" class="mic-button w-16 h-16 text-2xl mb-3 shadow-lg hover:shadow-xl hover:scale-110 transition-all bg-white text-blue-500 border-none">
+                                        <i class="ph ph-microphone"></i>
+                                    </button>
+                                </div>
+                                <p id="mic-status-text" class="text-[10px] font-bold text-slate-400 uppercase tracking-widest text-center mt-2">Tap to Record<br>Audio Feedback</p>
                                 <textarea id="hidden-transcript-box" class="hidden"></textarea>
                             </div>
         
-                            <div class="w-1/4 p-6 flex flex-col justify-center items-center bg-slate-50">
-                                <div id="loading-ai" class="hidden text-center mb-2">
-                                    <i class="ph ph-spinner animate-spin text-blue-500"></i>
-                                </div>
-                                <div id="ai-insight-container" class="hidden absolute bottom-full right-0 bg-white shadow-xl p-4 w-96 rounded-xl border border-slate-200 mb-4 mr-4 text-xs max-h-60 overflow-y-auto">
-                                    <div id="ai-output-content"></div>
-                                </div>
+                            <div class="w-4/12 p-6 flex flex-col bg-white relative">
                                 
-                                <button id="save-complete-btn" class="w-full bg-slate-900 text-white py-3 rounded-lg font-bold hover:bg-slate-800 transition-transform transform hover:scale-105 shadow-md flex items-center justify-center gap-2">
-                                    <span>Finish</span>
-                                    <i class="ph ph-check-bold"></i>
-                                </button>
-                                <button id="retry-feedback-btn" class="text-xs text-slate-400 mt-3 hover:text-slate-600 underline hidden">Reset</button>
+                                <div class="flex-grow flex flex-col overflow-hidden mb-4">
+                                    <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 flex items-center gap-2">
+                                        <i class="ph ph-magic-wand text-purple-500"></i> AI Insights
+                                    </h4>
+                                    
+                                    <div class="flex-grow bg-slate-50 rounded-xl border border-slate-100 p-4 relative overflow-hidden">
+                                        <div id="loading-ai" class="hidden absolute inset-0 flex flex-col items-center justify-center bg-white/80 backdrop-blur-sm z-10">
+                                            <i class="ph ph-spinner animate-spin text-3xl text-blue-500 mb-2"></i>
+                                            <span class="text-xs font-bold text-blue-500 animate-pulse">Analyzing Feedback...</span>
+                                        </div>
+                                        <div id="ai-output-content" class="h-full overflow-y-auto ai-scroll text-xs text-slate-600 leading-relaxed">
+                                            <p class="text-slate-400 italic text-center mt-10">Record audio feedback to generate automated insights...</p>
+                                        </div>
+                                    </div>
+                                </div>
+        
+                                <div class="flex gap-2">
+                                    <button id="retry-feedback-btn" class="hidden px-4 py-3 rounded-xl border border-slate-200 text-slate-500 hover:bg-slate-50 hover:text-slate-700 transition font-bold text-xs">
+                                        <i class="ph ph-arrow-counter-clockwise text-lg"></i>
+                                    </button>
+                                    <button id="save-complete-btn" class="flex-grow bg-slate-900 text-white py-3 rounded-xl font-bold hover:bg-slate-800 transition-all shadow-lg hover:shadow-xl flex items-center justify-center gap-2 group">
+                                        <span>Complete Case</span>
+                                        <i class="ph ph-check-circle text-lg text-green-400 group-hover:text-green-300"></i>
+                                    </button>
+                                </div>
                             </div>
+        
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-
+        
         <div id="about-view" class="hidden">
             <div class="max-w-4xl mx-auto py-12">
                 <h1 class="text-5xl font-extrabold gradient-text text-center">About Case Buddy</h1>
@@ -393,5 +445,6 @@
     <script type="module" src="js/app.js"></script>
 </body>
 </html>
+
 
 
