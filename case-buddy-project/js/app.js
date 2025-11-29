@@ -180,19 +180,22 @@ async function showInProgressView() {
     document.getElementById('casebook-title').textContent = `${currentCase.company}: ${currentCase.title}`;
     const pdfPath = casebooks[currentCase.id] || casebooks.default;
 
-    // RESET PANEL STATES
-    interviewActivePanel.classList.remove('hidden');
-    interviewActivePanel.classList.add('flex');
-    interviewFeedbackPanel.classList.add('hidden');
-    interviewFeedbackPanel.classList.remove('flex');
-
-    // RESET FEEDBACK UI
+    // RESET UI STATES
+    interviewFeedbackPanel.classList.remove('slide-up-active');
+    pdfRenderContainer.classList.remove('scale-in-center');
+    
+    // Reset Feedback UI
     resetInlineFeedbackUI();
 
     startTimer();
 
     await initPdfViewer(pdfPath);
     showView(views.progress);
+
+    // Trigger Load-in Animation after a slight delay for effect
+    setTimeout(() => {
+        pdfRenderContainer.classList.add('scale-in-center');
+    }, 100);
 
     // ENABLE ARROW KEYS
     document.addEventListener('keydown', handlePdfKeyboardNav);
@@ -279,7 +282,7 @@ async function initPdfViewer(url) {
     }
 }
 
-function renderPage(num, isResize = false) {
+function renderPage(num) {
     if (pageRendering) {
         if (currentRenderTask) currentRenderTask.cancel();
         pageNumPending = num;
@@ -287,15 +290,26 @@ function renderPage(num, isResize = false) {
     }
     pageRendering = true;
 
-    if (!isResize) pdfCanvas.style.opacity = '0';
-
+    // Animation Reset
+    pdfCanvas.classList.remove('page-transition');
+    void pdfCanvas.offsetWidth; // Trigger reflow
+    
     pdfDoc.getPage(num).then(page => {
         const devicePixelRatio = window.devicePixelRatio || 1;
-        // Calculate scale to fit container width, but max out at sensible zoom
-        const containerWidth = pdfRenderContainer.clientWidth;
+        
+        // Get the parent container dimensions
+        const container = document.getElementById('pdf-viewer-wrapper');
+        const containerWidth = container.clientWidth - 40; // padding
+        const containerHeight = container.clientHeight - 40;
+
         const unscaledViewport = page.getViewport({ scale: 1 });
-        const scale = (containerWidth - 40) / unscaledViewport.width; // 40px padding buffer
-        const viewport = page.getViewport({ scale: Math.min(scale, 1.5) });
+        
+        // Calculate scale to FIT the container (Contain, not Cover)
+        const widthScale = containerWidth / unscaledViewport.width;
+        const heightScale = containerHeight / unscaledViewport.height;
+        const scale = Math.min(widthScale, heightScale);
+
+        const viewport = page.getViewport({ scale: scale });
 
         const context = pdfCanvas.getContext('2d');
         pdfCanvas.style.width = `${viewport.width}px`;
@@ -310,7 +324,10 @@ function renderPage(num, isResize = false) {
         currentRenderTask.promise.then(() => {
             pageRendering = false;
             currentRenderTask = null;
-            if (!isResize) pdfCanvas.style.opacity = '1';
+            
+            // Apply slide animation
+            pdfCanvas.classList.add('page-transition');
+            
             if (pageNumPending !== null) {
                 renderPage(pageNumPending);
                 pageNumPending = null;
@@ -330,7 +347,8 @@ function handlePdfKeyboardNav(e) {
 
 function toggleFullscreen() {
     if (!document.fullscreenElement) {
-        pdfRenderContainer.requestFullscreen().catch(err => {
+        // We request fullscreen on the wrapper now for the "Theater" feel
+        document.getElementById('pdf-viewer-wrapper').requestFullscreen().catch(err => {
             console.error(`Error attempting to enable full-screen mode: ${err.message} (${err.name})`);
         });
     } else {
@@ -341,15 +359,9 @@ function toggleFullscreen() {
 // --- NEW FEEDBACK LOGIC (INLINE PANEL) ---
 
 function transitionToFeedbackMode() {
-    stopTimer(); // <--- ADD THIS LINE
-    // Hide Active, Show Feedback
-    interviewActivePanel.classList.add('hidden');
-    interviewActivePanel.classList.remove('flex');
-
-    interviewFeedbackPanel.classList.remove('hidden');
-    interviewFeedbackPanel.classList.add('flex');
-
-    // Initialize Mic
+    stopTimer();
+    // TRIGGER ANIMATION: Slide up the feedback panel
+    interviewFeedbackPanel.classList.add('slide-up-active');
     setupSpeechRecognition();
 }
 
