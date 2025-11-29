@@ -278,9 +278,15 @@ async function initPdfViewer(url) {
         renderPage(pageNum);
     } catch (error) {
         console.error('Error loading PDF:', error);
-        pdfRenderContainer.innerHTML = `<p class="text-white text-center">Error loading PDF. Check console.</p>`;
     }
-}
+
+// FIX FOR POINT 4: Re-render on fullscreen change
+document.addEventListener('fullscreenchange', () => {
+    // Small timeout to allow the browser to update layout dimensions first
+    setTimeout(() => {
+        if (pdfDoc) renderPage(pageNum);
+    }, 100);
+});
 
 function renderPage(num) {
     if (pageRendering) {
@@ -347,7 +353,6 @@ function handlePdfKeyboardNav(e) {
 
 function toggleFullscreen() {
     if (!document.fullscreenElement) {
-        // We request fullscreen on the wrapper now for the "Theater" feel
         document.getElementById('pdf-viewer-wrapper').requestFullscreen().catch(err => {
             console.error(`Error attempting to enable full-screen mode: ${err.message} (${err.name})`);
         });
@@ -433,17 +438,12 @@ function setupSpeechRecognition() {
 
 async function processFeedbackWithAI(text) {
     // HIDE MIC, SHOW LOADING
-    document.getElementById('mic-interface').classList.add('hidden');
-    aiInsightContainer.classList.remove('hidden');
+    // document.getElementById('mic-interface').classList.add('hidden'); // Don't hide mic col anymore
     loadingAi.classList.remove('hidden');
-    aiOutputContent.innerHTML = '';
+    document.getElementById('ai-output-content').innerHTML = ''; 
     retryFeedbackBtn.classList.add('hidden');
 
-    const fullPrompt = `
-                Act as a senior McKinsey partner. Convert this raw verbal feedback for a case interview into a structured, professional evaluation card (HTML format only, no markdown). 
-                Use <h3> for sections (Key Strengths, Areas for Improvement) and <ul><li> for points. Keep it encouraging but sharp. 
-                Feedback: "${text}"
-            `;
+    // ... (Keep prompt logic same) ...
 
     try {
         const response = await fetch('/api/generate-feedback', {
@@ -459,8 +459,12 @@ async function processFeedbackWithAI(text) {
             resultHtml = resultHtml.replace(/```html/g, '').replace(/```/g, '');
 
             loadingAi.classList.add('hidden');
-            aiOutputContent.innerHTML = resultHtml;
-            generatedAiFeedback = resultHtml;
+            
+            // Show result in the new dedicated column
+            document.getElementById('ai-insight-container').classList.remove('hidden'); // Ensure container is visible if hidden
+            const outputDiv = document.getElementById('ai-output-content');
+            outputDiv.innerHTML = resultHtml;
+            
             retryFeedbackBtn.classList.remove('hidden');
         } else {
             throw new Error("Invalid response from AI");
@@ -468,7 +472,7 @@ async function processFeedbackWithAI(text) {
     } catch (error) {
         console.error(error);
         loadingAi.classList.add('hidden');
-        aiOutputContent.innerHTML = `<span class="text-red-500">Error generating insights. Please try again.</span>`;
+        document.getElementById('ai-output-content').innerHTML = `<span class="text-red-500">Error generating insights. Please try again.</span>`;
         retryFeedbackBtn.classList.remove('hidden');
     }
 }
